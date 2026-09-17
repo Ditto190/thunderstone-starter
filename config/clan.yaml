@@ -1,0 +1,19 @@
+schema_version: 1
+clan: thunderstone
+starter_authority: google_drive
+active_code_authority: github_after_promotion
+default_executor: cursor_cli
+recursive_agent_execution: false
+startup:
+  bootstrap: sh scripts/bootstrap.sh
+  login: bash scripts/resume.sh
+  session_resume: bash scripts/resume.sh
+  desktop: xfce_existing
+  terminal: bash
+  session_manager: tmux
+  require_systemd: false
+automation:
+  paid_tasks_on_login: false
+  checkpoint_commits: opt_in
+  remote_push: explicit_approval
+  drive_export: curated_additive_only
