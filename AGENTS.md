@@ -16,3 +16,10 @@ Read this file, assigned brief and current status only. Run scripts/resume.sh.
 - Run npm test; add application-specific validation before marking application work done.
 - Status: outcome, changed files, validation, blockers, next action. Do not paste raw logs.
 - Caveman tone is explicit opt-in and must never alter commands or safety clarity.
+
+<!-- lean-ctx -->
+## lean-ctx
+
+lean-ctx is active — the MCP tools replace native equivalents.
+Full rules: LEAN-CTX.md (open on demand — do not auto-load).
+<!-- /lean-ctx -->
