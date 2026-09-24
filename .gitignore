@@ -9,3 +9,5 @@ workspace/
 *.key
 *credentials*.json
 rclone.conf
+.context/
+*.bak
