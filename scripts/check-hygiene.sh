@@ -44,7 +44,8 @@ while IFS= read -r -d '' file; do
   done
 done < <(git ls-files -z)
 
-# Commit identities: every author/committer must be the public alias (or GitHub's web-flow committer).
+# Commit identities: every non-merge commit must be authored by the public alias (or GitHub's web-flow committer).
+# Merge commits are skipped: GitHub's synthetic PR merge ref uses the account profile display name.
 alias_name="Ditto190"
 while IFS='|' read -r sha an ae cn ce; do
   ok_author=0; ok_committer=0
@@ -55,7 +56,7 @@ while IFS='|' read -r sha an ae cn ce; do
     echo "hygiene: commit ${sha:0:7} [non-alias author/committer identity]"
     fail=1
   fi
-done < <(git log --all --format='%H|%an|%ae|%cn|%ce' 2>/dev/null || true)
+done < <(git log --all --no-merges --format='%H|%an|%ae|%cn|%ce' 2>/dev/null || true)
 
 if [ "$fail" -ne 0 ]; then
   echo "Hygiene check failed. Use relative paths and keep secrets in untracked .env files." >&2
