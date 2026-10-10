@@ -3,5 +3,5 @@
   "observe": ["Wait for authenticated app shell", "Prefer accessibility refs over CSS selectors"],
   "actions": ["Use keyboard shortcuts for the editor", "Resnapshot after opening a modal"],
   "fallback": ["Capture annotated screenshot", "Use CUA only inside active browser viewport"],
-  "requires_approval": ["submit", "purchase", "post", "upload"]
+  "requires_approval": ["submit", "purchase", "post", "upload", "js_eval", "mfa", "account_change", "legal_acceptance"]
 }
