@@ -12,4 +12,5 @@ done
 if command -v systemctl >/dev/null && systemctl --user show-environment >/dev/null 2>&1; then
   echo "User systemd reachable; not required by starter."
 else echo "No reachable user systemd; tmux + XDG autostart are used."; fi
+bash scripts/agent-setup.sh --doctor || true
 exit "$failed"
