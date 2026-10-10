@@ -44,9 +44,13 @@ while IFS= read -r -d '' file; do
   done
 done < <(git ls-files -z)
 
-# Commit identities: every author/committer must be the public alias (or GitHub's web-flow committer).
+# Commit identities: every non-merge commit must be authored by the public alias (or GitHub's web-flow committer).
 alias_name="Ditto190"
-while IFS='|' read -r sha an ae cn ce; do
+while IFS='|' read -r sha an ae cn ce subj; do
+  # GitHub's synthetic PR merge commit uses the profile display name. Skip it only when its SHA is the
+  # one Actions checked out (GITHUB_SHA), so a look-alike commit elsewhere in history can't bypass the check.
+  if [ -n "${GITHUB_SHA:-}" ] && [ "$sha" = "$GITHUB_SHA" ] && [ "$cn" = "GitHub" ] \
+     && printf '%s' "$subj" | grep -Eq '^Merge [0-9a-f]{40} into [0-9a-f]{40}$'; then continue; fi
   ok_author=0; ok_committer=0
   if [ "$an" = "$alias_name" ] && printf '%s' "$ae" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; then ok_author=1; fi
   if { [ "$cn" = "$alias_name" ] && printf '%s' "$ce" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; } \
@@ -55,7 +59,7 @@ while IFS='|' read -r sha an ae cn ce; do
     echo "hygiene: commit ${sha:0:7} [non-alias author/committer identity]"
     fail=1
   fi
-done < <(git log --all --format='%H|%an|%ae|%cn|%ce' 2>/dev/null || true)
+done < <(git log --all --format='%H|%an|%ae|%cn|%ce|%s' 2>/dev/null || true)
 
 if [ "$fail" -ne 0 ]; then
   echo "Hygiene check failed. Use relative paths and keep secrets in untracked .env files." >&2
