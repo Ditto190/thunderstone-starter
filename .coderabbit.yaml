@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# One automatic review when a PR is opened / marked ready. Later pushes are NOT
+# re-reviewed (cubic.yaml has the same policy). Role split: CodeRabbit = general review + summary + lint;
+# cubic = bugs, security and project rules. Comment "@coderabbitai review" (new commits) or "@coderabbitai full review".
+language: en-AU
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  poem: false
+  in_progress_fortune: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: false
+    ignore_title_keywords:
+      - "WIP"
+      - "[skip review]"
+    ignore_usernames:
+      - "dependabot[bot]"
+
+  path_filters:
+    - "!package-lock.json"
+    - "!manifest.sha256"
+    - "!.state/**"
+    - "!.context/**"
+    - "!workspace/**"
+
+  path_instructions:
+    - path: "scripts/**"
+      instructions: |
+        Shell safety: quoting, set -euo pipefail, no absolute or user-specific paths,
+        never print secret values. Flag anything that would fail shellcheck.
+    - path: ".github/workflows/**"
+      instructions: |
+        Actions must be pinned to full commit SHAs, use least-privilege permissions,
+        and keep concurrency cancel groups. Flag any pull_request_target or secret exposure.
+    - path: ".husky/**"
+      instructions: "Hooks must stay fast and must never be bypassed with --no-verify."
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+chat:
+  auto_reply: false
