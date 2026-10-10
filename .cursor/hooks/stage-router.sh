@@ -2,6 +2,9 @@
 # Stage-aware advisory router for Cursor sessionStart (read-only).
 set -euo pipefail
 
+STAGE_ROUTER_BUDGET_SEC="${STAGE_ROUTER_BUDGET_SEC:-4}"
+stage_router_start="$SECONDS"
+
 emit_empty() {
   printf '{}\n'
 }
@@ -14,6 +17,87 @@ emit_stage() {
   printf '{"additional_context":"STAGE=%s reason=%s"}\n' "$stage" "$reason"
 }
 
+budget_remaining_sec() {
+  local elapsed=$((SECONDS - stage_router_start))
+  echo $((STAGE_ROUTER_BUDGET_SEC - elapsed))
+}
+
+gh_timed_capture() {
+  local per_call_sec="$1"
+  shift
+  local remain
+  remain="$(budget_remaining_sec)"
+  if [ "${remain:-0}" -le 0 ]; then
+    return 124
+  fi
+  if [ "$per_call_sec" -gt "$remain" ]; then
+    per_call_sec="$remain"
+  fi
+  if ! command -v timeout >/dev/null 2>&1; then
+    gh "$@" 2>/dev/null
+    return $?
+  fi
+  timeout "$per_call_sec" gh "$@" 2>/dev/null
+}
+
+collect_scan_text() {
+  local path
+  {
+    git diff HEAD 2>/dev/null || true
+    git diff --cached 2>/dev/null || true
+  }
+  while IFS= read -r -d '' path; do
+    [ -n "$path" ] || continue
+    [ -f "$path" ] || continue
+    git diff --no-index -- /dev/null "$path" 2>/dev/null || true
+  done < <(git ls-files -o --exclude-standard -z 2>/dev/null || true)
+}
+
+diff_check_includes_untracked() {
+  if ! git diff --check >/dev/null 2>&1; then
+    return 1
+  fi
+  if ! git diff --check --cached >/dev/null 2>&1; then
+    return 1
+  fi
+  local path out
+  while IFS= read -r -d '' path; do
+    [ -n "$path" ] || continue
+    [ -f "$path" ] || continue
+    out="$(git diff --no-index --check -- /dev/null "$path" 2>&1 || true)"
+    if printf '%s' "$out" | grep -Eq 'trailing whitespace|space before tab|conflict marker|new blank line at EOF'; then
+      return 1
+    fi
+  done < <(git ls-files -o --exclude-standard -z 2>/dev/null || true)
+  return 0
+}
+
+matches_secret_or_abs_path() {
+  local text="$1"
+  printf '%s' "$text" | grep -Eq \
+    '(^|[^A-Za-z0-9_.-])/(home|Users|root)/[A-Za-z0-9_.-]+|(^|[^A-Za-z])[A-Za-z]:\\[A-Za-z0-9_.-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}'
+}
+
+collect_changed_paths_z() {
+  local -n _out_var=$1
+  local -A seen=()
+  local path
+  _out_var=()
+  while IFS= read -r -d '' path; do
+    [ -n "$path" ] || continue
+    seen["$path"]=1
+  done < <(
+    {
+      git diff --name-only -z HEAD 2>/dev/null || true
+      git diff --name-only -z --cached 2>/dev/null || true
+      git ls-files -o --exclude-standard -z 2>/dev/null || true
+    }
+  )
+  for path in "${!seen[@]}"; do
+    _out_var+=("$path")
+  done
+}
+
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 if [ -z "$repo_root" ]; then
   emit_empty
@@ -23,13 +107,8 @@ cd "$repo_root"
 
 porcelain="$(git status --porcelain 2>/dev/null || true)"
 branch="$(git branch --show-current 2>/dev/null || true)"
-changed_paths="$(
-  {
-    git diff --name-only HEAD 2>/dev/null || true
-    git diff --name-only --cached 2>/dev/null || true
-    printf '%s' "$porcelain" | awk '{print $2}'
-  } | sed '/^$/d' | sort -u
-)"
+changed_paths=()
+collect_changed_paths_z changed_paths
 
 ahead=0
 behind=0
@@ -58,7 +137,7 @@ if [ -n "$porcelain" ]; then
 fi
 
 gh_ok=0
-if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+if command -v gh >/dev/null 2>&1 && gh_timed_capture 1 auth status >/dev/null 2>&1; then
   gh_ok=1
 fi
 
@@ -66,15 +145,17 @@ monitor_reason=""
 triage_reason=""
 build_reason=""
 
-if [ "$gh_ok" -eq 1 ]; then
-  run_json="$(gh run list --branch "$default_branch" -L1 --json conclusion,status 2>/dev/null || true)"
+if [ "$gh_ok" -eq 1 ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
+  run_json="$(gh_timed_capture 1 run list --branch "$default_branch" -L1 --json conclusion,status || true)"
   run_conclusion="$(printf '%s' "${run_json:-[]}" | jq -r '.[0].conclusion // empty' 2>/dev/null || true)"
   if [ "$run_conclusion" = "failure" ]; then
     monitor_reason="default-branch CI run failed"
   fi
+fi
 
+if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
   for label in incident regression p0; do
-    issue_json="$(gh issue list --label "$label" --state open --limit 1 --json number 2>/dev/null || true)"
+    issue_json="$(gh_timed_capture 1 issue list --label "$label" --state open --limit 1 --json number || true)"
     issue_n="$(printf '%s' "${issue_json:-[]}" | jq -r 'length' 2>/dev/null || echo 0)"
     if [ "${issue_n:-0}" -gt 0 ] 2>/dev/null; then
       monitor_reason="open issue labeled ${label}"
@@ -83,15 +164,28 @@ if [ "$gh_ok" -eq 1 ]; then
   done
 fi
 
+if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
+  repo_slug="$(gh_timed_capture 1 repo view --json nameWithOwner --jq .nameWithOwner || true)"
+  if [ -n "$repo_slug" ]; then
+    deploy_id="$(gh_timed_capture 1 api "repos/${repo_slug}/deployments" --jq '.[0].id // empty' || true)"
+    if [ -n "$deploy_id" ]; then
+      deploy_state="$(gh_timed_capture 1 api "repos/${repo_slug}/deployments/${deploy_id}/statuses" --jq '.[0].state // empty' || true)"
+      if [ "$deploy_state" = "failure" ] || [ "$deploy_state" = "error" ]; then
+        monitor_reason="latest deployment failed"
+      fi
+    fi
+  fi
+fi
+
 diff_check_failed=0
-if ! git diff --check >/dev/null 2>&1; then
+if ! diff_check_includes_untracked; then
   diff_check_failed=1
 fi
 
 secret_or_abs_in_diff=0
 if [ "$dirty" -eq 1 ]; then
-  diff_text="$(git diff HEAD 2>/dev/null || true)"
-  if printf '%s' "$diff_text" | grep -Eq '(^|[[:space:]=(:\`"\x27])/([hH]ome|Users|root)/[A-Za-z0-9_.-]+|(^|[^A-Za-z])[A-Za-z]:\\[A-Za-z0-9_.-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}'; then
+  scan_text="$(collect_scan_text)"
+  if matches_secret_or_abs_path "$scan_text"; then
     secret_or_abs_in_diff=1
   fi
 fi
@@ -102,23 +196,23 @@ if [ "$dirty" -eq 1 ] && [ -f .state/tests-known-red ]; then
 fi
 
 touches_sensitive_paths=0
-if [ "$dirty" -eq 1 ] && [ -n "$changed_paths" ]; then
-  while IFS= read -r path; do
+if [ "$dirty" -eq 1 ] && [ "${#changed_paths[@]}" -gt 0 ]; then
+  for path in "${changed_paths[@]}"; do
     [ -n "$path" ] || continue
     case "$path" in
-      .github/workflows/*|scripts/*|.husky/*) touches_sensitive_paths=1 ;;
+      .github/workflows/*|scripts/*|.husky/*|.cursor/hooks/*) touches_sensitive_paths=1 ;;
       package-lock.json|npm-shrinkwrap.json|yarn.lock|pnpm-lock.yaml|bun.lock|bun.lockb|Gemfile.lock|poetry.lock|Cargo.lock|go.sum)
         touches_sensitive_paths=1
         ;;
     esac
-  done <<<"$changed_paths"
+  done
 fi
 
 pr_failing_checks=0
 pr_approved_green=0
 has_open_pr=0
-if [ "$gh_ok" -eq 1 ] && [ -n "$branch" ]; then
-  pr_json="$(gh pr list --head "$branch" --state open --json number,reviewDecision,statusCheckRollup 2>/dev/null || true)"
+if [ "$gh_ok" -eq 1 ] && [ -n "$branch" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
+  pr_json="$(gh_timed_capture 1 pr list --head "$branch" --state open --json number,reviewDecision,statusCheckRollup || true)"
   if [ -n "$pr_json" ] && [ "$pr_json" != "[]" ]; then
     has_open_pr=1
     pr_eval="$(printf '%s' "$pr_json" | jq -r '
@@ -139,15 +233,15 @@ if [ "$gh_ok" -eq 1 ] && [ -n "$branch" ]; then
 fi
 
 docs_only_dirty=0
-if [ "$dirty" -eq 1 ] && [ -n "$changed_paths" ]; then
+if [ "$dirty" -eq 1 ] && [ "${#changed_paths[@]}" -gt 0 ]; then
   docs_only_dirty=1
-  while IFS= read -r path; do
+  for path in "${changed_paths[@]}"; do
     [ -n "$path" ] || continue
     case "$path" in
       *.md) ;;
       *) docs_only_dirty=0; break ;;
     esac
-  done <<<"$changed_paths"
+  done
 fi
 
 if [ "$dirty" -eq 1 ]; then

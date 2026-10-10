@@ -7,7 +7,7 @@ for script in scripts/*.mjs; do node --check "$script"; done
 node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json"]) JSON.parse(require("fs").readFileSync(f))'
 bash scripts/check-hygiene.sh
 command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
-shellcheck scripts/*.sh .cursor/hooks/*.sh
+shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'
