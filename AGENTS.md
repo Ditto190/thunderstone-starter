@@ -28,6 +28,12 @@ Read this file, the assigned brief and current status only.
 - Commit as the alias `Ditto190 <Ditto190@users.noreply.github.com>`.
 - Report: outcome, changed files, validation, blockers, next action. Do not paste raw logs.
 
+## Catalogue
+
+Do not copy agent trees into this repo. Load them from the Awesome Copilot MCP.
+`bash scripts/awesome-copilot-mcp.sh` starts the official image when Docker is already installed.
+Pointers: `.github/agents/`. Notes: `docs/mcp/CATALOGUE.md`. Decision: `docs/adr/adr-0001-control-plane.md`.
+
 ## Review rubric
 - **BLOCKER:** secrets, PII or absolute paths; broken `npm test`; unsafe or destructive commands.
 - **NON-BLOCKER:** should be fixed in this PR if cheap, or tracked as a follow-up.
