@@ -1,21 +1,37 @@
 # Thunderstone Clan
 
 Drive owns the starter and project intelligence. GitHub owns promoted active code.
-Read this file, assigned brief and current status only. Run scripts/resume.sh.
+Read this file, the assigned brief and current status only.
 
-- Chief of Chiefs routes bounded tasks. Chief Thunder-Terminal owns the VM.
-- Grunt Cursor-Hammer implements. Watcher of Broken Things verifies evidence.
-- Keeper of Stone Tablets maintains compact briefs and handoffs.
-- Prefer deterministic CLI tools; use Cursor CLI for substantial execution from Grok Bot.
-- Inside Cursor CLI/Cloud, execute directly. Never recursively invoke agent.
-- Prefer APIs/CLI over browser clicking; use browser interaction for genuine gaps.
-- One owner per task, isolated worktrees for concurrent writes. No blind parallel agents.
-- Keep credentials in runtime injection; environment loading is scripts/env-run.mjs.
+## Setup
+- Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
+- Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
+- Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
+
+## Commands
+- `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
+- `bash scripts/doctor.sh` checks the local environment.
+- `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
+- Prefer deterministic CLI tools and APIs over browser clicking.
+
+## Boundaries
+- One owner per task. Concurrent writers each use their own worktree
+  (see `.cursor/rules/multi-agent-worktrees.mdc`). No blind parallel agents.
+- Inside Cursor CLI/Cloud, execute directly. Never recursively invoke an agent.
+- Work on a branch and open a PR. Never push to `main` or change rulesets.
+- Roles: Chief of Chiefs routes tasks, Thunder-Terminal owns the VM, Cursor-Hammer implements,
+  Watcher of Broken Things verifies, Keeper of Stone Tablets keeps briefs and handoffs.
+
+## Safety
 - Do not auto-approve MCP or shell, push, deploy, delete remote data, or message others.
-- Local automated commits require ALLOW_LOCAL_COMMITS=1 and scripts/checkpoint.sh.
-- Run npm test; add application-specific validation before marking application work done.
-- Status: outcome, changed files, validation, blockers, next action. Do not paste raw logs.
-- Caveman tone is explicit opt-in and must never alter commands or safety clarity.
+- No secrets, personal data or absolute local paths in commits. Use relative paths.
+- Commit as the alias `Ditto190 <Ditto190@users.noreply.github.com>`.
+- Report: outcome, changed files, validation, blockers, next action. Do not paste raw logs.
+
+## Review rubric
+- **BLOCKER:** secrets, PII or absolute paths; broken `npm test`; unsafe or destructive commands.
+- **NON-BLOCKER:** should be fixed in this PR if cheap, or tracked as a follow-up.
+- **SUGGESTION:** optional style or design ideas; the author decides.
 
 <!-- lean-ctx -->
 ## lean-ctx
