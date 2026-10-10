@@ -32,7 +32,8 @@ Read this file, the assigned brief and current status only.
 
 Do not copy agent trees into this repo. Load them from the Awesome Copilot MCP.
 `bash scripts/awesome-copilot-mcp.sh` starts the official image when Docker is already installed.
-Pointers: `.github/agents/`. Notes: `docs/mcp/CATALOGUE.md`. Decision: `docs/adr/adr-0001-control-plane.md`.
+Pointers: `.github/agents/`. Notes: `docs/mcp/CATALOGUE.md`.
+Decision: `docs/adr/adr-0001-control-plane.md`. Evaluation: `docs/adr/adr-0002-archetype-fit.md`.
 
 ## Review rubric
 - **BLOCKER:** secrets, PII or absolute paths; broken `npm test`; unsafe or destructive commands.
