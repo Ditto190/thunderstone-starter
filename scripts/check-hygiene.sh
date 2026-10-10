@@ -44,6 +44,19 @@ while IFS= read -r -d '' file; do
   done
 done < <(git ls-files -z)
 
+# Commit identities: every author/committer must be the public alias (or GitHub's web-flow committer).
+alias_name="Ditto190"
+while IFS='|' read -r sha an ae cn ce; do
+  ok_author=0; ok_committer=0
+  if [ "$an" = "$alias_name" ] && printf '%s' "$ae" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; then ok_author=1; fi
+  if { [ "$cn" = "$alias_name" ] && printf '%s' "$ce" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; } \
+     || { [ "$cn" = "GitHub" ] && [ "$ce" = "noreply@github.com" ]; }; then ok_committer=1; fi
+  if [ "$ok_author" -ne 1 ] || [ "$ok_committer" -ne 1 ]; then
+    echo "hygiene: commit ${sha:0:7} [non-alias author/committer identity]"
+    fail=1
+  fi
+done < <(git log --all --format='%H|%an|%ae|%cn|%ce' 2>/dev/null || true)
+
 if [ "$fail" -ne 0 ]; then
   echo "Hygiene check failed. Use relative paths and keep secrets in untracked .env files." >&2
   exit 1
