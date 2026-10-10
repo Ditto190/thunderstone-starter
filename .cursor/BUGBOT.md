@@ -11,7 +11,7 @@ Public repo. Be brief; report only real problems, one comment per issue.
 - Hooks or checks bypassed or weakened (`--no-verify`, removed hygiene or gitleaks steps).
 
 ## Non-blocking
-- Shell quoting issues, missing `set -euo pipefail`, shellcheck warnings.
+- Shell quoting issues, missing `set -euo pipefail` in bash scripts (not POSIX `sh` ones), shellcheck warnings.
 - Docs out of sync with changed scripts.
 
 ## Ignore
