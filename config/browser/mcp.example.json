@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "browser": { "command": "bash", "args": ["scripts/browser-mcp.sh"] },
+    "scrapling": { "command": "scrapling", "args": ["mcp"] },
+    "firecrawl": { "command": "node", "args": ["scripts/env-run.mjs", "npx", "-y", "firecrawl-mcp"] },
+    "rustwright": { "command": "rustwright-mcp", "args": [], "disabled": true }
+  }
+}
