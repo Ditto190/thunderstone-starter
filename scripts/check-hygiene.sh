@@ -44,7 +44,10 @@ while IFS= read -r -d '' file; do
   done
 done < <(git ls-files -z)
 
-# Commit identities: every non-merge commit must be authored by the public alias (or GitHub's web-flow committer).
+# Commit identities: every non-merge commit reachable from HEAD must be authored by the public alias
+# (or GitHub's web-flow committer). HEAD is the branch under test and includes its main history.
+# Do not use --all: actions/checkout fetch-depth 0 fetches refs/heads/*, and an unrelated remote
+# branch is not part of this history. Do not exempt any author by name.
 alias_name="Ditto190"
 while IFS='|' read -r sha an ae cn ce subj; do
   # GitHub's synthetic PR merge commit uses the profile display name. Skip it only when its SHA is the
@@ -59,7 +62,7 @@ while IFS='|' read -r sha an ae cn ce subj; do
     echo "hygiene: commit ${sha:0:7} [non-alias author/committer identity]"
     fail=1
   fi
-done < <(git log --all --format='%H|%an|%ae|%cn|%ce|%s' 2>/dev/null || true)
+done < <(git log HEAD --format='%H|%an|%ae|%cn|%ce|%s' 2>/dev/null || true)
 
 if [ "$fail" -ne 0 ]; then
   echo "Hygiene check failed. Use relative paths and keep secrets in untracked .env files." >&2
