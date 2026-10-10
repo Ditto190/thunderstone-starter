@@ -70,3 +70,4 @@ Keep this repository a control plane.
 - **REF-001**: `AGENTS.md`, `config/clan.yaml`
 - **REF-002**: Microsoft Awesome Copilot MCP, image `ghcr.io/microsoft/mcp-dotnet-samples/awesome-copilot`
 - **REF-003**: `Ditto190/modme-ui-01` `.github/agents` (maintained pointers, not a second copy)
+- **REF-004**: `docs/adr/adr-0002-archetype-fit.md` is the evaluation this decision executes.
