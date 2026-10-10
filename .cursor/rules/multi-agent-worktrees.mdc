@@ -1,0 +1,18 @@
+---
+description: One isolated git worktree per agent when several agents write concurrently
+alwaysApply: false
+---
+# One worktree per agent
+
+Concurrent agents never share a working directory. Each writer gets its own branch and worktree.
+
+1. Start from the latest default branch: `git fetch origin`.
+2. Create a sibling worktree, one per agent and task, outside the repo folder:
+   `git worktree add ../wt-<agent>-<task> -b <type>/<task> origin/main`
+3. Set the alias identity inside it: `Ditto190 <Ditto190@users.noreply.github.com>`.
+4. Edit, run `npm test`, commit and push only from that worktree, then open a PR.
+5. Do not touch another agent's worktree or branch. Overlapping files mean a conflict: ask the owner.
+6. Never push to `main`; the ruleset requires a PR.
+7. Clean up after merge: `git worktree remove ../wt-<agent>-<task>` and delete the branch.
+
+Check what exists with `git worktree list`. Worktree folders are never committed.
