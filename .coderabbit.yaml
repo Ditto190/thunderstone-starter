@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # One automatic review when a PR is opened / marked ready. Later pushes are NOT
-# re-reviewed; comment "@coderabbitai review" (new commits) or "@coderabbitai full review".
+# re-reviewed (cubic.yaml has the same policy). Role split: CodeRabbit = general review + summary + lint;
+# cubic = bugs, security and project rules. Comment "@coderabbitai review" (new commits) or "@coderabbitai full review".
 language: en-AU
 early_access: false
 
