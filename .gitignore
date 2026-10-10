@@ -11,3 +11,44 @@ workspace/
 rclone.conf
 .context/
 *.bak
+
+# --- Hardening for public repo ---
+# Secrets and credentials
+.env.local
+.env.*.local
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+*.pub.bak
+.npmrc
+.netrc
+secrets/
+*secret*.json
+*token*.json
+service-account*.json
+.aws/
+.ssh/
+.gnupg/
+.config/
+
+# Logs, caches, local tool state
+*.log
+logs/
+.cache/
+.tmp/
+tmp/
+coverage/
+.lean-ctx/
+.cursor/*.local.*
+.cursor/mcp.json
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+*.orig
+*.rej
+npm-debug.log*

@@ -4,7 +4,7 @@ Drive-first starter for Grok Bot computers and Cursor Cloud Agents. Version 1.0.
 
 ## Start in the Grok VM
 
-Download and extract the ZIP to a permanent directory, preferably `/workspace/thunderstone-starter`. Open Xfce Terminal in that directory and run:
+Download and extract the ZIP to a permanent directory, for example a `thunderstone-starter` folder in your workspace. Open Xfce Terminal in that directory and run:
 
 ```sh
 sh scripts/bootstrap.sh

@@ -1,9 +1,13 @@
 name: Starter validation
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 permissions:
   contents: read
 jobs:
   validate:
+    name: validate
     runs-on: ubuntu-24.04
     env:
       HUSKY: "0"
