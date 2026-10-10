@@ -1,0 +1,28 @@
+name: Release notes
+# Every merge to main appends the PR (title, number, labels, files, commits incl. follow-ups) to the
+# draft "Unreleased" GitHub release. No commit is pushed to main, so protect-main and alias-only authorship stay intact.
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: release-notes
+  cancel-in-progress: false
+jobs:
+  notes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Append merged PR to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          pr="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/pulls" --jq '.[0].number // empty')"
+          if [ -z "$pr" ]; then echo "no PR for ${SHA}; skipping"; exit 0; fi
+          bash scripts/release-notes-append.sh "$pr"
