@@ -19,8 +19,9 @@ Read this file, the assigned brief and current status only.
   (see `.cursor/rules/multi-agent-worktrees.mdc`). No blind parallel agents.
 - Inside Cursor CLI/Cloud, execute directly. Never recursively invoke an agent.
 - Work on a branch and open a PR. Never push to `main` or change rulesets.
-- Roles: Chief of Chiefs routes tasks, Thunder-Terminal owns the VM, Cursor-Hammer implements,
-  Watcher of Broken Things verifies, Keeper of Stone Tablets keeps briefs and handoffs.
+- Roles: Grok Bot (primary) is the front door and router; Chief Thunderstone is the sole execution lead for the VM;
+  Cursor-Runner implements via the Cursor CLI; Git-Scout is the git gate (approved writes only);
+  Chief Lorekeeper keeps briefs, wiki and handoffs on demand.
 
 ## Safety
 - Do not auto-approve MCP or shell, push, deploy, delete remote data, or message others.
