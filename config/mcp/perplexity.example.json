@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "perplexity": {
+      "command": "node",
+      "args": ["scripts/env-run.mjs", "npx", "-y", "@perplexity-ai/mcp-server"]
+    },
+    "perplexity-computer": {
+      "url": "https://www.perplexity.ai/rest/computer/mcp"
+    }
+  }
+}
