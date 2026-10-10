@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Thunderstone KB chunk",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "projectId", "documentId", "chunkId", "revision", "sourcePath", "heading", "content", "contentHash", "trustStatus", "embeddingStatus"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "projectId": {"const": "thunderstone"},
+    "documentId": {"type": "string", "minLength": 1},
+    "chunkId": {"type": "string", "minLength": 1},
+    "revision": {"type": "string", "minLength": 1},
+    "sourcePath": {"type": "string", "minLength": 1},
+    "heading": {"type": "string"},
+    "content": {"type": "string", "minLength": 1},
+    "contentHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sourceUrls": {"type": "array", "items": {"type": "string", "format": "uri"}},
+    "trustStatus": {"enum": ["unreviewed", "reviewed"]},
+    "embeddingStatus": {"enum": ["not_generated", "generated"]},
+    "embeddingModel": {"type": ["string", "null"]},
+    "embeddingDimensions": {"type": ["integer", "null"], "minimum": 1}
+  }
+}
