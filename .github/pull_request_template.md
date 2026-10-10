@@ -8,7 +8,7 @@
 
 ## Secrets
 - [ ] No keys, tokens or `.env` values added (names only in `.env.example`)
-- [ ] No absolute local paths or personal details; commits authored as the `Ditto190` alias
+- [ ] No absolute local paths or personal details; commits use the repo's public noreply identity (checked by `scripts/check-hygiene.sh`)
 
 ## Risks
 <!-- Rollback plan, blast radius, anything reviewers should look at first. -->
