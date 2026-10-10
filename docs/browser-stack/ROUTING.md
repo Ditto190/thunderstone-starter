@@ -1,5 +1,5 @@
 # Browser Routing Policy (give to Grok bots)
-Escalate in order; stop at first tier that works.
+For sensitive actions (MFA, posts, purchases, uploads, JS eval, account changes, legal acceptance), obtain human approval BEFORE execution, regardless of tier. For all other actions, escalate in order and stop at the first tier that works.
 1. Firecrawl — public read-only pages, broad crawls.
 2. Scrapling HTTP — structured extraction, no browser state.
 3. Scrapling browser/stealth — JS, XHR capture, adaptive selectors.

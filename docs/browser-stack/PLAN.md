@@ -29,7 +29,7 @@ cp config/browser/mcp.example.json .cursor/mcp.json   # gitignored; secrets via 
 ```
 
 ## Guardrails
-CDP loopback only. One VM/profile per bot. Secrets via `scripts/env-run.mjs`, never in config. Human approval for MFA, posts, purchases, uploads, JS eval. Respect site terms, robots and rate limits.
+CDP loopback only. One VM/profile per bot. Secrets via `scripts/env-run.mjs`, never in config. Human approval is required BEFORE executing MFA, posts, purchases, uploads, JS eval, account changes or legal acceptance, regardless of routing tier. Respect site terms, robots and rate limits.
 
 ## Open verification (next agent)
 - Confirm `agent-browser mcp --tools` flag names and `cloakhq/cloakbrowser` image/cmd against current docs (Context7).
