@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=https://cubic.dev/schema/cubic-repository-config.schema.json
+# cubic reads this file from the DEFAULT branch only (it takes effect after merge to main).
+#
+# Role split (no duplicate comments):
+#   cubic       = bugs, security and the project rules below. Silent on style, docs wording and lint.
+#   CodeRabbit  = general review, PR summary, shellcheck/actionlint-style lint (see .coderabbit.yaml).
+# Both review once when the PR is opened / ready. Re-run on demand only:
+#   cubic: comment "@cubic-dev-ai incremental review" (new commits) or "@cubic-dev-ai review this PR"
+#   CodeRabbit: comment "@coderabbitai review"
+version: 1
+
+reviews:
+  enabled: true
+  sensitivity: low
+  incremental_commits: false
+  check_drafts: false
+  architecture_diagrams: false
+  external_contributors_require_manual_review: true
+  resolve_threads_when_addressed: true
+  auto_approve_behavior: disabled
+  auto_approve: disabled
+  ultrareview: disabled
+  custom_instructions: |
+    Public shell and GitHub Actions starter repo. Report only real bugs, security problems and
+    violations of the custom rules. Do not comment on style, naming, formatting, documentation
+    wording, or lint-level shell issues; CodeRabbit covers those. Keep each finding to one comment.
+
+  ignore:
+    files:
+      - package-lock.json
+      - manifest.sha256
+      - LICENSE
+      - "**/*.md"
+      - .state/**
+      - .context/**
+      - workspace/**
+    head_branches:
+      - "dependabot/**"
+    pr_labels:
+      - skip-review
+      - WIP
+    pr_titles:
+      - "WIP*"
+      - "no-auto-review:*"
+    max_changed_lines: 3000
+
+  custom_rules:
+    - name: No secrets or personal data
+      description: >-
+        Flag any committed API key, token, private key or credential value, and any real name or
+        personal email address. Only variable names belong in the env example file. Commit authors
+        must be the public alias Ditto190 with its GitHub noreply address.
+      exclude:
+        - package-lock.json
+    - name: No absolute local paths
+      description: >-
+        Flag absolute paths to a home directory, a workspace root or a Windows drive in scripts,
+        configs and workflows. Relative paths only.
+      exclude:
+        - package-lock.json
+    - name: Workflow safety
+      description: >-
+        In workflow files, flag actions not pinned to a full 40-character commit SHA, permissions
+        broader than contents read unless justified, any use of pull_request_target, and secrets
+        exposed to untrusted pull request code.
+      include:
+        - .github/workflows/**
+    - name: Script changes need tests
+      description: >-
+        If a file under scripts/ changes behaviour, flag it when scripts/validate.sh (or another
+        test) is not updated to cover it. Also flag removed or weakened hygiene, gitleaks or
+        shellcheck steps and hooks bypassed with no-verify.
+      include:
+        - scripts/**
+        - .husky/**
+
+pr_descriptions:
+  generate: false
+
+issues:
+  fix_with_cubic_buttons: true
+  pr_comment_fixes: true
+  coding_agent_provider: cubic
+  auto_fix: "off"
