@@ -8,7 +8,7 @@ Concurrent agents never share a working directory. Each writer gets its own bran
 
 1. Start from the latest default branch: `git fetch origin`.
 2. Create a sibling worktree, one per agent and task, outside the repo folder:
-   `git worktree add ../wt-<agent>-<task> -b <type>/<task> origin/main`
+3. Set the alias identity inside it: `git config user.name "Ditto190"` and `git config user.email "Ditto190@users.noreply.github.com"`.
 3. Set the alias identity inside it: `Ditto190 <Ditto190@users.noreply.github.com>`.
 4. Edit, run `npm test`, commit and push only from that worktree, then open a PR.
 5. Do not touch another agent's worktree or branch. Overlapping files mean a conflict: ask the owner.
