@@ -1,0 +1,21 @@
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/workflows/**", ".husky/**"]
+docs:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "**/*.md", "LICENSE"]
+security:
+  - changed-files:
+      - any-glob-to-any-file: ["SECURITY.md", "scripts/check-hygiene.sh", ".github/workflows/security.yml", ".github/workflows/codeql.yml"]
+deps:
+  - changed-files:
+      - any-glob-to-any-file: ["package.json", "package-lock.json", ".github/dependabot.yml"]
+agent:
+  - changed-files:
+      - any-glob-to-any-file: ["AGENTS.md", "config/**", ".cursor/**", ".coderabbit.yaml", "cubic.yaml"]
+scripts:
+  - changed-files:
+      - any-glob-to-any-file: ["scripts/**"]
+browser:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/browser-stack/**", "config/browser/**", "scripts/browser-*.sh"]

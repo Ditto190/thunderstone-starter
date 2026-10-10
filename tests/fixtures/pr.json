@@ -1,0 +1,1 @@
+{"number":7,"title":"fix: example change","labels":[{"name":"ci"},{"name":"security"}],"files":[{"path":"scripts/a.sh"},{"path":".github/workflows/ci.yml"}],"commits":[{"messageHeadline":"fix: example change"},{"messageHeadline":"fix: follow-up after review"}]}
