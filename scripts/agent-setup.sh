@@ -26,17 +26,28 @@ install_agent_browser() {
   command -v agent-browser >/dev/null 2>&1 && return 0
   step "installing agent-browser@$AGENT_BROWSER_VERSION into ~/.local"
   run npm install -g --prefix "$HOME/.local" --no-audit --no-fund "agent-browser@$AGENT_BROWSER_VERSION"
+  # npm declares node >= 24 for this package, but the CLI is a native binary; confirm it actually starts here.
+  agent-browser --version >/dev/null 2>&1 || warn "agent-browser installed but does not start on Node $(node -v 2>/dev/null); upgrade Node or set AGENT_BROWSER_VERSION"
 }
 
 # Cua Driver is for the Grok Bot VM profile only. The installer is saved and run from .state, like the Cursor installer.
 install_cua() {
   [ "${SKIP_CUA_INSTALL:-0}" = 1 ] && return 0
   command -v cua-driver >/dev/null 2>&1 && return 0
-  [ "$(uname -s)" = Linux ] && [ "$(uname -m)" = x86_64 ] || { warn "Cua Driver needs x86_64 Linux; skipping"; return 0; }
+  if [ "$(uname -s)" != Linux ] || [ "$(uname -m)" != x86_64 ]; then
+    warn "Cua Driver needs x86_64 Linux; skipping"
+    return 0
+  fi
   step "installing Cua Driver (VM profile)"
-  mkdir -p .state
-  run curl --proto '=https' --tlsv1.2 -fsS https://cua.ai/driver/install.sh -o .state/cua-install.sh
-  [ -s .state/cua-install.sh ] && run bash .state/cua-install.sh
+  local installer
+  installer="$(mktemp)"
+  # A fresh temp file each time, so a failed download can never run an older installer.
+  if curl --proto '=https' --tlsv1.2 -fsS https://cua.ai/driver/install.sh -o "$installer" && [ -s "$installer" ]; then
+    run bash "$installer"
+  else
+    warn "Cua Driver download failed; skipping"
+  fi
+  rm -f "$installer"
 }
 
 start_browser() {
