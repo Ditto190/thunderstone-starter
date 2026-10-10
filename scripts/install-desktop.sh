@@ -15,4 +15,10 @@ write_entry() {
 }
 write_entry "$HOME/.config/autostart/thunderstone.desktop" false resume.sh
 write_entry "$HOME/.local/share/applications/thunderstone.desktop" true terminal.sh
+# This desktop installer only runs on the Grok Bot VM, so record that profile once (never overwrite a choice).
+env_file="$HOME/.config/thunderstone/env"
+mkdir -p "$(dirname "$env_file")"
+if ! grep -qs '^THUNDERSTONE_PROFILE=' "$env_file"; then
+  (umask 077; printf 'THUNDERSTONE_PROFILE=vm\n' >> "$env_file")
+fi
 echo "Installed application launcher and desktop-login autostart."

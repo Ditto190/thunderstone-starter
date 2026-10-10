@@ -30,4 +30,6 @@ if ! command -v agent >/dev/null 2>&1 && [ "${SKIP_CURSOR_INSTALL:-0}" != 1 ]; t
   bash .state/cursor-install.sh
 fi
 npm ci --no-audit --no-fund
+# Browser stack, MCP configs and skills for Grok, Grok Bot and Cursor. Best effort; never blocks bootstrap.
+bash scripts/agent-setup.sh --install || echo "agent-setup reported a problem; rerun: bash scripts/agent-setup.sh --install" >&2
 bash scripts/doctor.sh
