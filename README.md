@@ -26,7 +26,7 @@ Resume uses a kernel file lock, keeps one `thunderstone` session, and never star
 
 ## Cursor Cloud
 
-Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
+Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. When the Cloud environment lists multiple repositories, install runs from the shared `/agent/repos` parent; the commands detect that layout and still invoke `scripts/bootstrap.sh` inside this repo. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
 
 Set runtime secrets in Cursor settings. Build secrets are separate and should be supplied only if installation needs them. Cursor install runs during a Build; start runs on boot: https://cursor.com/docs/cloud-agent/setup
 
