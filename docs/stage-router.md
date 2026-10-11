@@ -7,7 +7,8 @@ Prototype hook that inspects **read-only** git (and optional GitHub CLI) state a
 
 | Condition | stdout |
 |-----------|--------|
-| No stage applies, or working tree clean with green default-branch CI | `{}` |
+| No stage applies (clean synced feature branch, or nothing else matched) | `{}` |
+| Clean synced default branch | `{"additional_context":"STAGE=Build reason=clean synced tree; consider claiming a Project #2 item"}` |
 | Otherwise | `{"additional_context":"STAGE=<Monitor\|Triage\|Build> reason=..."}` |
 
 Precedence: **Monitor** → **Triage** → **Build**.

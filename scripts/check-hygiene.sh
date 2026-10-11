@@ -50,9 +50,10 @@ done < <(git ls-files -z)
 # branch is not part of this history. Do not exempt any author by name.
 alias_name="Ditto190"
 while IFS='|' read -r sha an ae cn ce subj; do
-  # GitHub's synthetic PR merge commit uses the profile display name. Skip it only when its SHA is the
-  # one Actions checked out (GITHUB_SHA), so a look-alike commit elsewhere in history can't bypass the check.
+  # GitHub web merge: committer is GitHub <noreply@github.com> and the subject is the synthetic merge line.
+  # Only the Actions checkout SHA may skip; author and committer email are still required on every other commit.
   if [ -n "${GITHUB_SHA:-}" ] && [ "$sha" = "$GITHUB_SHA" ] && [ "$cn" = "GitHub" ] \
+     && [ "$ce" = "noreply@github.com" ] \
      && printf '%s' "$subj" | grep -Eq '^Merge [0-9a-f]{40} into [0-9a-f]{40}$'; then continue; fi
   ok_author=0; ok_committer=0
   if [ "$an" = "$alias_name" ] && printf '%s' "$ae" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; then ok_author=1; fi
