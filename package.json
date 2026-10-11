@@ -6,6 +6,7 @@
   "scripts": {
     "prepare": "node scripts/prepare.mjs",
     "test": "bash scripts/validate.sh",
+    "triage": "node scripts/triage.mjs",
     "lint": "shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh",
     "format:check": "git diff --check"
   },

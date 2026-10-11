@@ -2,6 +2,10 @@
 # Stage-aware advisory router for Cursor sessionStart (read-only).
 set -euo pipefail
 
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$hook_dir/../../scripts/hygiene-rules.sh"
+
 STAGE_ROUTER_BUDGET_SEC="${STAGE_ROUTER_BUDGET_SEC:-4}"
 stage_router_start="$SECONDS"
 
@@ -74,8 +78,7 @@ diff_check_includes_untracked() {
 
 matches_secret_or_abs_path() {
   local text="$1"
-  printf '%s' "$text" | grep -Eq \
-    '(^|[^A-Za-z0-9_.-])/(home|Users|root)/[A-Za-z0-9_.-]+|(^|[^A-Za-z])[A-Za-z]:\\[A-Za-z0-9_.-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[baprs]-[A-Za-z0-9-]{10,}'
+  [ -n "$(hygiene_scan_text "$text")" ]
 }
 
 collect_changed_paths_z() {

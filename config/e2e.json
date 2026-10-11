@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "lanes": [
+    {
+      "id": "boot",
+      "owner": "thunder-terminal",
+      "evidence": { "kind": "file", "path": "scripts/doctor.sh" },
+      "action": "sh scripts/bootstrap.sh && bash scripts/resume.sh"
+    },
+    {
+      "id": "task",
+      "owner": "cursor-hammer",
+      "evidence": { "kind": "file", "path": "scripts/run-task.sh" },
+      "action": "node scripts/env-run.mjs bash scripts/run-task.sh <brief>"
+    },
+    {
+      "id": "brief",
+      "owner": "keeper",
+      "evidence": { "kind": "operator" },
+      "action": "Write the brief under workspace/briefs. resume.sh creates that directory. It is not committed."
+    },
+    {
+      "id": "drive-export",
+      "owner": "keeper",
+      "evidence": { "kind": "env-name", "name": "DRIVE_EXPORT_ROOT" },
+      "action": "Set DRIVE_EXPORT_ROOT, curate workspace/exports, then node scripts/env-run.mjs bash scripts/export-drive.sh"
+    },
+    {
+      "id": "perplexity",
+      "owner": "thunder-terminal",
+      "evidence": { "kind": "env-name", "name": "PERPLEXITY_API_KEY" },
+      "action": "node scripts/triage.mjs mcp > .cursor/mcp.json and set PERPLEXITY_API_KEY in .env.local"
+    },
+    {
+      "id": "browser",
+      "owner": "thunder-terminal",
+      "evidence": { "kind": "operator" },
+      "action": "bash scripts/browser-up.sh on a machine that already has Docker. Bootstrap does not install Docker."
+    }
+  ],
+  "connectors": [
+    {
+      "id": "perplexity",
+      "kind": "remote-http",
+      "tier": "required",
+      "url": "https://api.perplexity.ai/mcp",
+      "auth": { "type": "bearer", "env": "PERPLEXITY_API_KEY" }
+    },
+    {
+      "id": "xai-docs",
+      "kind": "remote-http",
+      "tier": "optional",
+      "url": "https://docs.x.ai/api/mcp",
+      "auth": { "type": "none" }
+    },
+    {
+      "id": "perplexity-computer",
+      "kind": "remote-http",
+      "tier": "escalation",
+      "url": "https://www.perplexity.ai/rest/computer/mcp",
+      "auth": { "type": "oauth" }
+    },
+    {
+      "id": "browser",
+      "kind": "stdio",
+      "tier": "optional",
+      "command": "bash",
+      "args": ["scripts/browser-mcp.sh"]
+    },
+    {
+      "id": "scrapling",
+      "kind": "stdio",
+      "tier": "optional",
+      "command": "scrapling",
+      "args": ["mcp"]
+    },
+    {
+      "id": "firecrawl",
+      "kind": "stdio",
+      "tier": "optional",
+      "command": "node",
+      "args": ["scripts/env-run.mjs", "npx", "-y", "firecrawl-mcp"],
+      "env": ["FIRECRAWL_API_KEY"]
+    }
+  ]
+}

@@ -26,7 +26,7 @@ Resume uses a kernel file lock, keeps one `thunderstone` session, and never star
 
 ## Cursor Cloud
 
-Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. In multi-repo Cloud environments, install and start run with working directory `/agent`, so those commands use absolute paths under `/agent/repos/thunderstone-starter/`. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
+Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. Commands are relative to the repo. When a multi-repo environment starts in the parent of `repos/thunderstone-starter`, those commands enter that directory first. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
 
 Set runtime secrets in Cursor settings. Build secrets are separate and should be supplied only if installation needs them. Cursor install runs during a Build; start runs on boot: https://cursor.com/docs/cloud-agent/setup
 
@@ -69,13 +69,17 @@ Exports are additive to unique run folders; no Drive sync/delete. No raw agent l
 
 ## Git, hooks and CI
 
-Before promotion, no Git remote is created. Initialize locally when ready (`git init -b work/bootstrap`), set your own Git identity, then `npm run prepare`. Husky runs validation before commit and push. Local checkpoint automation is opt-in via `ALLOW_LOCAL_COMMITS=1`; specify individual paths, never blanket-stage. Checkpoints refuse main/master and a pre-existing staged diff. Pushes, PR creation and deployment remain separate approved actions.
+Before promotion, no Git remote is created. Initialize locally when ready (`git init -b work/bootstrap`), set the commit identity to the alias in AGENTS.md, then `npm run prepare`. Husky runs validation before commit and push. Local checkpoint automation is opt-in via `ALLOW_LOCAL_COMMITS=1`; specify individual paths, never blanket-stage. Checkpoints refuse main/master and a pre-existing staged diff. Pushes, PR creation and deployment remain separate approved actions.
 
 ```sh
 ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "chore: validated checkpoint" README.md
 ```
 
 CI installs locked dependencies and runs the same validation. Hooks are bypassable; CI is the authoritative check. Add application tests/build/lint to `npm test` when adopting this starter: the included tests validate infrastructure, not an application. Husky reference: https://typicode.github.io/husky/get-started.html
+
+## End-to-end lanes
+
+`node scripts/triage.mjs` prints each lane as `ready`, `operator`, or `blocked`. The state is derived from `config/e2e.json`. A blocked lane means the repo contract is incomplete. An operator lane needs a secret, a brief, or a VM tool that this starter does not install. Perplexity is the hosted remote MCP. Write the gitignored client file with `node scripts/triage.mjs mcp > .cursor/mcp.json`, then set `PERPLEXITY_API_KEY` in `.env.local`. Computer MCP is an OAuth escalation in that same file. xAI docs MCP needs no key.
 
 ## Bot instruction
 
