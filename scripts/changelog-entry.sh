@@ -8,14 +8,12 @@ case "$src" in
   ''|-*) echo "usage: $0 --from-json <file|-> | <pr-number>" >&2; exit 2 ;;
   *) data="$(gh pr view "$src" --json number,title,labels,files,commits)" ;;
 esac
-printf '%s' "$data" | jq -r '
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+sections="$(node "$root/scripts/clan.mjs" labels --changelog)"
+printf '%s' "$data" | jq -r --argjson sections "$sections" '
   def section:
-    ((.labels // []) | map(.name)) as $l
-    | if ($l | index("breaking")) then "Changed"
-      elif ($l | index("security")) then "Security"
-      elif ($l | index("deps")) then "Changed"
-      elif ($l | index("docs")) then "Changed"
-      else "Added" end;
+    ((.labels // []) | map(.name)) as $names
+    | (($sections | map(select(.label as $label | $names | index($label))) | .[0].section) // "Added");
   (.files // []) as $f
   | (.commits // []) as $c
   | "\(section)\t- \(.title) (#\(.number))"

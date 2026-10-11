@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "perplexity": {
+      "url": "https://api.perplexity.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:PERPLEXITY_API_KEY}"
+      }
+    }
+  }
+}
