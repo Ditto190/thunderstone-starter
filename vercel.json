@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/health.js": { "maxDuration": 10 },
+    "api/v1/domain.js": { "maxDuration": 10 },
+    "api/v1/analyze.js": { "maxDuration": 10 }
+  }
+}

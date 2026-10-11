@@ -1,0 +1,70 @@
+{
+  "signals": [
+    "ciFailed",
+    "deployFailed",
+    "incidentOpen",
+    "dirty",
+    "diffCheckFailed",
+    "secretOrPathHit",
+    "testsKnownRed",
+    "riskyPaths",
+    "openPrChecksFailing",
+    "docsOnly",
+    "aheadWithoutPr",
+    "prApprovedGreen",
+    "cleanDefaultBranch"
+  ],
+  "rules": [
+    {
+      "stage": "Monitor",
+      "reason": "default-branch CI, deployment failure, or incident",
+      "when": {
+        "op": "any",
+        "of": [
+          { "op": "signal", "name": "ciFailed" },
+          { "op": "signal", "name": "deployFailed" },
+          { "op": "signal", "name": "incidentOpen" }
+        ]
+      }
+    },
+    {
+      "stage": "Triage",
+      "reason": "failing checks, sensitive paths, or a dirty tree with risk",
+      "when": {
+        "op": "any",
+        "of": [
+          { "op": "signal", "name": "openPrChecksFailing" },
+          { "op": "signal", "name": "riskyPaths" },
+          {
+            "op": "all",
+            "of": [
+              { "op": "signal", "name": "dirty" },
+              {
+                "op": "any",
+                "of": [
+                  { "op": "signal", "name": "diffCheckFailed" },
+                  { "op": "signal", "name": "secretOrPathHit" },
+                  { "op": "signal", "name": "testsKnownRed" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "stage": "Build",
+      "reason": "work is ready and no monitor or triage rule matched",
+      "when": {
+        "op": "any",
+        "of": [
+          { "op": "signal", "name": "docsOnly" },
+          { "op": "signal", "name": "dirty" },
+          { "op": "signal", "name": "aheadWithoutPr" },
+          { "op": "signal", "name": "prApprovedGreen" },
+          { "op": "signal", "name": "cleanDefaultBranch" }
+        ]
+      }
+    }
+  ]
+}

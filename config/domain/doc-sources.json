@@ -1,0 +1,10 @@
+{
+  "sources": [
+    "README.md",
+    "AGENTS.md",
+    "VALIDATION.md",
+    "config/clan.yaml",
+    ".cursor/environment.json"
+  ],
+  "scriptPattern": "(?:^|[^\\w./-])(scripts/[\\w./-]+\\.(?:sh|mjs))"
+}

@@ -1,0 +1,9 @@
+{
+  "roles": [
+    { "id": "chief-of-chiefs", "name": "Chief of Chiefs", "owns": "route" },
+    { "id": "thunder-terminal", "name": "Thunder-Terminal", "owns": "vm" },
+    { "id": "cursor-hammer", "name": "Cursor-Hammer", "owns": "implement" },
+    { "id": "watcher", "name": "Watcher of Broken Things", "owns": "verify" },
+    { "id": "keeper", "name": "Keeper of Stone Tablets", "owns": "briefs" }
+  ]
+}
