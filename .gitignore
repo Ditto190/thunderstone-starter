@@ -1,4 +1,5 @@
 node_modules/
+.agent-serve/
 .state/
 .env
 .env.*
