@@ -45,6 +45,7 @@ export const CONTRACT = {
   perplexity: {
     server: "perplexity",
     url: "https://api.perplexity.ai/mcp",
+    skill: "perplexity-search-router",
     tokenEnv: "PERPLEXITY_API_KEY",
     tools: ["perplexity_search", "perplexity_ask", "perplexity_research", "perplexity_reason"],
     forbiddenPackages: ["@perplexity-ai/perplexity_ai", "@perplexity-ai/mcp-server"],
@@ -150,6 +151,7 @@ function clanYaml(c) {
   lines.push("  perplexity:");
   lines.push(`    url: ${c.perplexity.url}`);
   lines.push(`    server: ${c.perplexity.server}`);
+  lines.push(`    skill: ${c.perplexity.skill}`);
   lines.push(`    token_env: ${c.perplexity.tokenEnv}`);
   lines.push("env:");
   for (const entry of c.env) lines.push(`  - ${entry.name}`);
@@ -206,6 +208,7 @@ export function artifacts(c = CONTRACT) {
     { kind: "file", path: ".env.defaults", text: envDefaults(c) },
     { kind: "file", path: ".github/labeler.yml", text: labeler(c) },
     { kind: "file", path: "config/mcp.example.json", text: mcpExample(c) },
+    { kind: "file", path: "config/monitor-labels.txt", text: `${signalLabels(c, "monitor").join("\n")}\n` },
     { kind: "block", path: "AGENTS.md", marker: "roles", text: `${rolesBlock(c)}\n` },
   ];
 }

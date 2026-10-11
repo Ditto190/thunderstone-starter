@@ -316,7 +316,7 @@ function planRun(loaded, env) {
     ? `Write workspace/items/${loaded.id}/report.md with the headings outcome, changed files, validation, blockers, and next action. This session is the executor, so no second agent is spawned.`
     : "Print the report as your final message with the headings outcome, changed files, validation, blockers, and next action. Do not write the report file yourself. Print mode does not apply file edits.";
   const prompt = [
-    `Read AGENTS.md, skills/perplexity-search-router/SKILL.md, and workspace/items/${loaded.id}/brief.md.`,
+    `Read AGENTS.md, skills/${CONTRACT.perplexity.skill}/SKILL.md, and workspace/items/${loaded.id}/brief.md.`,
     `You are ${loaded.role.title}. Duty: ${loaded.role.duty}.`,
     tools.length > 0 ? `Perplexity tools for this role: ${tools.join(", ")}. Do not call any other Perplexity tool.` : "Do not call Perplexity tools.",
     "Do not spawn another Cursor CLI. Do not push, deploy, or send messages.",

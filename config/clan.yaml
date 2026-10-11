@@ -53,6 +53,7 @@ connectors:
   perplexity:
     url: https://api.perplexity.ai/mcp
     server: perplexity
+    skill: perplexity-search-router
     token_env: PERPLEXITY_API_KEY
 env:
   - CURSOR_API_KEY

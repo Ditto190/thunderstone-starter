@@ -163,7 +163,7 @@ if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)"
       monitor_reason="open issue labeled ${label}"
       break
     fi
-  done < <(node "$router_root/scripts/clan.mjs" labels --signal monitor 2>/dev/null || true)
+  done < "$router_root/config/monitor-labels.txt"
 fi
 
 if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
