@@ -1,4 +1,4 @@
 {
-  "install": "SKIP_CURSOR_INSTALL=1 sh scripts/bootstrap.sh",
-  "start": "bash scripts/resume.sh"
+  "install": "found=\"\"; for d in . thunderstone-starter repos/thunderstone-starter ../thunderstone-starter; do if [ -f \"$d/scripts/bootstrap.sh\" ]; then found=\"$d\"; break; fi; done; if [ -z \"$found\" ]; then d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do if [ -f \"$d/thunderstone-starter/scripts/bootstrap.sh\" ]; then found=\"$d/thunderstone-starter\"; break; fi; if [ -f \"$d/scripts/bootstrap.sh\" ]; then found=\"$d\"; break; fi; d=$(dirname \"$d\"); done; fi; if [ -z \"$found\" ]; then echo \"bootstrap.sh not found from $PWD\" >&2; exit 1; fi; SKIP_CURSOR_INSTALL=1 sh \"$found/scripts/bootstrap.sh\"",
+  "start": "found=\"\"; for d in . thunderstone-starter repos/thunderstone-starter ../thunderstone-starter; do if [ -f \"$d/scripts/resume.sh\" ]; then found=\"$d\"; break; fi; done; if [ -z \"$found\" ]; then d=\"$PWD\"; while [ \"$d\" != \"/\" ]; do if [ -f \"$d/thunderstone-starter/scripts/resume.sh\" ]; then found=\"$d/thunderstone-starter\"; break; fi; if [ -f \"$d/scripts/resume.sh\" ]; then found=\"$d\"; break; fi; d=$(dirname \"$d\"); done; fi; if [ -z \"$found\" ]; then echo \"resume.sh not found from $PWD\" >&2; exit 1; fi; bash \"$found/scripts/resume.sh\""
 }
