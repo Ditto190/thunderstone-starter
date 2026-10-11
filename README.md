@@ -26,7 +26,7 @@ Resume uses a kernel file lock, keeps one `thunderstone` session, and never star
 
 ## Cursor Cloud
 
-Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. In multi-repo Cloud environments, install and start run with working directory `/agent`, so those commands use absolute paths under `/agent/repos/thunderstone-starter/`. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
+Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. Each command uses `scripts/bootstrap.sh` or `scripts/resume.sh` when that file is in the working directory, and otherwise the copy under `/agent/repos/thunderstone-starter/`. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
 
 Set runtime secrets in Cursor settings. Build secrets are separate and should be supplied only if installation needs them. Cursor install runs during a Build; start runs on boot: https://cursor.com/docs/cloud-agent/setup
 
@@ -69,7 +69,7 @@ Exports are additive to unique run folders; no Drive sync/delete. No raw agent l
 
 ## Git, hooks and CI
 
-Before promotion, no Git remote is created. Initialize locally when ready (`git init -b work/bootstrap`), set your own Git identity, then `npm run prepare`. Husky runs validation before commit and push. Local checkpoint automation is opt-in via `ALLOW_LOCAL_COMMITS=1`; specify individual paths, never blanket-stage. Checkpoints refuse main/master and a pre-existing staged diff. Pushes, PR creation and deployment remain separate approved actions.
+A fresh extract has no Git remote. Initialize locally when ready (`git init -b work/bootstrap`). This promoted checkout already has `origin`. Commits must use the public alias `Ditto190 <Ditto190@users.noreply.github.com>`, which `scripts/check-hygiene.sh` enforces, then `npm run prepare`. Husky runs validation before commit and push. Local checkpoint automation is opt-in via `ALLOW_LOCAL_COMMITS=1`; specify individual paths, never blanket-stage. Checkpoints refuse main/master and a pre-existing staged diff. Pushes, PR creation and deployment remain separate approved actions.
 
 ```sh
 ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "chore: validated checkpoint" README.md
@@ -79,7 +79,18 @@ CI installs locked dependencies and runs the same validation. Hooks are bypassab
 
 ## Bot instruction
 
-You are Chief Thunder-Terminal of the Thunderstone Clan. Read AGENTS.md and your assigned brief, run scripts/resume.sh, then use Cursor CLI for bounded execution unless already inside Cursor. Prefer CLI/API retrieval over GUI clicks. Read only relevant files. Save evidence locally; report outcome, files, checks, blocker and next action briefly. Chiefs route, Grunts implement, Watchers verify. No recursive delegation or automatic chat-message relay. Caveman tone is opt-in only.
+You are Thunder-Terminal of the Thunderstone Clan. Read AGENTS.md and your assigned brief, run scripts/resume.sh, then use Cursor CLI for bounded execution unless already inside Cursor. Prefer CLI/API retrieval over GUI clicks. Read only relevant files. Save evidence locally; report outcome, files, checks, blocker and next action briefly. Chief of Chiefs routes, Cursor-Hammer implements, Watcher of Broken Things verifies, and Keeper of Stone Tablets keeps briefs. No recursive delegation or automatic chat-message relay. Caveman tone is opt-in only.
+
+## Domain analysis
+
+Stage rules, the clan roster, and doc-path checks live in `config/domain/` and `config/clan.yaml`. The analysis service reads that data. It does not invent a second copy of the rules in conditionals.
+
+```sh
+node services/domain-analysis/cli.mjs
+node services/domain-analysis/server.mjs
+```
+
+The server listens on `127.0.0.1:8787` unless `HOST` and `PORT` are set. `GET /v1/domain` returns the roster and stage order. `POST /v1/analyze` accepts `{ "signals": { "<name>": true } }` using names from `config/domain/stages.json`. The same routes are Vercel Functions under `api/health.js` and `api/v1/`. The `domain-analyst` agent calls this analysis. `.cursor/agents/domain-config-keeper.md` and `.cursor/agents/code-analysis-maintainer.md` maintain the config and the analyzer.
 
 ## Verification limits
 
