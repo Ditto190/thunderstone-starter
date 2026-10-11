@@ -17,3 +17,7 @@ automation:
   checkpoint_commits: opt_in
   remote_push: explicit_approval
   drive_export: curated_additive_only
+agents:
+  bdk_orchestrator: agents/clan-orchestrator
+domains:
+  registry: config/domains/registry.json

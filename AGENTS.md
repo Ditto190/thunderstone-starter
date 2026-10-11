@@ -4,9 +4,11 @@ Drive owns the starter and project intelligence. GitHub owns promoted active cod
 Read this file, the assigned brief and current status only.
 
 ## Setup
-- Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
-- Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
+- **Grok VM:** `sh scripts/bootstrap.sh`, `bash scripts/install-desktop.sh` (Xfce autostart), then `bash scripts/resume.sh` (Node 22+).
+- **Cursor Cloud / CLI:** `sh scripts/bootstrap.sh` with optional `SKIP_CURSOR_INSTALL=1`, then `bash scripts/resume.sh`. Cloud builds use `scripts/cloud-bootstrap.sh` via `.cursor/environment.json`.
+- Copy `.env.example` to `.env.local` only for secret-backed workflows (tasks, Drive export). `npm test` does not require it.
 - Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
+- Domain registry and BDK orchestrator: `docs/domains.md`, `agents/clan-orchestrator/`.
 
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.

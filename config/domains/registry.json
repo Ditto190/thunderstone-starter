@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "clan": "thunderstone",
+  "stages": ["monitor", "triage", "build"],
+  "lanes": [
+    "review_and_ship",
+    "pr_review_canvas",
+    "comment_sicko",
+    "docs_reliability",
+    "orchestrate"
+  ],
+  "entries": [
+    {
+      "id": "pr_orchestration",
+      "description": "Open PRs, branches, and ship readiness for thunderstone-starter",
+      "lanes": ["review_and_ship", "pr_review_canvas", "orchestrate"],
+      "maintainer_subagent": "domain-registry-maintainer",
+      "stage_hints": ["triage", "build"],
+      "default_repo": "Ditto190/thunderstone-starter"
+    },
+    {
+      "id": "agent_instructions",
+      "description": "AGENTS.md, lean-ctx, and Cursor rule consistency",
+      "lanes": ["comment_sicko", "docs_reliability"],
+      "maintainer_subagent": "comment-sicko",
+      "stage_hints": ["monitor", "triage"]
+    },
+    {
+      "id": "starter_runtime",
+      "description": "Bootstrap, resume, Cloud environment.json, and validation scripts",
+      "lanes": ["docs_reliability", "review_and_ship"],
+      "maintainer_subagent": "docs-reliability-review",
+      "stage_hints": ["monitor", "build"]
+    }
+  ],
+  "transitions": {
+    "monitor": ["triage"],
+    "triage": ["build", "monitor"],
+    "build": ["monitor"]
+  }
+}
