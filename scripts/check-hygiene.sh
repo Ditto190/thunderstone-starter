@@ -20,6 +20,7 @@ rules=(
   "aws-access-key|AKIA[0-9A-Z]{16}"
   "google-api-key|AIza[0-9A-Za-z_-]{35}"
   "slack-token|xox[baprs]-[A-Za-z0-9-]{10,}"
+  "perplexity-key|pplx-[A-Za-z0-9]{20,}"
   "credential-assignment|(api[_-]?key|secret|token|passw(or)?d)[A-Za-z_]*[[:space:]]*[=:][[:space:]]*[\"']?[A-Za-z0-9/+_-]{20,}"
 )
 

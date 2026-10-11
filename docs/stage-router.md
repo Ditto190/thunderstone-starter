@@ -7,7 +7,7 @@ Prototype hook that inspects **read-only** git (and optional GitHub CLI) state a
 
 | Condition | stdout |
 |-----------|--------|
-| No stage applies, or working tree clean with green default-branch CI | `{}` |
+| No stage applies (clean feature branch, detached HEAD, or unmatched GitHub state) | `{}` |
 | Otherwise | `{"additional_context":"STAGE=<Monitor\|Triage\|Build> reason=..."}` |
 
 Precedence: **Monitor** → **Triage** → **Build**.

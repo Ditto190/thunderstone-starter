@@ -16,8 +16,8 @@ Rule: if a phase overruns, stop coding and ship docs only.
 
 ## Shortlist → files
 1. agent-browser controlling CloakBrowser sidecar → `scripts/browser-up.sh`, `scripts/browser-mcp.sh`
-2. Scrapling MCP + Firecrawl read path → `config/browser/mcp.example.json`
-3. Rustwright MCP (alt, opt-in) → `config/browser/mcp.example.json` (add a `rustwright` entry yourself and enable it in your MCP client UI; no entry ships)
+2. Scrapling MCP + Firecrawl read path → `config/mcp.example.json`
+3. Rustwright MCP (alt, opt-in) → add a `rustwright` entry in the local gitignored `.cursor/mcp.json` after connect; no entry ships
 4. Hanzi-style per-domain skills (method only, no PolyForm code) → `config/browser/playbooks/`
 5. CUA last → `docs/browser-stack/ROUTING.md`
 
@@ -25,7 +25,7 @@ Rule: if a phase overruns, stop coding and ship docs only.
 ```bash
 bash scripts/browser-up.sh        # CloakBrowser on 127.0.0.1:9222, profiles in .state/browser
 bash scripts/browser-doctor.sh    # checks docker, CDP, agent-browser, scrapling
-cp config/browser/mcp.example.json .cursor/mcp.json   # gitignored; secrets via env-run
+node scripts/env-run.mjs node scripts/connect-mcp.mjs   # gitignored .cursor/mcp.json
 ```
 
 ## Guardrails

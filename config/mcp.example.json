@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "browser": { "command": "bash", "args": ["scripts/browser-mcp.sh"] },
+    "scrapling": { "command": "scrapling", "args": ["mcp"] },
+    "firecrawl": {
+      "command": "node",
+      "args": ["scripts/env-run.mjs", "--only", "FIRECRAWL_API_KEY", "npx", "-y", "firecrawl-mcp"]
+    },
+    "perplexity": { "url": "https://api.perplexity.ai/mcp" }
+  }
+}

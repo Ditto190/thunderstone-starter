@@ -40,6 +40,14 @@ node scripts/env-run.mjs bash scripts/run-task.sh workspace/briefs/TASK-001.md
 
 This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
 
+Connect Perplexity as one hosted MCP server. With no key, Cursor signs in with OAuth. When `PERPLEXITY_API_KEY` is set in the env files, the gitignored config receives a bearer header and the value is not printed:
+
+```sh
+node scripts/env-run.mjs node scripts/connect-mcp.mjs
+```
+
+Cloud agents do not read that gitignored file. Add the same URL, `https://api.perplexity.ai/mcp`, once in the Cursor dashboard. The remaining end-to-end gaps are listed in `docs/e2e-triage.md`.
+
 ## Environment and Drive
 
 `env-run.mjs` loads real dotenv syntax with Node's parser. Precedence: injected environment, `/run/secrets/thunderstone.env`, `~/.config/thunderstone/env`, project `.env.local`, project `.env.defaults`. It never sources shell code or prints values. Node 22+ is required. Explicit empty environment values remain authoritative.
