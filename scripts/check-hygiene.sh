@@ -35,7 +35,13 @@ email_allow='@(users\.noreply\.github\.com|noreply\.github\.com|example\.(com|or
 
 scan_file() {
   local file="$1" rule name pattern lineno match
-  [ -f "$file" ] || { echo "hygiene: $file [missing]"; fail=1; return 0; }
+  [ -f "$file" ] || {
+    if [ "$files_only" -eq 1 ]; then
+      echo "hygiene: $file [missing]"
+      fail=1
+    fi
+    return 0
+  }
   grep -Iq . "$file" 2>/dev/null || return 0
   for rule in "${rules[@]}"; do
     name="${rule%%|*}"
