@@ -46,4 +46,5 @@ if ! command -v agent >/dev/null 2>&1 && [ "${SKIP_CURSOR_INSTALL:-0}" != 1 ]; t
   bash .state/cursor-install.sh
 fi
 npm ci --no-audit --no-fund
+sh scripts/install-lean-ctx.sh
 bash scripts/doctor.sh

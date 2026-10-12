@@ -22,6 +22,8 @@ Xfce is a lightweight desktop environment, not a shell or operating system. Keep
 
 `install-desktop.sh` adds a named desktop launcher and an XDG login-autostart entry under the current user. It refuses to overwrite differing existing entries. Autostart runs at desktop session login, not every time the remote computer viewer opens. Every Bot must invoke `resume.sh` before work as the reliable resume path. Xfce can restore saved sessions as well as autostart entries: https://docs.xfce.org/xfce/xfce4-session/preferences
 
+Lifecycle hooks are registered in Git (`.cursor/hooks.json` and `.grok/hooks/thunderstone.json`) and dispatched by `.cursor/hooks/lifecycle.sh`. See `docs/HOOKS.md`. LeanCTX is installed only when `LEAN_CTX_RELEASE_URL` is set; bootstrap never guesses a package. The project Grok config registers the public `xai-docs` MCP endpoint.
+
 Resume uses a kernel file lock, keeps one `thunderstone` session, and never starts a paid agent job automatically. tmux survives terminal disconnects but not VM reboot; resume recreates the terminal session after reboot. systemd is detected, not assumed, and never replaced. No background cloud worker or inbound service is installed by default.
 
 ## Cursor Cloud

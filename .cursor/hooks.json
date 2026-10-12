@@ -3,7 +3,70 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": ".cursor/hooks/stage-router.sh",
+        "command": ".cursor/hooks/lifecycle.sh sessionStart",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh sessionEnd",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh beforeSubmitPrompt",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh preToolUse",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh postToolUse",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh postToolUseFailure",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh subagentStart",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh subagentStop",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "preCompact": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh preCompact",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/lifecycle.sh stop",
         "timeout": 5,
         "failClosed": false
       }

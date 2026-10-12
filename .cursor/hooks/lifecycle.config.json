@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "sessionStart": true,
+    "sessionEnd": true,
+    "beforeSubmitPrompt": true,
+    "preToolUse": true,
+    "postToolUse": true,
+    "postToolUseFailure": true,
+    "subagentStart": true,
+    "subagentStop": true,
+    "preCompact": true,
+    "stop": true,
+    "permissionDenied": true,
+    "stopFailure": true,
+    "notification": true,
+    "postCompact": true
+  }
+}

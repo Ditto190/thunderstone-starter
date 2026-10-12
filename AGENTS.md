@@ -9,7 +9,8 @@ Read this file, the assigned brief and current status only.
 - Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
 
 ## Commands
-- `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
+- `npm test` runs validation, ShellCheck, hook/Composio checks, and `scripts/check-hygiene.sh`.
+- Hook behavior and the disable flags are in `docs/HOOKS.md`.
 - `bash scripts/doctor.sh` checks the local environment.
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.

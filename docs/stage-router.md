@@ -22,12 +22,12 @@ Precedence: **Monitor** → **Triage** → **Build**.
 
 Changed paths are collected with NUL-safe `git diff --name-only -z` plus untracked `git ls-files -o -z` so renames and spaces in paths work.
 
-When `gh` is missing or not authenticated, GitHub-backed signals are skipped (silent degrade). Each `gh` call uses a short per-call timeout inside a total **~4s** budget so the hook stays within the 5s `sessionStart` limit.
+When `gh` is missing or not authenticated, GitHub-backed signals are skipped (silent degrade). Each `gh` call uses a short per-call timeout inside a total **~4s** budget. The `sessionStart` registration allows 8 seconds so LeanCTX observe can use 1 second first.
 
 ## Enable
 
-1. Ensure `.cursor/hooks.json` registers `.cursor/hooks/stage-router.sh` on `sessionStart`
-   (`timeout`: 5, `failClosed`: false).
+1. Ensure `.cursor/hooks.json` registers `.cursor/hooks/lifecycle.sh sessionStart`
+   (`timeout`: 8, `failClosed`: false). The dispatcher runs LeanCTX observe, then this router.
 2. Keep the script executable (`git mode 100755`).
 3. Optional: mark local test failures with an empty marker file `.state/tests-known-red` after a red `npm test`.
 
