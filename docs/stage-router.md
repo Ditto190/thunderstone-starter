@@ -26,8 +26,8 @@ When `gh` is missing or not authenticated, GitHub-backed signals are skipped (si
 
 ## Enable
 
-1. Ensure `.cursor/hooks.json` registers `.cursor/hooks/stage-router.sh` on `sessionStart`
-   (`timeout`: 5, `failClosed`: false).
+1. Ensure `.cursor/hooks.json` registers `.cursor/hooks/lifecycle.sh sessionStart` on `sessionStart`
+   (`timeout`: 5, `failClosed`: false). The dispatcher calls `.cursor/hooks/stage-router.sh`.
 2. Keep the script executable (`git mode 100755`).
 3. Optional: mark local test failures with an empty marker file `.state/tests-known-red` after a red `npm test`.
 
