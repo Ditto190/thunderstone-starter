@@ -25,7 +25,7 @@ Rule: if a phase overruns, stop coding and ship docs only.
 ```bash
 bash scripts/browser-up.sh        # CloakBrowser on 127.0.0.1:9222, profiles in .state/browser
 bash scripts/browser-doctor.sh    # checks docker, CDP, agent-browser, scrapling
-cp config/browser/mcp.example.json .cursor/mcp.json   # gitignored; secrets via env-run
+bash scripts/mcp-sync.sh   # merges config/mcp/http-remote.example.json + browser MCP → .cursor/mcp.json (gitignored)
 ```
 
 ## Guardrails
