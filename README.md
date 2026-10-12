@@ -38,6 +38,8 @@ For a task, write a brief and run:
 node scripts/env-run.mjs bash scripts/run-task.sh workspace/briefs/TASK-001.md
 ```
 
+For the bounded E2E control plane (leases, receipts, gates), see `docs/agent-runtime.md` and `examples/agent-runtime/task.json`.
+
 This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
 
 ## Environment and Drive

@@ -1,0 +1,10 @@
+{
+  "stateDir": ".state/agent-runtime",
+  "leaseSeconds": 3600,
+  "promptByteBudget": 65536,
+  "acceptanceTimeoutMs": 30000,
+  "workers": {
+    "cursor-hammer": { "routing": "pinned", "compatibleRoles": ["implement"] },
+    "watcher": { "routing": "round-robin", "compatibleRoles": ["verify"] }
+  }
+}
