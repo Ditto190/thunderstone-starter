@@ -32,6 +32,8 @@ Set runtime secrets in Cursor settings. Build secrets are separate and should be
 
 Cursor CLI installer reference: https://cursor.com/docs/cli/installation
 
+Hook lifecycle, the pinned Composio skill, and the connector catalogue are described in `docs/engineering-forge.md`.
+
 For a task, write a brief and run:
 
 ```sh
