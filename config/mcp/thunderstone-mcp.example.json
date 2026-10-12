@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "browser": {
+      "command": "bash",
+      "args": ["scripts/browser-mcp.sh"]
+    },
+    "scrapling": {
+      "command": "scrapling",
+      "args": ["mcp"]
+    },
+    "xai-docs": {
+      "url": "https://docs.x.ai/api/mcp"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp/oauth"
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "firecrawl": {
+      "url": "https://mcp.firecrawl.dev/v2/mcp-oauth"
+    }
+  }
+}

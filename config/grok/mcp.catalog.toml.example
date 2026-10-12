@@ -1,0 +1,14 @@
+# Copy to .grok/config.toml (project) or merge into ~/.grok/config.toml (user).
+# No secrets in repo — OAuth runs on first use; tokens live under ~/.grok/mcp_credentials.json.
+
+[mcp_servers.xai-docs]
+url = "https://docs.x.ai/api/mcp"
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp/oauth"
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+
+[mcp_servers.firecrawl]
+url = "https://mcp.firecrawl.dev/v2/mcp-oauth"
