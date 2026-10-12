@@ -4,7 +4,8 @@ Drive owns the starter and project intelligence. GitHub owns promoted active cod
 Read this file, the assigned brief and current status only.
 
 ## Setup
-- Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
+- Run `sh scripts/bootstrap.sh`, then `bash scripts/install-desktop.sh`, then `bash scripts/resume.sh` (Node 22+).
+- `SKIP_CURSOR_INSTALL=1 sh scripts/bootstrap.sh` skips the Cursor installer when `agent` is not on PATH.
 - Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
 - Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
 
