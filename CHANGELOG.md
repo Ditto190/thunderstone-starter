@@ -9,6 +9,7 @@ time, copy the draft notes into this file in a normal PR authored by the `Ditto1
 
 ### Added
 - E2E agent runtime control plane (`scripts/agent-runtime.mjs`, leases, receipts, gates, acceptance) with docs and tests
+- Runtime gates `pr-review` (fail closed on red required checks) and `conflict-scan` (markers and read-only merge-tree), plus lockfile marker scan before accept
 - Stage-aware sessionStart advisory hook (`.cursor/hooks/stage-router.sh`) routing Monitor > Triage > Build, with fixture tests and `docs/stage-router.md` (#8)
 - CI, security and hygiene workflows with pinned actions and required checks (#1)
 - Browser stack bootstrap: CloakBrowser CDP sidecar, agent-browser, Scrapling and Firecrawl wiring (#3)
