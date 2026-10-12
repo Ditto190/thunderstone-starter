@@ -7,6 +7,8 @@ CURSOR_HOOKS="${ROOT}/.cursor/hooks.json"
 GROK_HOOKS="${ROOT}/.grok/hooks/lifecycle.json"
 failures=0
 
+# Report the failure message in $1 to stderr and set the global failures flag to 1.
+# Return success so remaining checks run; the final flag check exits with failure.
 fail() {
   echo "lifecycle test FAIL: $1" >&2
   failures=1

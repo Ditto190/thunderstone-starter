@@ -11,6 +11,9 @@ if [ -z "$event" ] && [ -n "$payload" ] && command -v jq >/dev/null 2>&1; then
   event="$(printf '%s' "$payload" | jq -r '(.hook_event_name // .hookEventName // .event // empty)' 2>/dev/null || true)"
 fi
 
+# Forward the global payload to lean-ctx hook observe when both tools are available.
+# Takes no arguments; timeout requests termination after one second.
+# Discard observer output and return success if tools are missing or observation fails.
 observe_lean_ctx() {
   command -v lean-ctx >/dev/null 2>&1 || return 0
   command -v timeout >/dev/null 2>&1 || return 0
