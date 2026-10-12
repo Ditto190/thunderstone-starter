@@ -60,7 +60,7 @@ composio link <toolkit>
 composio execute <TOOL_SLUG> -d '{...}'
 ```
 
-Use `composio login --no-wait` when the agent cannot open a browser. Share the printed login URL with the user, then run `composio login --poll` to complete authentication. Once installed, prefer the bundled `composio-cli` skill for current command and flag details.
+Use `composio login --no-wait | jq` when the agent cannot open a browser. Give the returned login URL to the user and complete authentication with the returned key. Once installed, prefer the bundled `composio-cli` skill for current command and flag details.
 
 ## Connect apps when the task needs them
 
