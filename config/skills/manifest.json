@@ -1,0 +1,40 @@
+{
+  "$comment": "Agent Skills installed into .agents/skills for Grok Build, Grok Bot and Cursor by scripts/skills-install.sh. Refs are pinned commit SHAs; bump with scripts/skills-install.sh --update. Anthropic document skills (docx, pdf, pptx, xlsx) are proprietary and excluded; doc-coauthoring has no license file and is excluded.",
+  "sources": [
+    {
+      "id": "superpowers",
+      "repo": "obra/superpowers",
+      "ref": "bb92a77741419a4ab5f06e711a283343f1ada0c3",
+      "license": "MIT",
+      "path": "skills",
+      "include": "*",
+      "exclude": ["diagnosing-superpowers"]
+    },
+    {
+      "id": "anthropic",
+      "repo": "anthropics/skills",
+      "ref": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "license": "Apache-2.0",
+      "path": "skills",
+      "include": ["mcp-builder", "skill-creator", "webapp-testing", "frontend-design", "web-artifacts-builder"]
+    },
+    {
+      "id": "addyosmani",
+      "repo": "addyosmani/agent-skills",
+      "ref": "1401c8b8030e023baeebb31781a6653fe8e93026",
+      "license": "MIT",
+      "path": "skills",
+      "include": "*",
+      "exclude": ["test-driven-development", "using-agent-skills"]
+    },
+    {
+      "id": "last30days",
+      "repo": "mvanhorn/last30days-skill",
+      "ref": "267d50f7fcbab8a6457a93ad6ca15cbc199f633c",
+      "license": "MIT",
+      "path": "skills",
+      "include": ["last30days"],
+      "prune": ["assets", "agents"]
+    }
+  ]
+}

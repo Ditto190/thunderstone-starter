@@ -1,0 +1,99 @@
+{
+  "$comment": "Canonical MCP server list for Grok Build / Grok Bot (reads .grok/config.toml) and Cursor (reads .cursor/mcp.json). Rendered by scripts/mcp-sync.mjs. Names only: secrets stay in env files. Not used by Perplexity Computer or Comet; see docs/agent-connectors/README.md.",
+  "servers": {
+    "perplexity": {
+      "summary": "Perplexity search, ask, research and reason tools (official stdio server)",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "requiresEnv": ["PERPLEXITY_API_KEY"],
+      "command": "npx",
+      "args": ["-y", "@perplexity-ai/mcp-server@1.3.0"]
+    },
+    "context7": {
+      "summary": "Up-to-date library docs (CONTEXT7_API_KEY is optional, raises rate limits)",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@4.3.0"]
+    },
+    "firecrawl": {
+      "summary": "Firecrawl search, scrape, map and crawl",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "requiresEnv": ["FIRECRAWL_API_KEY"],
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp@3.29.1"]
+    },
+    "browser": {
+      "summary": "agent-browser driving the CloakBrowser CDP sidecar (see docs/browser-stack)",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "requiresBin": ["agent-browser"],
+      "script": "scripts/browser-mcp.sh"
+    },
+    "scrapling": {
+      "summary": "Scrapling HTTP and stealth extraction",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "requiresBin": ["scrapling"],
+      "command": "scrapling",
+      "args": ["mcp"],
+      "wrap": false
+    },
+    "chrome-devtools": {
+      "summary": "Chrome DevTools: traces, network, console. Attaches to the CloakBrowser CDP port. Off by default to save context",
+      "profiles": ["dev", "vm"],
+      "default": false,
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@1.10.1", "--no-usage-statistics", "--browserUrl=http://127.0.0.1:{BROWSER_CDP_PORT}"]
+    },
+    "computer-use": {
+      "summary": "Whole-desktop screenshots, mouse and keyboard through nut.js. Grok Bot VM only: the VM belongs to the bots",
+      "profiles": ["vm"],
+      "default": true,
+      "requiresDisplay": true,
+      "command": "npx",
+      "args": ["-y", "computer-use-mcp@1.8.0"]
+    },
+    "cua-driver": {
+      "summary": "Cua Driver: background desktop app control through AT-SPI and X11. Grok Bot VM only",
+      "profiles": ["vm"],
+      "default": true,
+      "requiresBin": ["cua-driver"],
+      "requiresDisplay": true,
+      "command": "cua-driver",
+      "args": ["mcp"],
+      "wrap": false
+    },
+    "perplexity-computer": {
+      "summary": "Delegate whole tasks to Perplexity Computer (OAuth in a browser, spends Perplexity credits). Off by default",
+      "profiles": ["dev", "vm"],
+      "default": false,
+      "url": "https://www.perplexity.ai/rest/computer/mcp"
+    },
+    "xai-docs": {
+      "summary": "Official xAI documentation MCP (Streamable HTTP, no API key)",
+      "profiles": ["dev", "vm"],
+      "default": true,
+      "url": "https://docs.x.ai/api/mcp"
+    },
+    "github-remote": {
+      "summary": "GitHub hosted MCP (OAuth). Prefer the Cursor GitHub plugin on Cloud; enable here for Grok-only flows",
+      "profiles": ["dev", "vm"],
+      "default": false,
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "gitlab": {
+      "summary": "GitLab official MCP (instance OAuth). Replace host for self-managed GitLab",
+      "profiles": ["dev", "vm"],
+      "default": false,
+      "url": "https://gitlab.com/api/v4/mcp"
+    },
+    "composio": {
+      "summary": "Composio hosted app connectors (OAuth). Off by default; see .agents/skills/composio",
+      "profiles": ["dev", "vm"],
+      "default": false,
+      "url": "https://connect.composio.dev/mcp"
+    }
+  }
+}

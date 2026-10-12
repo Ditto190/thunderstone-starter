@@ -52,3 +52,7 @@ Thumbs.db
 *.orig
 *.rej
 npm-debug.log*
+
+# Generated agent configs and installed skills (see docs/agent-connectors)
+.grok/config.toml
+.agents/skills/

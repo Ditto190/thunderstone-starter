@@ -13,6 +13,7 @@ Read this file, the assigned brief and current status only.
 - `bash scripts/doctor.sh` checks the local environment.
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
+- `bash scripts/agent-setup.sh --sync` regenerates `.grok/config.toml` and `.cursor/mcp.json` from `config/mcp/servers.json`; `docs/agent-connectors/` explains MCP servers, skills and the VM profile. The Grok Bot VM is fully owned by the bots.
 
 ## Boundaries
 - One owner per task. Concurrent writers each use their own worktree

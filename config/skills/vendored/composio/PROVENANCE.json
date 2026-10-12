@@ -1,0 +1,7 @@
+{
+  "upstream": "https://github.com/ComposioHQ/composio",
+  "commit": "f9ce49953598e13371c406ac346846696a4d8385",
+  "path": "skills/composio",
+  "vendoredAt": "2026-10-12",
+  "updateCommand": "scripts/update-composio-skill.sh"
+}
