@@ -28,7 +28,10 @@ Task state lives under `.state/agent-runtime/` (gitignored). Receipts are idempo
 ## Gates and acceptance
 
 - **Gates** run after submit (`validate`). Failed gates move the task to `blocked`.
-- **Acceptance** runs on `accept` with a configured timeout.
+- `command` runs a fixed argv with a timeout.
+- `pr-review` reads GitHub check rollup (`gh pr view --json statusCheckRollup`) and fails closed unless every required check conclusion is `success`. It does not merge, push, or comment. Tests pass a repo-relative `fixture` instead of calling GitHub.
+- `conflict-scan` rejects conflict markers in listed paths. When `base` is set it also runs read-only `git merge-tree` against that ref and fails closed on conflicts or a missing ref.
+- **Acceptance** runs on `accept` with a configured timeout. Outputs named `package-lock.json`, and any `conflictScan.paths`, are scanned for conflict markers before accept.
 
 ## Safety
 

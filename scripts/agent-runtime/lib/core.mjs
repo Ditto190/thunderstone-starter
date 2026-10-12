@@ -115,6 +115,44 @@ export function compilePrompt(templateText, vars, byteBudget) {
   return { text: body, prefixHash, bytes: Buffer.byteLength(body, "utf8") };
 }
 
+const CONFLICT_MARKER = /^(<{7} |={7}$|>{7} )/m;
+
+export function hasConflictMarkers(text) {
+  return CONFLICT_MARKER.test(text);
+}
+
+export function scanConflictMarkers(rootDir, relPaths) {
+  const hits = [];
+  for (const rel of relPaths) {
+    const abs = resolveSafePath(rootDir, rel);
+    if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) {
+      continue;
+    }
+    if (hasConflictMarkers(fs.readFileSync(abs, "utf8"))) {
+      hits.push(rel);
+    }
+  }
+  return hits;
+}
+
+/** Fail closed: every named check must exist and have conclusion "success". */
+export function evaluateCheckSnapshot(snapshot, requiredChecks) {
+  const checks = Array.isArray(snapshot?.checks) ? snapshot.checks : [];
+  const names = requiredChecks?.length
+    ? requiredChecks
+    : checks.map((check) => check.name).filter(Boolean);
+  if (names.length === 0) {
+    return { ok: false, reason: "no checks reported" };
+  }
+  for (const name of names) {
+    const hit = checks.find((check) => check.name === name);
+    if (!hit || hit.conclusion !== "success") {
+      return { ok: false, reason: `check not green: ${name}` };
+    }
+  }
+  return { ok: true };
+}
+
 export function runCommand(argv, timeoutMs, cwd) {
   const res = spawnSync(argv[0], argv.slice(1), {
     cwd,

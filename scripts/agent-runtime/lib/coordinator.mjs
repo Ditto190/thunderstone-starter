@@ -1,11 +1,14 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import {
   compilePrompt,
+  evaluateCheckSnapshot,
   loadJson,
   materializeInput,
   resolveSafePath,
   runCommand,
+  scanConflictMarkers,
   sha256File,
   writeJson,
 } from "./core.mjs";
@@ -174,13 +177,136 @@ export function submitReceipt(rootDir, receiptPath) {
   return { state, receipt, idempotent: false };
 }
 
+function safeToken(value, label) {
+  if (typeof value !== "string" || !/^[A-Za-z0-9._-]+$/.test(value)) {
+    throw new Error(`invalid ${label}`);
+  }
+  return value;
+}
+
+function readPullRequestChecks(gate) {
+  const owner = safeToken(gate.owner, "owner");
+  const repo = safeToken(gate.repo, "repo");
+  const pull = String(gate.pullNumber ?? "");
+  if (!/^[0-9]+$/.test(pull)) {
+    throw new Error("invalid pullNumber");
+  }
+  const res = spawnSync(
+    "gh",
+    [
+      "pr",
+      "view",
+      pull,
+      "--repo",
+      `${owner}/${repo}`,
+      "--json",
+      "statusCheckRollup",
+    ],
+    { encoding: "utf8", timeout: gate.timeoutMs ?? 15_000 },
+  );
+  if (res.status !== 0) {
+    return { ok: false, reason: "pr-review read failed" };
+  }
+  let payload;
+  try {
+    payload = JSON.parse(res.stdout);
+  } catch {
+    return { ok: false, reason: "pr-review parse failed" };
+  }
+  const checks = (payload.statusCheckRollup ?? []).map((item) => ({
+    name: item.name,
+    conclusion: item.conclusion,
+  }));
+  return evaluateCheckSnapshot({ checks }, gate.requiredChecks);
+}
+
+export function runPrReviewGate(rootDir, gate) {
+  if (gate.fixture) {
+    const snapshot = loadJson(resolveSafePath(rootDir, gate.fixture));
+    return evaluateCheckSnapshot(snapshot, gate.requiredChecks);
+  }
+  return readPullRequestChecks(gate);
+}
+
+function safeRef(value) {
+  if (typeof value !== "string" || !/^[A-Za-z0-9._/-]+$/.test(value) || value.includes("..")) {
+    throw new Error("invalid base ref");
+  }
+  return value;
+}
+
+export function mergeTreeConflict(rootDir, baseRef) {
+  const base = safeRef(baseRef);
+  const parsed = spawnSync("git", ["rev-parse", "--verify", "--quiet", `${base}^{commit}`], {
+    cwd: rootDir,
+    encoding: "utf8",
+  });
+  if (parsed.status !== 0) {
+    return { ok: false, reason: `base ref not found: ${base}` };
+  }
+  const baseSha = spawnSync("git", ["merge-base", "HEAD", base], {
+    cwd: rootDir,
+    encoding: "utf8",
+  });
+  if (baseSha.status !== 0) {
+    return { ok: false, reason: "merge-base failed" };
+  }
+  const tree = spawnSync(
+    "git",
+    ["merge-tree", baseSha.stdout.trim(), "HEAD", base],
+    { cwd: rootDir, encoding: "utf8", maxBuffer: 2_000_000 },
+  );
+  const text = `${tree.stdout ?? ""}\n${tree.stderr ?? ""}`;
+  if (tree.status !== 0 || /^(<{7} |={7}$|>{7} )/m.test(text)) {
+    return { ok: false, reason: "merge-tree reported conflicts" };
+  }
+  return { ok: true };
+}
+
+export function runConflictScanGate(rootDir, gate) {
+  const paths = gate.paths ?? [];
+  const hits = scanConflictMarkers(rootDir, paths);
+  if (hits.length > 0) {
+    return { ok: false, reason: `conflict markers in ${hits.join(", ")}` };
+  }
+  if (gate.base) {
+    return mergeTreeConflict(rootDir, gate.base);
+  }
+  return { ok: true };
+}
+
+function lockfilePaths(state) {
+  const paths = [];
+  for (const out of state.descriptor.outputs ?? []) {
+    if (typeof out.path === "string" && out.path.endsWith("package-lock.json")) {
+      paths.push(out.path);
+    }
+  }
+  for (const rel of state.descriptor.conflictScan?.paths ?? []) {
+    paths.push(rel);
+  }
+  return paths;
+}
+
 export function runGates(rootDir, state) {
   const descriptor = state.descriptor;
   const results = [];
   for (const gate of descriptor.gates ?? []) {
     if (gate.kind === "command") {
       const res = runCommand(gate.argv, gate.timeoutMs ?? 60_000, rootDir);
-      results.push({ gate, ...res });
+      results.push({ kind: gate.kind, ok: res.ok, status: res.status });
+      if (!res.ok) {
+        return { ok: false, results };
+      }
+    } else if (gate.kind === "pr-review") {
+      const res = runPrReviewGate(rootDir, gate);
+      results.push({ kind: gate.kind, ok: res.ok, reason: res.reason });
+      if (!res.ok) {
+        return { ok: false, results };
+      }
+    } else if (gate.kind === "conflict-scan") {
+      const res = runConflictScanGate(rootDir, gate);
+      results.push({ kind: gate.kind, ok: res.ok, reason: res.reason });
       if (!res.ok) {
         return { ok: false, results };
       }
@@ -256,6 +382,14 @@ export function acceptTask(rootDir, taskId) {
   }
   if (state.status !== "validated") {
     throw new Error(`accept requires validated status, got ${state.status}`);
+  }
+  const markers = scanConflictMarkers(rootDir, lockfilePaths(state));
+  if (markers.length > 0) {
+    state.status = "failed";
+    state.failureReason = `conflict markers in ${markers.join(", ")}`;
+    state.history.push({ at: new Date().toISOString(), status: "failed" });
+    saveTaskState(rootDir, config, state);
+    return state;
   }
   const acceptance = runAcceptance(rootDir, state, config.acceptanceTimeoutMs);
   if (!acceptance.ok) {

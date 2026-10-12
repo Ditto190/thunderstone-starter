@@ -16,6 +16,8 @@ import {
 } from "../../scripts/agent-runtime/lib/coordinator.mjs";
 import {
   compilePrompt,
+  evaluateCheckSnapshot,
+  hasConflictMarkers,
   materializeInput,
   resolveSafePath,
   sha256File,
@@ -194,6 +196,135 @@ test("lease expiry detected", () => {
   initTask(dir, path.join(rootDir, "examples/agent-runtime/task.json"));
   const leased = leaseTask(dir, "TS-DEMO-001", "cursor-hammer", 1_000);
   assert.ok(isLeaseStale(leased, leased.lease.expiresAt + 1));
+});
+
+test("pr-review fails closed when a required check is red", () => {
+  const red = evaluateCheckSnapshot(
+    { checks: [{ name: "validate", conclusion: "failure" }] },
+    ["validate", "hygiene"],
+  );
+  assert.equal(red.ok, false);
+  const empty = evaluateCheckSnapshot({ checks: [] }, []);
+  assert.equal(empty.ok, false);
+  const green = evaluateCheckSnapshot(
+    { checks: [{ name: "hygiene", conclusion: "success" }] },
+    ["hygiene"],
+  );
+  assert.equal(green.ok, true);
+});
+
+test("pr-review gate blocks on a red fixture", () => {
+  const dir = tempRoot();
+  fs.cpSync(path.join(rootDir, "prompts"), path.join(dir, "prompts"), { recursive: true });
+  fs.mkdirSync(path.join(dir, "fixtures"), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "fixtures/checks.json"),
+    JSON.stringify({ checks: [{ name: "hygiene", conclusion: "failure" }] }),
+    "utf8",
+  );
+  const task = {
+    taskId: "TS-REVIEW-RED",
+    workerPool: ["cursor-hammer"],
+    routing: "pinned",
+    pinnedWorker: "cursor-hammer",
+    outputs: [],
+    gates: [{ kind: "pr-review", fixture: "fixtures/checks.json", requiredChecks: ["hygiene"] }],
+    promptTemplate: "prompts/agent-runtime/worker.md",
+  };
+  const taskPath = path.join(dir, "task.json");
+  fs.writeFileSync(taskPath, JSON.stringify(task), "utf8");
+  initTask(dir, taskPath);
+  leaseTask(dir, "TS-REVIEW-RED", "cursor-hammer");
+  const config = loadConfig(dir);
+  const st = loadTaskState(dir, config, "TS-REVIEW-RED");
+  const receiptPath = path.join(dir, "receipt.json");
+  fs.writeFileSync(
+    receiptPath,
+    JSON.stringify({
+      receiptId: "rev",
+      taskId: "TS-REVIEW-RED",
+      attemptId: st.lease.attemptId,
+      worker: "cursor-hammer",
+      outputs: [],
+    }),
+    "utf8",
+  );
+  submitReceipt(dir, receiptPath);
+  const validated = validateTask(dir, "TS-REVIEW-RED");
+  assert.equal(validated.status, "blocked");
+});
+
+test("accept rejects conflict markers in package-lock.json", () => {
+  assert.equal(hasConflictMarkers("<<<<<<< HEAD\n"), true);
+  const dir = tempRoot();
+  fs.cpSync(path.join(rootDir, "prompts"), path.join(dir, "prompts"), { recursive: true });
+  const lockRel = "package-lock.json";
+  fs.writeFileSync(path.join(dir, lockRel), "<<<<<<< HEAD\n=======\n>>>>>>> branch\n", "utf8");
+  const task = {
+    taskId: "TS-LOCK",
+    workerPool: ["cursor-hammer"],
+    routing: "pinned",
+    pinnedWorker: "cursor-hammer",
+    outputs: [{ path: lockRel, required: true }],
+    gates: [{ kind: "command", argv: ["node", "-e", "process.exit(0)"], timeoutMs: 5000 }],
+    acceptance: [{ kind: "file-exists", path: lockRel }],
+    promptTemplate: "prompts/agent-runtime/worker.md",
+  };
+  const taskPath = path.join(dir, "task.json");
+  fs.writeFileSync(taskPath, JSON.stringify(task), "utf8");
+  initTask(dir, taskPath);
+  const leased = leaseTask(dir, "TS-LOCK", "cursor-hammer");
+  const receiptPath = path.join(dir, "receipt.json");
+  fs.writeFileSync(
+    receiptPath,
+    JSON.stringify({
+      receiptId: "lock",
+      taskId: "TS-LOCK",
+      attemptId: leased.lease.attemptId,
+      worker: "cursor-hammer",
+      outputs: [{ path: lockRel, sha256: sha256File(path.join(dir, lockRel)) }],
+    }),
+    "utf8",
+  );
+  submitReceipt(dir, receiptPath);
+  validateTask(dir, "TS-LOCK");
+  const accepted = acceptTask(dir, "TS-LOCK");
+  assert.equal(accepted.status, "failed");
+  assert.match(accepted.failureReason, /conflict markers/);
+});
+
+test("conflict-scan gate blocks when a listed file has markers", () => {
+  const dir = tempRoot();
+  fs.cpSync(path.join(rootDir, "prompts"), path.join(dir, "prompts"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "package-lock.json"), "<<<<<<< HEAD\n", "utf8");
+  const task = {
+    taskId: "TS-SCAN",
+    workerPool: ["cursor-hammer"],
+    routing: "pinned",
+    pinnedWorker: "cursor-hammer",
+    outputs: [],
+    gates: [{ kind: "conflict-scan", paths: ["package-lock.json"] }],
+    promptTemplate: "prompts/agent-runtime/worker.md",
+  };
+  const taskPath = path.join(dir, "task.json");
+  fs.writeFileSync(taskPath, JSON.stringify(task), "utf8");
+  initTask(dir, taskPath);
+  const leased = leaseTask(dir, "TS-SCAN", "cursor-hammer");
+  const receiptPath = path.join(dir, "receipt.json");
+  fs.writeFileSync(
+    receiptPath,
+    JSON.stringify({
+      receiptId: "scan",
+      taskId: "TS-SCAN",
+      attemptId: leased.lease.attemptId,
+      worker: "cursor-hammer",
+      outputs: [],
+    }),
+    "utf8",
+  );
+  submitReceipt(dir, receiptPath);
+  const validated = validateTask(dir, "TS-SCAN");
+  assert.equal(validated.status, "blocked");
 });
 
 test("buildPrompt includes compiled prefix", () => {
