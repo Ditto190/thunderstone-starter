@@ -1,0 +1,13 @@
+{
+  "receiptId": "rcpt-demo-001",
+  "taskId": "TS-DEMO-001",
+  "attemptId": "placeholder-set-by-lease",
+  "worker": "cursor-hammer",
+  "outputs": [
+    {
+      "path": "examples/agent-runtime/out/report.md",
+      "sha256": "placeholder-set-by-builder"
+    }
+  ],
+  "summary": "Demo receipt for validation fixtures."
+}

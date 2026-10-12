@@ -1,0 +1,33 @@
+{
+  "taskId": "TS-DEMO-001",
+  "title": "Agent runtime demo",
+  "workerPool": ["cursor-hammer", "watcher"],
+  "routing": "pinned",
+  "pinnedWorker": "cursor-hammer",
+  "inputs": [
+    {
+      "path": "examples/agent-runtime/input.txt",
+      "selector": { "kind": "lines", "start": 1, "end": 3 }
+    }
+  ],
+  "outputs": [
+    {
+      "path": "examples/agent-runtime/out/report.md",
+      "required": true
+    }
+  ],
+  "gates": [
+    {
+      "kind": "command",
+      "argv": ["node", "-e", "process.exit(0)"],
+      "timeoutMs": 5000
+    }
+  ],
+  "acceptance": [
+    {
+      "kind": "file-exists",
+      "path": "examples/agent-runtime/out/report.md"
+    }
+  ],
+  "promptTemplate": "prompts/agent-runtime/worker.md"
+}

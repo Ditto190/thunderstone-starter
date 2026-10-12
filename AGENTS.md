@@ -10,6 +10,7 @@ Read this file, the assigned brief and current status only.
 
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
+- `node scripts/agent-runtime.mjs init --task examples/agent-runtime/task.json` seeds the local runtime queue; `lease` / `submit` / `validate` / `accept` complete the lifecycle (see `docs/agent-runtime.md`).
 - `bash scripts/doctor.sh` checks the local environment.
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
