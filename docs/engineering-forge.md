@@ -54,6 +54,19 @@ already enable the same servers do not need a second registration.
 Paid xAI inference, LiteLLM routing, and batch submission stay out of
 `bootstrap.sh` and `resume.sh`.
 
+## Cursor SDK
+
+`scripts/cursor-agent.mjs` is a one-shot cloud run. It passes `cloud.repos`
+explicitly, attaches the public xAI docs MCP server, and disposes through
+`Agent.prompt`. Startup failures exit 1. A run that starts and then fails
+exits 2. The key stays in the environment:
+
+```sh
+node scripts/env-run.mjs node scripts/cursor-agent.mjs "prompt"
+```
+
+Do not call it from bootstrap or resume.
+
 ## Composio
 
 The skill is a router. It does not connect an account. For You and Platform
