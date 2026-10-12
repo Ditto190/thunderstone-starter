@@ -32,6 +32,8 @@ Set runtime secrets in Cursor settings. Build secrets are separate and should be
 
 Cursor CLI installer reference: https://cursor.com/docs/cli/installation
 
+MCP connector catalog (Cursor, Grok, Claude): [docs/mcp-connectors.md](docs/mcp-connectors.md).
+
 For a task, write a brief and run:
 
 ```sh
