@@ -16,10 +16,10 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 mkdir -p "$tmp/references"
-curl --fail --silent --show-error -o "$tmp/SKILL.md" "${base}/SKILL.md"
-curl --fail --silent --show-error -o "$tmp/references/errors.md" "${base}/references/errors.md"
-curl --fail --silent --show-error -o "$tmp/references/for-you.md" "${base}/references/for-you.md"
-curl --fail --silent --show-error -o "$tmp/references/platform.md" "${base}/references/platform.md"
+curl --fail --silent --show-error --connect-timeout 10 --max-time 60 -o "$tmp/SKILL.md" "${base}/SKILL.md"
+curl --fail --silent --show-error --connect-timeout 10 --max-time 60 -o "$tmp/references/errors.md" "${base}/references/errors.md"
+curl --fail --silent --show-error --connect-timeout 10 --max-time 60 -o "$tmp/references/for-you.md" "${base}/references/for-you.md"
+curl --fail --silent --show-error --connect-timeout 10 --max-time 60 -o "$tmp/references/platform.md" "${base}/references/platform.md"
 
 python3 - "$sha" "$tmp" "$dest" <<'PY'
 import hashlib, json, pathlib, shutil, sys

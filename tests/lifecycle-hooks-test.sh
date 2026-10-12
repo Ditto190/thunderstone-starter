@@ -111,12 +111,12 @@ shift
 "$@"
 EOF
 chmod +x "${mock_bin}/lean-ctx" "${mock_bin}/timeout"
-if ! PATH="${mock_bin}:${PATH}" printf '%s' '{"hook_event_name":"stop"}' | bash "$LIFECYCLE" stop >/dev/null; then
+if ! printf '%s' '{"hook_event_name":"stop"}' | PATH="${mock_bin}:${PATH}" bash "$LIFECYCLE" stop >/dev/null; then
   fail "lean-ctx observe path failed"
 fi
 
 # Missing lean-ctx still exits 0.
-if ! PATH="/usr/bin:/bin" printf 'not-json' | bash "$LIFECYCLE" stop >/dev/null; then
+if ! printf 'not-json' | PATH="/usr/bin:/bin" bash "$LIFECYCLE" stop >/dev/null; then
   fail "missing lean-ctx did not fail open"
 fi
 
