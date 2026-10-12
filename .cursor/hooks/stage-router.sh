@@ -154,14 +154,16 @@ if [ "$gh_ok" -eq 1 ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
 fi
 
 if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
-  for label in incident regression p0; do
+  router_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+  while IFS= read -r label; do
+    [ -n "$label" ] || continue
     issue_json="$(gh_timed_capture 1 issue list --label "$label" --state open --limit 1 --json number || true)"
     issue_n="$(printf '%s' "${issue_json:-[]}" | jq -r 'length' 2>/dev/null || echo 0)"
     if [ "${issue_n:-0}" -gt 0 ] 2>/dev/null; then
       monitor_reason="open issue labeled ${label}"
       break
     fi
-  done
+  done < "$router_root/config/monitor-labels.txt"
 fi
 
 if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then

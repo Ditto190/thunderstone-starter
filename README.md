@@ -32,13 +32,17 @@ Set runtime secrets in Cursor settings. Build secrets are separate and should be
 
 Cursor CLI installer reference: https://cursor.com/docs/cli/installation
 
-For a task, write a brief and run:
+For a task, create a work item and run it:
 
 ```sh
-node scripts/env-run.mjs bash scripts/run-task.sh workspace/briefs/TASK-001.md
+node scripts/clan.mjs new TASK-001 --role cursor-hammer
+node scripts/env-run.mjs bash scripts/run-task.sh TASK-001
+node scripts/clan.mjs status TASK-001
 ```
 
-This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
+`run-task.sh` launches Cursor CLI once, in print mode, without `--force`. The wrapper saves the final message as `workspace/items/TASK-001/report.md`. Inside a Cursor or Cloud session the same command records the attempt and does not launch another agent. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
+
+Runnable roles are `cursor-hammer`, `watcher-of-broken-things`, and `chief-investigator`. The first two may use Perplexity search. Only the investigator may use Perplexity research. Copy `config/mcp.example.json` into the gitignored `.cursor/mcp.json` and set `PERPLEXITY_API_KEY` in `.env.local`. The example names the hosted server `https://api.perplexity.ai/mcp` and does not contain a key.
 
 ## Environment and Drive
 
@@ -59,13 +63,13 @@ sha256sum -c manifest.sha256
 
 Checksums detect corruption, not malicious replacement of both package and checksum. Trust the Drive release owner.
 
-Export ONLY curated files to `workspace/exports/`, review for secrets, then:
+Copy reviewed files into `workspace/items/<ID>/export/`, then:
 
 ```sh
-node scripts/env-run.mjs bash scripts/export-drive.sh
+node scripts/env-run.mjs bash scripts/export-drive.sh TASK-001
 ```
 
-Exports are additive to unique run folders; no Drive sync/delete. No raw agent logs are exported automatically. Set `DRIVE_EXPORT_ROOT` to the active project's export path before use.
+Export refuses an item that has no report. The Drive folder is `<ID>/<digest>` and a repeated export of the same files does not copy again. No Drive sync/delete. Set `DRIVE_EXPORT_ROOT` to the active project's export path before use.
 
 ## Git, hooks and CI
 
@@ -79,7 +83,7 @@ CI installs locked dependencies and runs the same validation. Hooks are bypassab
 
 ## Bot instruction
 
-You are Chief Thunder-Terminal of the Thunderstone Clan. Read AGENTS.md and your assigned brief, run scripts/resume.sh, then use Cursor CLI for bounded execution unless already inside Cursor. Prefer CLI/API retrieval over GUI clicks. Read only relevant files. Save evidence locally; report outcome, files, checks, blocker and next action briefly. Chiefs route, Grunts implement, Watchers verify. No recursive delegation or automatic chat-message relay. Caveman tone is opt-in only.
+You are Thunder-Terminal of the Thunderstone Clan. Read AGENTS.md and the work item brief, run scripts/resume.sh, then use Cursor CLI for bounded execution unless already inside Cursor. Prefer CLI/API retrieval over GUI clicks. Read only relevant files. The report records outcome, changed files, validation, blockers and next action. Chiefs route, hammers implement, watchers verify, and the chief investigator is the only role that may call Perplexity research. No recursive delegation or automatic chat-message relay. Caveman tone is opt-in only.
 
 ## Verification limits
 
