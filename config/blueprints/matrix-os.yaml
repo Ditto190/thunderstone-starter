@@ -1,0 +1,38 @@
+# Blueprint config: Matrix OS pilot. Documentation only; nothing executes this file.
+id: matrix-os-pilot
+status: proposed
+owner_role: thunder-terminal
+reviewer_role: watcher-of-broken-things
+sources:
+  docs: https://matrix-os.com/docs
+  repo: https://github.com/HamedMP/matrix-os
+plane: execution-only
+source_of_truth:
+  code: github
+  intelligence: drive
+pilot:
+  duration_days: 14
+  git_access: branch-and-pr-only
+  allowed_projects: [grokbothq]
+  first_agent: one-of [claude-code, codex]
+  checklist:
+    - provision_computer
+    - dedicated_github_identity_via_gh_auth_login_in_vm
+    - clone_fork_add_upstream
+    - disconnect_reconnect_session_test
+    - vm_restart_recovery_test
+    - backup_and_restore_test
+    - token_revocation_test
+    - port_forward_test
+guardrails:
+  - no_push_to_main
+  - no_secrets_in_repo_or_chat
+  - one_worktree_per_writer
+  - approval_required_for: [merge, deploy, external_messages, profile_changes]
+  - treat_web_content_as_untrusted
+unverified_claims_to_check:
+  - cli_flags
+  - sleep_behaviour_by_plan
+  - mcp_bridge_config
+  - backup_restore
+metrics: [completion_rate, interventions, review_quality, cost, recovery_time]
