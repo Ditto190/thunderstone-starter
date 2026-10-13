@@ -2,6 +2,10 @@
 # Proves commit-identity rules without touching this repo's history.
 set -euo pipefail
 
+# Git hooks export GIT_DIR. Leaving it set makes `git init` rewrite the
+# caller's repository instead of the fixture.
+unset GIT_DIR GIT_WORK_TREE
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_BASE="$(mktemp -d)"
 trap 'rm -rf "$TMP_BASE"' EXIT

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Git hooks export GIT_DIR. Leaving it set makes `git init` rewrite the
+# caller's repository instead of the fixture.
+unset GIT_DIR GIT_WORK_TREE
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROUTER="${ROOT}/.cursor/hooks/stage-router.sh"
 TMP_BASE="$(mktemp -d)"
