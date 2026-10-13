@@ -1,0 +1,25 @@
+# Blueprint config: GrokBot HQ adoption. Documentation only; nothing executes this file.
+id: grokbothq-adoption
+status: proposed
+repos:
+  origin: ModifyMe-Org/grokbothq
+  upstream: V-harshith/grokbothq
+preflight:
+  - verify_vercel_binding_for_fork
+  - protect_main_branch
+  - keep_existing_github_actions_enabled
+stack: {framework: nextjs, content: content/*.json, scripts: [dev, build, start, lint]}
+roles:
+  discovery: {writes: draft-artifact-only}
+  verification: {writes: verification-record-only}
+  content-editor: {writes: content/*.json}
+  reviewer: {writes: none}
+  publisher: {writes: branch-and-pr-only}
+thunderstone_role_map:
+  discovery: chief-of-chiefs
+  content-editor: cursor-hammer
+  reviewer: watcher-of-broken-things
+  briefs: keeper-of-stone-tablets
+worktrees: {pattern: "ops/<task-id>", one_owner_per_task: true}
+keep_out_of_repo: [transcripts, browser-profiles, tokens, schedules, matrix-config]
+escalate_to_owner: [legal, trademark, sponsor-deals, unverifiable-claims]
