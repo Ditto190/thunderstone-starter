@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Husky exports GIT_DIR. Leaving it set makes git init rewrite the parent
+# repo and makes a temp directory look like a checkout.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROUTER="${ROOT}/.cursor/hooks/stage-router.sh"
 TMP_BASE="$(mktemp -d)"
