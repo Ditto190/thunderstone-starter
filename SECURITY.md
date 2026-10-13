@@ -13,6 +13,8 @@ Do not open a public issue for security problems.
 - `.env.example` and `.env.defaults` must only hold empty or non-sensitive placeholders.
 - Use relative paths only. Absolute local paths (home directories, drive letters) are rejected by
   `scripts/check-hygiene.sh`, which runs in CI and in the Husky pre-commit and pre-push hooks.
+- Human commits use the public noreply identity. GitHub App commits (Dependabot, review apps) are
+  accepted only when the author email is GitHub's numeric `[bot]` noreply address.
 - If a secret is ever committed, revoke and rotate it first, then remove it from history.
 
 ## Automated protections

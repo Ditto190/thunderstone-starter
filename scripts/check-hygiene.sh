@@ -45,15 +45,24 @@ while IFS= read -r -d '' file; do
 done < <(git ls-files -z)
 
 # Commit identities: every non-merge commit reachable from HEAD must be authored by the public alias
-# (or GitHub's web-flow committer). HEAD is the branch under test and includes its main history.
+# or a GitHub App noreply identity. HEAD is the branch under test and includes its main history.
 # Do not use --all: actions/checkout fetch-depth 0 fetches refs/heads/*, and an unrelated remote
-# branch is not part of this history. Do not exempt any author by name.
+# branch is not part of this history. Do not exempt an author by display name alone.
 alias_name="Ditto190"
+bot_email='^[0-9]+\+[^@[:space:]]+\[bot\]@users\.noreply\.github\.com$'
 while IFS='|' read -r sha an ae cn ce subj; do
   # GitHub's synthetic PR merge commit uses the profile display name. Skip it only when its SHA is the
   # one Actions checked out (GITHUB_SHA), so a look-alike commit elsewhere in history can't bypass the check.
   if [ -n "${GITHUB_SHA:-}" ] && [ "$sha" = "$GITHUB_SHA" ] && [ "$cn" = "GitHub" ] \
      && printf '%s' "$subj" | grep -Eq '^Merge [0-9a-f]{40} into [0-9a-f]{40}$'; then continue; fi
+  # Dependabot commits as the app and lets GitHub sign. Other GitHub Apps sign as themselves.
+  # Require the numeric bot noreply address so a display name ending in [bot] is not enough.
+  if printf '%s' "$an" | grep -Eq '\[bot\]$' && printf '%s' "$ae" | grep -Eq "$bot_email"; then
+    if { [ "$an" = "$cn" ] && [ "$ae" = "$ce" ]; } \
+       || { [ "$cn" = "GitHub" ] && [ "$ce" = "noreply@github.com" ]; }; then
+      continue
+    fi
+  fi
   ok_author=0; ok_committer=0
   if [ "$an" = "$alias_name" ] && printf '%s' "$ae" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; then ok_author=1; fi
   if { [ "$cn" = "$alias_name" ] && printf '%s' "$ce" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; } \
