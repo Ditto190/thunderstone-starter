@@ -5,7 +5,7 @@ Status: PLAN + scaffold only. Nothing installed beyond what is listed as present
 1. Cursor cloud/headless agents (via `agent` CLI) test the catalogue method (drafts/AGENT-INDEX.draft.md, awesome-copilot style).
 2. A very light, portable editor that can host Cursor + Grok bot agents.
 3. Google Drive appears as a folder on the VM desktop (open in a file manager).
-4. Architecture notes kept in /workspace/thunderstone/plans (this dir) and mirrored to Drive 00_INBOX/Thunderstone.
+4. Architecture notes kept in `docs/plans/` (this dir) and mirrored to Drive 00_INBOX/Thunderstone.
 
 ## Facts verified now
 - Present: `rclone` v1.60.1 (no remote configured, no ~/.config/rclone), `cursor`, `agent`, `tmux`, 107 GB free.
@@ -19,7 +19,7 @@ S2 Editor: evaluate in this order, measure install size + idle RAM + start time,
    a. Zed: preferred for weight and its Agent Client Protocol (ACP) for external agents. UNVERIFIED: GPU/Vulkan need on this software-rendered desktop, and whether Cursor CLI exposes an ACP mode. Check `agent --help` and Zed Linux requirements first.
    b. code-server or VSCodium (heavier, but reliable in a browser/desktop with Cursor and Grok extensions).
    c. Cursor desktop AppImage as fallback.
-   Success: one editor opens /workspace/thunderstone-starter and can launch `agent` in its terminal.
+   Success: one editor opens the starter repo root and can launch `agent` in its terminal.
 S3 Drive on the desktop: needs DT's one-time Google sign-in for rclone (OAuth), done in DT's 1:1 chat, never a group. Then `rclone mount` if FUSE can be installed (needs `fuse3`), else a one-way `rclone copy`/`bisync` into ~/Drive triggered by events (session start/end), never cron. Scope to folders 00_INBOX/Thunderstone and 99_SYSTEM first; never 06_PRIVATE-RECORDS. Lorekeeper remains Drive owner.
 S4 Hooks: Engineering Lead plan -> `.cursor/hooks.json` + `stage-runner-spawn.sh` on a branch from draft PR #8 (task #16).
 S5 Docs: this plan + ARCH notes mirrored to Drive via Lorekeeper after DT's nod.
