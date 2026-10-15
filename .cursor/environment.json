@@ -1,4 +1,4 @@
 {
-  "install": "SKIP_CURSOR_INSTALL=1 sh /agent/repos/thunderstone-starter/scripts/bootstrap.sh",
-  "start": "bash /agent/repos/thunderstone-starter/scripts/resume.sh"
+  "install": "if test -f /agent/repos/thunderstone-starter/scripts/bootstrap.sh; then ROOT=/agent/repos/thunderstone-starter; else ROOT=/workspace; fi; SKIP_CURSOR_INSTALL=1 sh \"$ROOT/scripts/bootstrap.sh\"",
+  "start": "if test -f /agent/repos/thunderstone-starter/scripts/resume.sh; then ROOT=/agent/repos/thunderstone-starter; else ROOT=/workspace; fi; bash \"$ROOT/scripts/resume.sh\""
 }
