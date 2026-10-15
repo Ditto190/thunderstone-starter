@@ -34,7 +34,7 @@ CURSOR_WORKER_NAME=custom-test \
 # ensure is a no-op when autostart is off (default)
 bash scripts/cursor-worker.sh ensure
 
-# status should not fail when worker is stopped
-bash scripts/cursor-worker.sh status | grep -q 'WORKER_SESSION=stopped'
+status_out="$(bash scripts/cursor-worker.sh status 2>/dev/null)"
+printf '%s\n' "$status_out" | grep -q 'WORKER_SESSION=stopped'
 
 echo "cursor-worker tests passed."

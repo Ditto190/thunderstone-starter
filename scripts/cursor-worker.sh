@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Manage the Cursor CLI self-hosted worker (My Machines) in tmux.
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
@@ -32,9 +31,17 @@ worker_env() {
   ' "$ROOT"
 }
 
+load_worker_cfg() {
+  local line
+  line="$(worker_env | node -e '
+    const j = JSON.parse(require("fs").readFileSync(0, "utf8"));
+    process.stdout.write([j.name, j.session, j.dir, j.autostart, j.computer].join("\t"));
+  ')"
+  IFS=$'\t' read -r WORKER_NAME WORKER_SESSION WORKER_DIR WORKER_AUTOSTART WORKER_COMPUTER_USE <<<"$line"
+}
+
 session_running() {
-  local session="$1"
-  tmux has-session -t "=${session}" 2>/dev/null
+  tmux has-session -t "=$WORKER_SESSION" 2>/dev/null
 }
 
 require_tmux() {
@@ -54,73 +61,60 @@ require_agent() {
 start_worker() {
   require_tmux
   require_agent
-  local cfg name session dir computer
-  cfg="$(worker_env)"
-  name="$(node -e "console.log(JSON.parse(process.argv[1]).name)" "$cfg")"
-  session="$(node -e "console.log(JSON.parse(process.argv[1]).session)" "$cfg")"
-  dir="$(node -e "console.log(JSON.parse(process.argv[1]).dir)" "$cfg")"
-  computer="$(node -e "console.log(JSON.parse(process.argv[1]).computer)" "$cfg")"
+  load_worker_cfg
 
-  if session_running "$session"; then
-    echo "Worker tmux session already running: $session"
+  if session_running; then
+    echo "Worker tmux session already running: $WORKER_SESSION"
     return 0
   fi
 
-  local inner="cd \"$ROOT\" && exec node scripts/env-run.mjs agent worker start --name \"$name\" --worker-dir \"$dir\""
-  if [ "$computer" = "1" ]; then
+  local inner="cd \"$ROOT\" && exec node scripts/env-run.mjs agent worker start --name \"$WORKER_NAME\" --worker-dir \"$WORKER_DIR\""
+  if [ "$WORKER_COMPUTER_USE" = "1" ]; then
     inner+=" --computer-use"
   fi
 
-  tmux new-session -d -s "$session" -c "$ROOT" "$inner"
-  echo "Started Cursor worker name=$name session=$session dir=$dir"
-  echo "In Cursor Cloud: pick My Machines → $name (or worker=$name in triggers)."
+  tmux new-session -d -s "$WORKER_SESSION" -c "$ROOT" "$inner"
+  echo "Started Cursor worker name=$WORKER_NAME session=$WORKER_SESSION dir=$WORKER_DIR"
+  echo "In Cursor Cloud: pick My Machines → $WORKER_NAME (or worker=$WORKER_NAME in triggers)."
 }
 
 stop_worker() {
   require_tmux
-  local cfg session
-  cfg="$(worker_env)"
-  session="$(node -e "console.log(JSON.parse(process.argv[1]).session)" "$cfg")"
-  if session_running "$session"; then
-    tmux kill-session -t "$session"
-    echo "Stopped tmux session: $session"
+  load_worker_cfg
+  if session_running; then
+    tmux kill-session -t "$WORKER_SESSION"
+    echo "Stopped tmux session: $WORKER_SESSION"
   else
-    echo "Worker tmux session not running: $session"
+    echo "Worker tmux session not running: $WORKER_SESSION"
   fi
 }
 
 status_worker() {
   require_tmux
-  local cfg name session dir
-  cfg="$(worker_env)"
-  name="$(node -e "console.log(JSON.parse(process.argv[1]).name)" "$cfg")"
-  session="$(node -e "console.log(JSON.parse(process.argv[1]).session)" "$cfg")"
-  dir="$(node -e "console.log(JSON.parse(process.argv[1]).dir)" "$cfg")"
+  load_worker_cfg
 
-  if session_running "$session"; then
-    echo "WORKER_SESSION=running ($session)"
+  if session_running; then
+    echo "WORKER_SESSION=running ($WORKER_SESSION)"
   else
-    echo "WORKER_SESSION=stopped ($session)"
+    echo "WORKER_SESSION=stopped ($WORKER_SESSION)"
   fi
-  echo "WORKER_NAME=$name"
-  echo "WORKER_DIR=$dir"
+  echo "WORKER_NAME=$WORKER_NAME"
+  echo "WORKER_DIR=$WORKER_DIR"
 
-  if command -v agent >/dev/null; then
-    if node "$ROOT/scripts/env-run.mjs" agent worker debug 2>/dev/null; then
-      :
-    else
-      echo "WORKER_DEBUG=unavailable (login or set CURSOR_API_KEY, then retry)"
-    fi
-  else
+  if ! command -v agent >/dev/null; then
     echo "WORKER_DEBUG=skipped (agent CLI missing)"
+    return 0
+  fi
+  if node "$ROOT/scripts/env-run.mjs" agent worker debug >&2; then
+    echo "WORKER_DEBUG=ok"
+  else
+    echo "WORKER_DEBUG=unavailable (login or set CURSOR_API_KEY, then retry)"
   fi
 }
 
 ensure_worker() {
-  local cfg autostart
-  cfg="$(worker_env)"
-  autostart="$(node -e "console.log(JSON.parse(process.argv[1]).autostart)" "$cfg")"
-  if [ "$autostart" != "1" ]; then
+  load_worker_cfg
+  if [ "$WORKER_AUTOSTART" != "1" ]; then
     return 0
   fi
   start_worker

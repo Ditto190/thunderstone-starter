@@ -12,4 +12,3 @@ if ! tmux has-session -t '=thunderstone' 2>/dev/null; then
 fi
 bash "$ROOT/scripts/cursor-worker.sh" ensure
 echo "Ready: tmux attach -t thunderstone. No paid agent task started."
-echo "Cursor worker: bash scripts/cursor-worker.sh status (autostart via CURSOR_WORKER_AUTOSTART=1 in .env.local)."
