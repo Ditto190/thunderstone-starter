@@ -2,12 +2,17 @@
 # One automatic review when a PR is opened / marked ready. Later pushes are NOT
 # re-reviewed (cubic.yaml has the same policy). Role split: CodeRabbit = general review + summary + lint;
 # cubic = bugs, security and project rules. Comment "@coderabbitai review" (new commits) or "@coderabbitai full review".
+# Resolution commands (author may use them): "@coderabbitai fix comments",
+# "@coderabbitai fix-ci", "@coderabbitai resolve merge conflict".
 language: en-AU
 early_access: false
 
 reviews:
   profile: chill
-  request_changes_workflow: false
+  # Approve once CodeRabbit's own comments are resolved and checks are green.
+  request_changes_workflow: true
+  # Cursor commits as the PR author, so the author must be allowed to ask CodeRabbit to resolve.
+  allow_author_approval: true
   high_level_summary: true
   review_status: true
   collapse_walkthrough: true
@@ -54,6 +59,12 @@ reviews:
       enabled: false
     unit_tests:
       enabled: false
+    autofix:
+      enabled: true
+    fix_ci:
+      enabled: true
+    resolve_merge_conflict:
+      enabled: true
 
 chat:
   auto_reply: false
