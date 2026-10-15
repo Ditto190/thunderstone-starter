@@ -11,6 +11,7 @@ Read this file, the assigned brief and current status only.
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
 - `bash scripts/doctor.sh` checks the local environment.
+- `bash scripts/cursor-worker.sh status` reports the Cursor My Machines worker (see `docs/grok-vm/cursor-cloud-bridge.md`).
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
 
