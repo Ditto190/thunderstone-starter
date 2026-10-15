@@ -4,7 +4,13 @@ node_modules/
 .env.*
 !.env.defaults
 !.env.example
-workspace/
+workspace/**/node_modules/
+workspace/**/dist/
+workspace/**/.env
+workspace/**/*.log
+workspace/**/tokens/
+workspace/**/tokens.json
+workspace/**/state/
 *.pem
 *.key
 *credentials*.json
