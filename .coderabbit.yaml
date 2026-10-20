@@ -11,8 +11,8 @@ reviews:
   profile: chill
   # Approve once CodeRabbit's own comments are resolved and checks are green.
   request_changes_workflow: true
-  # Cursor commits as the PR author, so the author must be allowed to ask CodeRabbit to resolve.
-  allow_author_approval: true
+  # Author self-approval would skip the independent review gate.
+  allow_author_approval: false
   high_level_summary: true
   review_status: true
   collapse_walkthrough: true
