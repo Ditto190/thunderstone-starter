@@ -38,7 +38,7 @@ For a task, write a brief and run:
 node scripts/env-run.mjs bash scripts/run-task.sh workspace/briefs/TASK-001.md
 ```
 
-This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
+This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Bootstrap installs the CLI under `~/.local/bin`, and the starter scripts prepend that directory to `PATH`. A shell that does not include it will not find `agent`. Do not infer that a login here registers a Cursor My Machines worker.
 
 ## Environment and Drive
 
@@ -75,11 +75,33 @@ Before promotion, no Git remote is created. Initialize locally when ready (`git 
 ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "chore: validated checkpoint" README.md
 ```
 
+Run the checkpoint from a task branch. On `main` or `master` the script exits without committing.
+
 CI installs locked dependencies and runs the same validation. Hooks are bypassable; CI is the authoritative check. Add application tests/build/lint to `npm test` when adopting this starter: the included tests validate infrastructure, not an application. Husky reference: https://typicode.github.io/husky/get-started.html
 
 ## Bot instruction
 
 You are Chief Thunder-Terminal of the Thunderstone Clan. Read AGENTS.md and your assigned brief, run scripts/resume.sh, then use Cursor CLI for bounded execution unless already inside Cursor. Prefer CLI/API retrieval over GUI clicks. Read only relevant files. Save evidence locally; report outcome, files, checks, blocker and next action briefly. Chiefs route, Grunts implement, Watchers verify. No recursive delegation or automatic chat-message relay. Caveman tone is opt-in only.
+
+## Code analysis
+
+Domain tables live in `services/analysis/domain.mjs` (stages, signals, command paths, analyzer rules). `domain-keeper` edits that registry. `code-analyst` runs it. Both are Cursor subagents under `.cursor/agents/`.
+
+```sh
+node services/analysis/cli.mjs README.md
+node --test tests/analysis-domain.test.mjs
+ANALYSIS_PORT=8787 node services/analysis/server.mjs
+```
+
+The HTTP process is stateless: `GET /health`, `GET /v1/domain`, `POST /v1/analyze`, `POST /v1/stage`. That is the Functions shape if this service is later promoted to Vercel. This starter does not deploy it.
+
+The BDK agent in `clan-analyst/` calls the same module. From a checkout with that package installed:
+
+```sh
+npm ci --prefix clan-analyst
+npx --prefix clan-analyst bdk validate --dir clan-analyst
+npx --prefix clan-analyst bdk call analyze_text --dir clan-analyst --input '{"text":"TODO"}'
+```
 
 ## Verification limits
 

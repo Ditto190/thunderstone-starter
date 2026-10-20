@@ -87,6 +87,29 @@ commit_as "$personal_repo" "Some Person" "$personal_email" \
   "Some Person" "$personal_email" "personal identity"
 expect_fail "personal email identity" "$personal_repo"
 
+web_merge_repo="$TMP_BASE/web-merge"
+init_repo "$web_merge_repo"
+base_sha="$(git -C "$web_merge_repo" rev-parse HEAD)"
+into_sha="$(git -C "$web_merge_repo" rev-parse 'HEAD^{tree}')"
+merge_subject="Merge ${base_sha} into ${into_sha}"
+merge_author_email="$(printf '%s@%s.%s' "merger" "personal" "example")"
+commit_as "$web_merge_repo" "Web Merger" "$merge_author_email" \
+  "GitHub" "$github_committer_email" "$merge_subject"
+merge_sha="$(git -C "$web_merge_repo" rev-parse HEAD)"
+GITHUB_EVENT_NAME=pull_request GITHUB_SHA="$merge_sha" \
+  expect_pass "pull request web merge" "$web_merge_repo"
+GITHUB_EVENT_NAME=push GITHUB_SHA="$merge_sha" \
+  expect_fail "push event does not skip web merge" "$web_merge_repo"
+
+other_merge_repo="$TMP_BASE/other-merge"
+init_repo "$other_merge_repo"
+other_email="$(printf '%s@%s.%s' "merge" "personal" "example")"
+commit_as "$other_merge_repo" "Ditto190" "Ditto190@users.noreply.github.com" \
+  "GitHub" "$other_email" "$merge_subject"
+other_sha="$(git -C "$other_merge_repo" rev-parse HEAD)"
+GITHUB_EVENT_NAME=pull_request GITHUB_SHA="$other_sha" \
+  expect_fail "web merge subject with another committer email" "$other_merge_repo"
+
 if [ "$failures" -ne 0 ]; then
   exit 1
 fi
