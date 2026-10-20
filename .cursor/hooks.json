@@ -6,6 +6,18 @@
         "command": ".cursor/hooks/stage-router.sh",
         "timeout": 5,
         "failClosed": false
+      },
+      {
+        "command": ".cursor/hooks/session-skills.sh",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": ".cursor/hooks/session-end-ci.sh",
+        "timeout": 5,
+        "failClosed": false
       }
     ]
   }
