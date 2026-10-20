@@ -153,8 +153,9 @@ if [ "$gh_ok" -eq 1 ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
   fi
 fi
 
-if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
-  router_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+router_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ] \
+  && [ -r "$router_root/config/monitor-labels.txt" ]; then
   while IFS= read -r label; do
     [ -n "$label" ] || continue
     issue_json="$(gh_timed_capture 1 issue list --label "$label" --state open --limit 1 --json number || true)"

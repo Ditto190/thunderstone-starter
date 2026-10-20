@@ -5,4 +5,5 @@ mkdir -p "$root/.state"
 exec 9>"$root/.state/run.lock"
 flock -n 9 || { echo "Another run holds this checkout. Use a separate worktree." >&2; exit 1; }
 export CLAN_ENTRY=run-task
+export PATH="$HOME/.local/bin:$PATH"
 exec node "$root/scripts/env-run.mjs" node "$root/scripts/clan.mjs" run "$@"

@@ -45,14 +45,24 @@ grep -q 'outcome: ok' workspace/items/TASK-010/report.md || fail "report body mi
 test ! -e .cursor/cli.json || fail "deny file left behind"
 refuse env CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
 mkdir -p workspace/items/TASK-010/export
-ln -s /etc/hostname workspace/items/TASK-010/export/link
+ln -s missing-target workspace/items/TASK-010/export/link
 refuse env CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
 rm workspace/items/TASK-010/export/link
+rmdir workspace/items/TASK-010/export
+ln -s ../brief.md workspace/items/TASK-010/export
+refuse env CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
+rm workspace/items/TASK-010/export
+mkdir -p workspace/items/TASK-010/export
 printf '%s\n' "reviewed" > workspace/items/TASK-010/export/note.txt
+printf '%s\n' "{}" > workspace/items/TASK-010/export/receipt.json
+refuse env DRIVE_EXPORT_ROOT='/' CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
+refuse env DRIVE_EXPORT_ROOT='proj/../out' CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
+test ! -s "$RCLONE_LOG" || fail "invalid export root invoked rclone"
 CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
 CLAN_ENTRY=export-drive node scripts/clan.mjs export TASK-010
 test "$(wc -l <"$RCLONE_LOG")" -eq 1 || fail "export was not idempotent"
 grep -q 'TASK-010/' "$RCLONE_LOG" || fail "export folder missing"
+grep -q -- '--exclude receipt.json' "$RCLONE_LOG" || fail "receipt.json was not excluded"
 before="$(wc -l <"$AGENT_STAMP")"
 CURSOR_AGENT=1 node scripts/clan.mjs new TASK-011 --role watcher-of-broken-things
 CURSOR_AGENT=1 CLAN_ENTRY=run-task node scripts/clan.mjs run TASK-011

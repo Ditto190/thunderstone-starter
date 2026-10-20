@@ -323,6 +323,24 @@ out="$(run_router "$repo" green_clean)"
 assert_exact "green-clean-idle" '{}' "$out"
 assert_valid_json "green-clean-json" "$out"
 
+isolated="${TMP_BASE}/no-labels"
+init_repo "$isolated"
+mkdir -p "$isolated/.cursor/hooks"
+cp "$ROUTER" "$isolated/.cursor/hooks/stage-router.sh"
+git -C "$isolated" checkout -b feat/nolabels
+git -C "$isolated" add .cursor/hooks/stage-router.sh
+git -C "$isolated" commit -m "chore: add stage router"
+(
+  cd "$isolated"
+  git remote add origin "$isolated"
+  git update-ref refs/remotes/origin/feat/nolabels HEAD
+  git config branch.feat/nolabels.remote origin
+  git config branch.feat/nolabels.merge refs/heads/feat/nolabels
+)
+out="$(ROUTER="$isolated/.cursor/hooks/stage-router.sh" run_router "$isolated" green_clean)" || failures=1
+assert_exact "missing-labels-file" '{}' "$out"
+assert_valid_json "missing-labels-json" "$out"
+
 if [ "$failures" -ne 0 ]; then
   echo "stage-router tests failed" >&2
   exit 1

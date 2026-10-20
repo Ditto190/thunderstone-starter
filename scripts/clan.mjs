@@ -51,6 +51,7 @@ function readText(path) {
 
 function walkFiles(dir, prefix = "") {
   if (!existsSync(dir)) return [];
+  if (lstatSync(dir).isSymbolicLink()) return [{ path: prefix || ".", type: "symlink", sha256: null }];
   const found = [];
   for (const name of readdirSync(dir)) {
     const rel = prefix ? `${prefix}/${name}` : name;
@@ -398,8 +399,10 @@ function performExport(loaded, env) {
   if (hygiene.stderr) process.stderr.write(hygiene.stderr);
   if (hygiene.status !== 0) return fail("export files failed hygiene");
   const folder = `${loaded.id}/${loaded.digest.slice(0, 12)}`;
-  const remote = `${env.GDRIVE_REMOTE}:${env.DRIVE_EXPORT_ROOT.replace(/\/$/, "")}/${folder}`;
-  const args = ["copy", join(itemDir(loaded.id), LAYOUT.exportDir), remote, "--immutable"];
+  const root = env.DRIVE_EXPORT_ROOT.trim().replace(/\/+$/, "");
+  if (!root || root.split("/").includes("..")) return fail("DRIVE_EXPORT_ROOT is invalid");
+  const remote = `${env.GDRIVE_REMOTE}:${root}/${folder}`;
+  const args = ["copy", join(itemDir(loaded.id), LAYOUT.exportDir), remote, "--immutable", "--exclude", "receipt.json"];
   for (const pattern of CONTRACT.exportDeny) args.push("--exclude", pattern);
   const copy = spawnSync("rclone", args, { stdio: "inherit", env });
   if (copy.status !== 0) return fail("rclone copy failed");
