@@ -13,6 +13,7 @@ Read this file, the assigned brief and current status only.
 - `bash scripts/doctor.sh` checks the local environment.
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
+- Unsure which skill? Run `bash scripts/select.sh "<task>"` and load only the top hit's SKILL.md. NO_MATCH (exit 1) -> route per house-rules; never guess.
 
 ## Boundaries
 - One owner per task. Concurrent writers each use their own worktree
