@@ -34,6 +34,9 @@ service-account*.json
 .gnupg/
 .config/
 
+# Generated skill index (absolute machine paths; regenerate locally)
+catalog/
+
 # Logs, caches, local tool state
 *.log
 logs/
@@ -52,3 +55,4 @@ Thumbs.db
 *.orig
 *.rej
 npm-debug.log*
+
