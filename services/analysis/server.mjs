@@ -9,10 +9,16 @@ const root = new URL("../../", import.meta.url);
 const routes = new Map([
   ["GET /health", () => ({ status: 200, body: { ok: true, service: "analysis" } })],
   ["GET /v1/domain", () => ({ status: 200, body: domainSnapshot() })],
-  ["POST /v1/analyze", (payload) => ({
-    status: 200,
-    body: analyzeText(String(payload.text ?? ""), { exists: scriptExists }),
-  })],
+  ["POST /v1/analyze", (payload) => {
+    const text = payload.text ?? "";
+    if (typeof text !== "string") {
+      throw Object.assign(new Error("bad_text"), { status: 400 });
+    }
+    return {
+      status: 200,
+      body: analyzeText(text, { exists: scriptExists }),
+    };
+  }],
   ["POST /v1/stage", (payload) => ({
     status: 200,
     body: adviseStage(payload.signals ?? {}),
@@ -57,16 +63,23 @@ function readJson(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
+    let settled = false;
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
     req.on("data", (chunk) => {
+      if (settled) return;
       size += chunk.length;
       if (size > MAX_BODY) {
-        reject(Object.assign(new Error("too_large"), { status: 413 }));
-        req.destroy();
+        fail(Object.assign(new Error("too_large"), { status: 413 }));
         return;
       }
       chunks.push(chunk);
     });
     req.on("end", () => {
+      if (settled) return;
       const raw = Buffer.concat(chunks).toString("utf8");
       if (raw.length === 0) {
         resolve({});
@@ -83,7 +96,7 @@ function readJson(req) {
         reject(Object.assign(new Error("bad_json"), { status: 400 }));
       }
     });
-    req.on("error", reject);
+    req.on("error", fail);
   });
 }
 

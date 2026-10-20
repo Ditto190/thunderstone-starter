@@ -5,7 +5,7 @@ const CHECKS = {
   "script-ref": scriptRefFindings,
 };
 
-const SCRIPT_REF = /(?<![\w./-])scripts\/[A-Za-z0-9._/-]+/g;
+const SCRIPT_REF = /(?<![\w./-])scripts\/[A-Za-z0-9._/-]*[A-Za-z0-9_-]/g;
 
 export function domainSnapshot() {
   return {

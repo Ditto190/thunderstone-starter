@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { adviseStage, analyzeText } from "../services/analysis/analyze.mjs";
 import { startServer } from "../services/analysis/server.mjs";
@@ -31,6 +32,23 @@ test("clean default branch is build", () => {
 
 test("unknown signals are ignored", () => {
   assert.equal(adviseStage({ madeUp: true }).stage, null);
+});
+
+test("sentence punctuation is not part of a script path", () => {
+  const report = analyzeText("See scripts/doctor.sh.", {
+    exists: (rel) => rel === "scripts/doctor.sh",
+  });
+  assert.deepEqual(report.findings, []);
+});
+
+test("documented starter scripts are registered", () => {
+  const text = [
+    "bash scripts/install-desktop.sh",
+    "node scripts/env-run.mjs bash scripts/export-drive.sh",
+    "bash scripts/checkpoint.sh",
+  ].join("\n");
+  const report = analyzeText(text, { exists: () => true });
+  assert.deepEqual(report.findings, []);
 });
 
 test("comment markers and missing scripts become findings", () => {
@@ -66,7 +84,33 @@ test("http domain, analyze, and unknown route", async () => {
     assert.equal(findings[0].rule, "escape-hatch");
     const missing = await fetch(`${base}/v1/nope`);
     assert.equal(missing.status, 404);
+    const empty = await fetch(`${base}/v1/analyze`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    assert.equal(empty.status, 200);
+    const badText = await fetch(`${base}/v1/analyze`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: { toString: false } }),
+    });
+    assert.equal(badText.status, 400);
+    const oversized = await fetch(`${base}/v1/analyze`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "x".repeat(70 * 1024) }),
+    });
+    assert.equal(oversized.status, 413);
   } finally {
     await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   }
+});
+
+test("cli does not invent a dirty stage", () => {
+  const result = spawnSync(process.execPath, ["services/analysis/cli.mjs", "README.md"], {
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).stage, null);
 });
