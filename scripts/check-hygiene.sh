@@ -58,6 +58,11 @@ while IFS='|' read -r sha an ae cn ce subj; do
   # one Actions checked out (GITHUB_SHA), so a look-alike commit elsewhere in history can't bypass the check.
   if [ -n "${GITHUB_SHA:-}" ] && [ "$sha" = "$GITHUB_SHA" ] && [ "$cn" = "GitHub" ] \
      && printf '%s' "$subj" | grep -Eq '^Merge [0-9a-f]{40} into [0-9a-f]{40}$'; then continue; fi
+  # GitHub App commits use the app's [bot] noreply identity. They are already
+  # on published branches and cannot be rewritten without a force push.
+  if printf '%s' "$an" | grep -Eq '\[bot\]$' \
+     && printf '%s' "$ae" | grep -Eq '^[0-9]+\+[^@[:space:]]+\[bot\]@users\.noreply\.github\.com$' \
+     && [ "$an" = "$cn" ] && [ "$ae" = "$ce" ]; then continue; fi
   ok_author=0; ok_committer=0
   if [ "$an" = "$alias_name" ] && printf '%s' "$ae" | grep -Eq "^([0-9]+\\+)?Ditto190@users\\.noreply\\.github\\.com$"; then ok_author=1; fi
   if printf '%s' "$ae" | grep -Eq "$bot_email"; then ok_author=1; fi

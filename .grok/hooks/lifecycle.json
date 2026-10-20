@@ -1,0 +1,60 @@
+{
+  "hooks": {
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".cursor/hooks/lifecycle.sh PermissionDenied",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".cursor/hooks/lifecycle.sh StopFailure",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "StopCancelled": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".cursor/hooks/lifecycle.sh StopCancelled",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".cursor/hooks/lifecycle.sh PostCompact",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".cursor/hooks/lifecycle.sh Notification",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

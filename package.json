@@ -2,12 +2,17 @@
   "name": "thunderstone-vm-starter",
   "version": "1.0.0",
   "private": true,
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "prepare": "node scripts/prepare.mjs",
     "test": "bash scripts/validate.sh",
     "lint": "shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh",
     "format:check": "git diff --check"
   },
-  "devDependencies": { "husky": "9.1.7" }
+  "devDependencies": {
+    "@cursor/sdk": "1.0.37",
+    "husky": "9.1.7"
+  }
 }
