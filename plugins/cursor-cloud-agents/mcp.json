@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "cursor-cloud-agents": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CURSOR_PLUGIN_ROOT}/server/index.mjs"],
+      "env": {
+        "CURSOR_API_KEY": "${CURSOR_API_KEY}"
+      }
+    }
+  }
+}

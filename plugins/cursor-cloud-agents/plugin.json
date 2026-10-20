@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "cursor-cloud-agents",
+  "version": "0.1.0",
+  "description": "Local stdio MCP wrapper for the Cursor Cloud Agents v1 REST API: launch, status, follow-up, list, cancel and artifacts, with launch guards.",
+  "author": { "name": "Ditto190" },
+  "license": "MIT",
+  "keywords": ["cursor", "cloud-agents", "mcp", "stdio"]
+}
