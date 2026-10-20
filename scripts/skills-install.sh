@@ -27,6 +27,35 @@ DEST=".agents/skills"
 CACHE=".state/skills-src"
 skip=",${SKILLS_SKIP:-},"
 
+# prune entries are relative paths under the skill dir. Reject escapes before rm.
+safe_prune() {
+  local rel="$1" base="$2" part
+  [ -n "$rel" ] || return 0
+  case "$rel" in
+    /*|~*|.|..) echo "reject prune path: $rel" >&2; return 1 ;;
+  esac
+  IFS=/ read -ra parts <<< "$rel"
+  for part in "${parts[@]}"; do
+    case "$part" in ""|.|..) echo "reject prune path: $rel" >&2; return 1 ;; esac
+  done
+  rm -rf "${base:?}/$rel"
+}
+
+# Drop skills this installer marked for a skipped source. Unmanaged dirs stay.
+remove_skipped() {
+  local id="$1" marker mid dest
+  [ "$MODE" = "--list" ] && return 0
+  [ -d "$DEST" ] || return 0
+  shopt -s nullglob
+  for marker in "$DEST"/*/.thunderstone-managed; do
+    read -r mid _ _ < "$marker" || true
+    [ "$mid" = "$id" ] || continue
+    dest="${marker%/.thunderstone-managed}"
+    case "$dest" in "$DEST"/*) rm -rf "$dest"; echo "removed skipped $id/${dest##*/}" ;; esac
+  done
+  shopt -u nullglob
+}
+
 fetch_source() { # id repo ref
   local dir="$CACHE/$1"
   mkdir -p "$dir"
@@ -51,6 +80,12 @@ skill_names() { # id -> skill directory names selected by the manifest
   fi | grep -vxFf <(jq -r --arg id "$id" '.sources[] | select(.id == $id) | (.exclude // [])[]' "$MANIFEST") || true
 }
 
+# Tests source this file to call safe_prune / remove_skipped. Normal runs ignore the variable.
+if [ "${SKILLS_INSTALL_SOURCE_ONLY:-}" = 1 ]; then
+  if [ "${BASH_SOURCE[0]}" != "$0" ]; then return 0; fi
+  exit 0
+fi
+
 if [ "$MODE" = "--update" ]; then
   tmp="$(mktemp)"
   cp "$MANIFEST" "$tmp"
@@ -67,7 +102,7 @@ mkdir -p "$DEST"
 declare -A seen=()
 installed=0
 while IFS=' ' read -r id repo ref; do
-  [[ "$skip" == *",$id,"* ]] && { echo "skip source $id"; continue; }
+  [[ "$skip" == *",$id,"* ]] && { echo "skip source $id"; remove_skipped "$id"; continue; }
   fetch_source "$id" "$repo" "$ref"
   path="$(jq -r --arg id "$id" '.sources[] | select(.id == $id) | .path' "$MANIFEST")"
   while IFS= read -r name; do
@@ -86,7 +121,7 @@ while IFS=' ' read -r id repo ref; do
     rm -rf "$target"
     cp -R "$src" "$target"
     while IFS= read -r prune; do
-      if [ -n "$prune" ]; then rm -rf "${target:?}/$prune"; fi
+      safe_prune "$prune" "$target"
     done < <(jq -r --arg id "$id" '.sources[] | select(.id == $id) | (.prune // [])[]' "$MANIFEST")
     printf '%s %s %s\n' "$id" "$repo" "$ref" > "$target/.thunderstone-managed"
     installed=$((installed + 1))

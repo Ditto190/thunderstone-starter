@@ -15,7 +15,7 @@ Excluded on purpose: Anthropic's `docx`, `pdf`, `pptx` and `xlsx` skills are pro
 
 - `bash scripts/skills-install.sh --list` shows what would install.
 - `bash scripts/skills-install.sh --update` moves each source to its upstream HEAD and rewrites the manifest. Review the diff, because skills can carry scripts that agents run.
-- `SKILLS_SCOPE=user` installs to `~/.agents/skills` instead. `SKILLS_SKIP=anthropic,last30days` skips sources.
+- `SKILLS_SCOPE=user` installs to `~/.agents/skills` instead. `SKILLS_SKIP=anthropic,last30days` skips those sources and removes skills this installer previously marked for them. Skills without a `.thunderstone-managed` marker stay.
 - Skills you wrote yourself in `.agents/skills/` are never overwritten; managed ones carry a `.thunderstone-managed` marker.
 
 ## Context cost

@@ -38,8 +38,8 @@ function detectProfile(env) {
     if (!PROFILES.includes(wanted)) throw new Error(`THUNDERSTONE_PROFILE must be one of: ${PROFILES.join(", ")}`);
     return wanted;
   }
-  // The Grok Bot VM is an Xfce desktop; anything else defaults to the lean dev profile.
-  return /xfce/i.test(env.XDG_CURRENT_DESKTOP ?? "") ? "vm" : "dev";
+  // vm (computer-use) only when THUNDERSTONE_PROFILE=vm is set. An Xfce desktop is not enough.
+  return "dev";
 }
 
 const list = (value) => (value ?? "").split(",").map((s) => s.trim()).filter(Boolean);

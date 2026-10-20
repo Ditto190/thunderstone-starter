@@ -38,7 +38,7 @@ Source of truth: `config/mcp/servers.json`. A server is written only when its pr
 | `cua-driver` (trycua) | vm | on | installed by `--install` |
 | `perplexity-computer` (delegate tasks, OAuth) | dev, vm | off | enable with `MCP_ENABLE=perplexity-computer` |
 
-Profiles: `vm` is the Grok Bot VM and `dev` is everything else. The profile comes from `THUNDERSTONE_PROFILE`, or defaults to `vm` on an Xfce desktop. `scripts/install-desktop.sh` writes `THUNDERSTONE_PROFILE=vm` to `~/.config/thunderstone/env` once.
+Profiles: `vm` is the Grok Bot VM and `dev` is everything else. The profile is `dev` unless `THUNDERSTONE_PROFILE=vm` is set. `scripts/install-desktop.sh` writes that once to `~/.config/thunderstone/env`, and leaves it unset when `.env.local` already chooses a profile (the user env file is loaded first).
 
 Toggles: `MCP_ENABLE=id,id` and `MCP_DISABLE=id,id`. Each enabled server adds tool definitions to every request, so leave rarely used ones off.
 

@@ -20,9 +20,17 @@ run() { "$@" || warn "step failed (continuing): $*"; }
 profile() { node scripts/env-run.mjs node scripts/mcp-sync.mjs --print-profile 2>/dev/null || echo dev; }
 docker_ok() { command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; }
 
-sync_mcp() { step "syncing MCP configs"; run node scripts/env-run.mjs node scripts/mcp-sync.mjs; }
+sync_mcp() {
+  step "syncing MCP configs"
+  local -a cmd=(node scripts/env-run.mjs node scripts/mcp-sync.mjs)
+  [ -n "${AGENT_SETUP_OUT:-}" ] && cmd+=(--out-dir "$AGENT_SETUP_OUT")
+  run "${cmd[@]}"
+}
+
+dry() { [ "${AGENT_SETUP_DRY:-0}" = 1 ]; }
 
 install_agent_browser() {
+  if dry; then step "dry: skip agent-browser install"; return 0; fi
   command -v agent-browser >/dev/null 2>&1 && return 0
   step "installing agent-browser@$AGENT_BROWSER_VERSION into ~/.local"
   run npm install -g --prefix "$HOME/.local" --no-audit --no-fund "agent-browser@$AGENT_BROWSER_VERSION"
@@ -32,6 +40,7 @@ install_agent_browser() {
 
 # Cua Driver is for the Grok Bot VM profile only. The installer is saved and run from .state, like the Cursor installer.
 install_cua() {
+  if dry; then step "dry: skip Cua Driver install"; return 0; fi
   [ "${SKIP_CUA_INSTALL:-0}" = 1 ] && return 0
   command -v cua-driver >/dev/null 2>&1 && return 0
   if [ "$(uname -s)" != Linux ] || [ "$(uname -m)" != x86_64 ]; then
@@ -51,6 +60,7 @@ install_cua() {
 }
 
 start_browser() {
+  if dry; then step "dry: skip CloakBrowser"; return 0; fi
   if docker_ok; then
     step "starting CloakBrowser sidecar"
     run bash scripts/browser-up.sh
@@ -85,8 +95,9 @@ doctor() {
 case "$MODE" in
   --install)
     install_agent_browser
-    if docker_ok; then run docker pull "${CLOAK_IMAGE:-cloakhq/cloakbrowser}"; fi
-    run bash scripts/skills-install.sh
+    if dry; then step "dry: skip image pull and skill fetch"
+    elif docker_ok; then run docker pull "${CLOAK_IMAGE:-cloakhq/cloakbrowser}"; fi
+    if dry; then run bash scripts/skills-install.sh --check; else run bash scripts/skills-install.sh; fi
     [ "$(profile)" = vm ] && install_cua
     sync_mcp
     ;;
