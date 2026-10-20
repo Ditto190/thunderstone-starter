@@ -10,7 +10,11 @@ command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
 shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
-bash tests/cursor-worker-test.sh
+CURSOR_WORKER_NAME=grok-shared \
+CURSOR_WORKER_SESSION="thunderstone-worker-test-$$" \
+CURSOR_WORKER_DIR="$PWD" \
+CURSOR_WORKER_AUTOSTART=0 \
+  bash tests/cursor-worker-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'
 entry="$(bash scripts/changelog-entry.sh --from-json tests/fixtures/pr.json)"

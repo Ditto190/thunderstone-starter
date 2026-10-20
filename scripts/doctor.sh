@@ -12,7 +12,7 @@ done
 if command -v systemctl >/dev/null && systemctl --user show-environment >/dev/null 2>&1; then
   echo "User systemd reachable; not required by starter."
 else echo "No reachable user systemd; tmux + XDG autostart are used."; fi
-if [[ -x scripts/cursor-worker.sh ]]; then
+if [[ -f scripts/cursor-worker.sh ]]; then
   echo "--- cursor-worker ---"
   bash scripts/cursor-worker.sh status || true
 fi

@@ -68,10 +68,22 @@ start_worker() {
     return 0
   fi
 
-  local inner="cd \"$ROOT\" && exec node scripts/env-run.mjs agent worker start --name \"$WORKER_NAME\" --worker-dir \"$WORKER_DIR\""
+  # tmux runs this string with the user's shell -c. Quote each argv so
+  # names or directories that contain spaces or double quotes stay one argument.
+  local -a launch=(
+    node "$ROOT/scripts/env-run.mjs"
+    agent worker start
+    --name "$WORKER_NAME"
+    --worker-dir "$WORKER_DIR"
+  )
   if [ "$WORKER_COMPUTER_USE" = "1" ]; then
-    inner+=" --computer-use"
+    launch+=(--computer-use)
   fi
+  local inner arg
+  printf -v inner 'cd %q && exec' "$ROOT"
+  for arg in "${launch[@]}"; do
+    printf -v inner '%s %q' "$inner" "$arg"
+  done
 
   tmux new-session -d -s "$WORKER_SESSION" -c "$ROOT" "$inner"
   echo "Started Cursor worker name=$WORKER_NAME session=$WORKER_SESSION dir=$WORKER_DIR"
