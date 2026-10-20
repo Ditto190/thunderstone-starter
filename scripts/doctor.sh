@@ -12,4 +12,6 @@ done
 if command -v systemctl >/dev/null && systemctl --user show-environment >/dev/null 2>&1; then
   echo "User systemd reachable; not required by starter."
 else echo "No reachable user systemd; tmux + XDG autostart are used."; fi
+# Core browser path (agent-browser) must fail this doctor. Remaining checks still run.
+bash scripts/agent-setup.sh --doctor || failed=1
 exit "$failed"

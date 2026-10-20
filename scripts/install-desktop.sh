@@ -15,4 +15,14 @@ write_entry() {
 }
 write_entry "$HOME/.config/autostart/thunderstone.desktop" false resume.sh
 write_entry "$HOME/.local/share/applications/thunderstone.desktop" true terminal.sh
+# Record the VM profile once. User env is loaded before .env.local, so do not
+# write vm when the project file already chooses a profile.
+env_file="$HOME/.config/thunderstone/env"
+project_env="${THUNDERSTONE_ENV_LOCAL:-$ROOT/.env.local}"
+mkdir -p "$(dirname "$env_file")"
+if [ -f "$project_env" ] && grep -qs '^THUNDERSTONE_PROFILE=' "$project_env"; then
+  echo "Leaving $env_file unchanged; $project_env already sets THUNDERSTONE_PROFILE."
+elif ! grep -qs '^THUNDERSTONE_PROFILE=' "$env_file"; then
+  (umask 077; printf 'THUNDERSTONE_PROFILE=vm\n' >> "$env_file")
+fi
 echo "Installed application launcher and desktop-login autostart."

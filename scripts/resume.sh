@@ -10,4 +10,6 @@ flock -w 15 9
 if ! tmux has-session -t '=thunderstone' 2>/dev/null; then
   tmux new-session -d -s thunderstone -c "$ROOT" 'exec bash -l' 9>&-
 fi
+# Start CloakBrowser (if Docker is available) and refresh MCP configs. Best effort; no paid task is started.
+bash "$ROOT/scripts/agent-setup.sh" --start 9>&- || true
 echo "Ready: tmux attach -t thunderstone. No paid agent task started."

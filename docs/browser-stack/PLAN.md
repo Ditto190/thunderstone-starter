@@ -32,7 +32,7 @@ cp config/browser/mcp.example.json .cursor/mcp.json   # gitignored; secrets via 
 CDP loopback only. One VM/profile per bot. Secrets via `scripts/env-run.mjs`, never in config. Human approval is required BEFORE executing MFA, posts, purchases, uploads, JS eval, account changes or legal acceptance, regardless of routing tier. Respect site terms, robots and rate limits.
 
 ## Open verification (next agent)
-- Confirm `agent-browser mcp --tools` flag names and `cloakhq/cloakbrowser` image/cmd against current docs (Context7).
+- Verified 2026-10-10 (Context7 and upstream README): `agent-browser mcp --tools` profiles are core, network, state, debug, tabs, react, mobile, all; `cloakhq/cloakbrowser` with `cloakserve --headless=false --idle-timeout` matches `scripts/browser-up.sh`. Note: the agent-browser npm package declares node >= 24; bootstrap installs Node 22, so expect an engines warning.
 - Confirm Rustwright MCP binary name; currently placeholder `rustwright-mcp`.
 - CloakBrowser binary licence/concurrency limits before scaling beyond pilot.
 
