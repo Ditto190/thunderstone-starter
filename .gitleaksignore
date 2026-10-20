@@ -1,0 +1,2 @@
+# Fake fixture in the selection-toolkit test (not a secret); later commits split the literal.
+c71e34a00e0c104ef980efad1c157b52a5d5fd7e:scripts/tests/select-test.sh:generic-api-key:199
