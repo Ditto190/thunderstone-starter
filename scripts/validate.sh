@@ -15,5 +15,6 @@ CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!==
 entry="$(bash scripts/changelog-entry.sh --from-json tests/fixtures/pr.json)"
 grep -qF "(#7) [ci, security]" <<<"$entry"
 bash scripts/tests/select-test.sh
+bash scripts/tests/skills-sync-test.sh
 test -f CHANGELOG.md
 echo "Infrastructure validation passed."

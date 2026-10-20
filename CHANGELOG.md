@@ -8,6 +8,7 @@ time, copy the draft notes into this file in a normal PR authored by the `Ditto1
 ## [Unreleased]
 
 ### Added
+- Shared skills sync check: scripts/skills-sync-check.sh, mirror drift report and catalog pickup (#17)
 - Agent-selection toolkit core: scripts/catalog.mjs, scripts/select.sh, acceptance tests (#15)
 - Stage-aware sessionStart advisory hook (`.cursor/hooks/stage-router.sh`) routing Monitor > Triage > Build, with fixture tests and `docs/stage-router.md` (#8)
 - CI, security and hygiene workflows with pinned actions and required checks (#1)
