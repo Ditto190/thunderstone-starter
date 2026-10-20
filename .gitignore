@@ -58,3 +58,4 @@ Thumbs.db
 *.orig
 *.rej
 npm-debug.log*
+workspace/reports/
