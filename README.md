@@ -14,7 +14,7 @@ bash scripts/resume.sh
 
 The first command is POSIX sh: it can install Bash even when Bash is missing. Supports Debian/Ubuntu apt, Fedora dnf and Alpine apk; requires root or noninteractive sudo for missing OS packages. It does not replace the desktop, init system, shell defaults, or install Docker. If privileges are unavailable it stops with an actionable error.
 
-Tools installed from the distribution repositories: Bash, tmux, Git, curl, certificates, unzip/zip, jq, ripgrep, fzf, Python, Node/npm, rclone, ShellCheck, make and compiler tools. Package versions follow the VM distribution repositories; this is not a byte-identical pinned OS image. Python dependencies are unnecessary. If Node is below 22, bootstrap installs Node 22.23.2 user-locally from nodejs.org and checks the archive against the HTTPS-published checksums. It never overwrites an existing local binary. Alpine requires a sufficiently recent distro Node instead. Cursor CLI uses the official downloaded installer only when missing; the installer is retained locally for audit. Grok CLI is detected but not installed through guessed marketplace commands.
+Tools installed from the distribution repositories: Bash, tmux, Git, curl, certificates, unzip/zip, jq, ripgrep, fzf, Python, rclone, ShellCheck, make and compiler tools. Package versions follow the VM distribution repositories; this is not a byte-identical pinned OS image. Python dependencies are unnecessary. Distro Node and npm are installed only when Node 22+ is not already on PATH, so an existing Node 22 is left alone. If Node is below 22, bootstrap installs Node 22.23.2 user-locally from nodejs.org and checks the archive against the HTTPS-published checksums. It never overwrites an existing local binary. Alpine requires a sufficiently recent distro Node instead. Cursor CLI uses the official downloaded installer only when missing; the installer is retained locally for audit. Grok CLI is detected but not installed through guessed marketplace commands.
 
 Xfce is a lightweight desktop environment, not a shell or operating system. Keep it: https://www.xfce.org/about
 
@@ -26,7 +26,7 @@ Resume uses a kernel file lock, keeps one `thunderstone` session, and never star
 
 ## Cursor Cloud
 
-Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
+Promote the extracted project to GitHub when active development starts. The included `.cursor/environment.json` runs bootstrap for builds and resume on agent start. In multi-repo Cloud environments, install and start run with working directory `/agent`, so those commands use absolute paths under `/agent/repos/thunderstone-starter/`. Do not copy this package's package.json over an existing application's package.json; merge scripts and dev dependencies and retain the application's lockfile.
 
 Set runtime secrets in Cursor settings. Build secrets are separate and should be supplied only if installation needs them. Cursor install runs during a Build; start runs on boot: https://cursor.com/docs/cloud-agent/setup
 
