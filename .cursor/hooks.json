@@ -33,6 +33,11 @@
       {
         "command": ".cursor/hooks/collection-metrics.sh"
       }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
     ]
   }
 }

@@ -4,38 +4,60 @@ set -euo pipefail
 ROOT="$(cd "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 FIX="${ROOT}/tests/fixtures/handoff"
-TMP="${ROOT}/workspace/handoffs/_invariant_test"
-rm -rf "$TMP"
-mkdir -p "$TMP/handoff_id"
+TMP="$(mktemp -d)"
+export HANDOFF_ROOT="${TMP}/handoffs"
+cleanup() { rm -rf "$TMP"; }
+trap cleanup EXIT
 
-# Gate: duplicate receipt ignored
-R1="${FIX}/receipt-investigator.json"
-cp "$R1" "$TMP/handoff_id/r1.json"
-bash scripts/handoff-receipt.sh record "$TMP/handoff_id/r1.json" >/dev/null
-out2="$(bash scripts/handoff-receipt.sh record "$TMP/handoff_id/r1.json")"
+run_id="inv-$(date +%s)-$$"
+receipt="${TMP}/r1.json"
+jq --arg id "$run_id" '.handoff_id=$id | .receipt_id="inv-1"' "$FIX/receipt-investigator.json" >"$receipt"
+bash scripts/handoff-receipt.sh record "$receipt" >/dev/null
+out2="$(bash scripts/handoff-receipt.sh record "$receipt")"
 grep -q duplicate_ignored <<<"$out2"
 
-# Gate: failed validation blocks promotion (no verifier accepted)
-hid="pilot-blocked"
-mkdir -p "workspace/handoffs/${hid}"
-cp "${FIX}/receipt-investigator.json" "workspace/handoffs/${hid}/inv.json"
-jq '.role="implementer"|.status="patch_ready"|.receipt_id="impl-1"' "${FIX}/receipt-investigator.json" \
-  >"workspace/handoffs/${hid}/impl.json"
-if bash scripts/handoff-receipt.sh check-promotion "$hid" 2>/dev/null; then
+if bash scripts/handoff-receipt.sh record <(jq '.handoff_id="../escape"' "$receipt") 2>/dev/null; then
+  echo "expected unsafe handoff_id rejection"
+  exit 1
+fi
+test ! -e "${TMP}/escape"
+
+blocked="${TMP}/blocked.json"
+jq --arg id "${run_id}-blocked" \
+  '.handoff_id=$id | .role="implementer" | .status="patch_ready" | .receipt_id="impl-1"' \
+  "$FIX/receipt-investigator.json" >"$blocked"
+bash scripts/handoff-receipt.sh record "$blocked" >/dev/null
+if bash scripts/handoff-receipt.sh check-promotion "${run_id}-blocked" 2>/dev/null; then
   echo "expected promotion_blocked"
   exit 1
 fi
 
-# Gate: accepted verifier allows promotion
-hid2="pilot-ok"
-mkdir -p "workspace/handoffs/${hid2}"
-cp "${FIX}/receipt-investigator.json" "workspace/handoffs/${hid2}/inv.json"
-jq '.role="verifier"|.status="accepted"|.receipt_id="ver-1"|.validation={"passed":true,"runner":"tests"}' \
-  "${FIX}/receipt-investigator.json" >"workspace/handoffs/${hid2}/ver.json"
-bash scripts/handoff-receipt.sh check-promotion "$hid2" | grep -q promotion_allowed
+bad_val="${TMP}/bad-val.json"
+jq --arg id "${run_id}-badval" \
+  '.handoff_id=$id | .role="verifier" | .status="accepted" | .receipt_id="ver-bad" | .validation={"passed":false,"runner":"tests"}' \
+  "$FIX/receipt-investigator.json" >"$bad_val"
+bash scripts/handoff-receipt.sh record "$bad_val" >/dev/null
+if bash scripts/handoff-receipt.sh check-promotion "${run_id}-badval"; then
+  echo "expected failed validation to block promotion"
+  exit 1
+fi
 
-# Resume fixture: interrupted handoff dir still readable
-test -f "workspace/handoffs/${hid2}/ver.json"
+string_true="${HANDOFF_ROOT}/${run_id}-string"
+mkdir -p "$string_true"
+jq --arg id "${run_id}-string" \
+  '.handoff_id=$id | .role="verifier" | .status="accepted" | .receipt_id="ver-str" | .validation.passed="true"' \
+  "$FIX/receipt-investigator.json" >"${string_true}/receipt-ver-str.json"
+if bash scripts/handoff-receipt.sh check-promotion "${run_id}-string"; then
+  echo "expected string validation.passed to block promotion"
+  exit 1
+fi
 
-rm -rf "$TMP" "workspace/handoffs/pilot-blocked" "workspace/handoffs/pilot-ok" "workspace/handoffs/pilot-fixture"
+ok="${TMP}/ok.json"
+jq --arg id "${run_id}-ok" \
+  '.handoff_id=$id | .role="verifier" | .status="accepted" | .receipt_id="ver-1" | .validation={"passed":true,"runner":"tests"}' \
+  "$FIX/receipt-investigator.json" >"$ok"
+bash scripts/handoff-receipt.sh record "$ok" >/dev/null
+bash scripts/handoff-receipt.sh check-promotion "${run_id}-ok" | grep -q promotion_allowed
+test -f "${HANDOFF_ROOT}/${run_id}-ok/receipt-ver-1.json"
+
 echo "agent-collection-invariants passed"
