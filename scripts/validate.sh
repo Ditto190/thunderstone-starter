@@ -10,6 +10,7 @@ command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
 shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
+bash docs/thunderstone/scripts/tests/health-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'
 entry="$(bash scripts/changelog-entry.sh --from-json tests/fixtures/pr.json)"
