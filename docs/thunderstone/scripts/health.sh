@@ -26,10 +26,16 @@
 #   HEALTH_TIMEOUT=seconds  per external call (default 20)
 #   HEALTH_MIN_INTERVAL_MIN=minutes  min age of the last green run before --bg reruns (default 30)
 #   HEALTH_SESSION_ID       session id for the guard marker
-WORKSPACE="${WORKSPACE_ROOT:-/workspace}"
+# VM layout is <workspace>/thunderstone/scripts. Honour WORKSPACE_ROOT; otherwise
+# walk up from this file. No hardcoded workspace or home path.
+if [ -n "${WORKSPACE_ROOT:-}" ]; then
+  WORKSPACE=$WORKSPACE_ROOT
+else
+  WORKSPACE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+fi
 set -uo pipefail
 export TZ="Australia/Sydney"
-export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+export PATH="/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 
 SELF="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/$(basename -- "${BASH_SOURCE[0]}")"
 STARTER="${HEALTH_STARTER:-$WORKSPACE/thunderstone-starter}"

@@ -24,7 +24,7 @@
 project files > Context7 / xAI docs > GitHub > GitLab > Githits > Drive > Serena (code nav) > web > computer-use LAST (visual QA, UI-only auth, one-offs; state target/actions/stop first).
 
 ## Heavy work (Cursor CLI assumed available)
-Anything beyond a 1-2 command check = brief file in $WORKSPACE/thunderstone/briefs/ -> Runner runs `bash scripts/run-task.sh <brief>` (Cursor CLI `agent -p`) as a separate detached process inside a tmux session in $WORKSPACE/thunderstone-starter -> evidence in $WORKSPACE/thunderstone/artifacts/ -> Runner replies path + exit code + <=5 lines. No multi-step investigation in chat. No bot does repo analysis itself.
+Anything beyond a 1-2 command check = brief file in $WORKSPACE/thunderstone/briefs/ -> Runner runs `bash scripts/run-task.sh <brief>` (wrapper: `env -u CURSOR_AGENT agent -p --force`, shell-enabled) as a separate detached process inside a tmux session in $WORKSPACE/thunderstone-starter -> evidence in $WORKSPACE/thunderstone/artifacts/ -> Runner replies path + exit code + <=5 lines. No multi-step investigation in chat. No bot does repo analysis itself.
 Graceful fallback: if `agent` exits with a usage-limit error, STOP, record it in the artifact, and notify Grok Bot once. No retry loops. No silent Grok-side fallback for big jobs; DT decides (wait for reset, upgrade, or an explicit one-off exception).
 
 ## Compression stack (applies to all messaging and routine rules; no other rules assumed)

@@ -10,7 +10,11 @@
 #     once, do not wait for it, and read $WORKSPACE/thunderstone/state/health-last.json only if it fails or a task needs the VM.
 #   - A once-per-session / 30-minute min-interval guard in health.sh stops repeated turns from rerunning it.
 #   This script is the manual, foreground variant: run it by hand when you want the result printed now.
-WORKSPACE="${WORKSPACE_ROOT:-/workspace}"
+if [ -n "${WORKSPACE_ROOT:-}" ]; then
+  WORKSPACE=$WORKSPACE_ROOT
+else
+  WORKSPACE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+fi
 set -uo pipefail
 HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 START_HERE="${START_HERE_PATH:-$WORKSPACE/thunderstone/.context/START-HERE.md}"

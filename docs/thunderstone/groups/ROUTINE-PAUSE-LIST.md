@@ -8,13 +8,13 @@ Rule: no cron or time-based routines; checks are event-triggered (sessionStart h
 | Chief Thunderstone | runner-terminal-smoke-brief (10:30 wkdy) | PAUSE; Runner smoke only as an on-demand brief |
 | Chief Lorekeeper (e7b5b3b8) | lorekeeper-morning-context-health (08:25), lorekeeper-evening-registry-sync (16:45) | PAUSE; covered by health.sh; registry sync on demand when Chief briefs it |
 | Chief Lorekeeper | lorekeeper-drive-freshness-pulse (15:00, never ran) | PAUSE; on-demand only |
-| Git-Scout (08fb189f) | weekday-lean-git-status (16:30 wkdy) | PAUSE; Scout wakes only when health.sh reports a dirty tree/unexpected remote |
-| Executive Assistant (f9067a3d) | weekly-investment-gmail-scan (Mon 08:00) | DT decides: it is time-based; keep (DT wanted it) or convert to on-demand "run the investment scan" |
+| Git-Scout (08fb189f) | weekday-lean-git-status (16:30 wkdy) | PAUSE. health.sh only counts dirty files; it does not fail on a dirty tree, check remotes, or wake Scout. |
+| Executive Assistant (f9067a3d) | weekly-investment-gmail-scan (Mon 08:00) | Approved exception: the only time-based routine still allowed, because DT asked to keep this scan. Do not add others. |
 | Grok Bot (0ef89b8b) | own periodic routine not found on disk | CHECK routines UI; pause any time-based one |
 | Lingxi's Engineer Bot (81e154c6) | 30-minute PR watch (profile text; no automation file on disk) | DISABLE cadence; GitHub-event or on-demand `gh pr list` via Chief brief; unknown if a server-side routine exists, check UI |
 | Nightly Audit Engineer (08a36657) | 4am default (profile text; no automation file) | DISABLE; run only as a Runner brief on DT's request; check UI |
 | Projects Manager (7b71c6ec) | none (empty automations dir) | none; no routine |
 | Tradbot (4b5e2379), Researcher (38239e9c), Senior Developer (1761543b), Cursor-Runner (a087ceb3), dr eggbot (eaac08b1) | none on disk | none; do not create any |
 
-Result: 8 weekday model runs/day -> 0 time-based; 1 weekly (EA) pending DT.
+Result: 8 weekday model runs/day -> 0 weekday routines; 1 weekly exception (EA investment scan, DT kept it).
 Caveat: only on-disk automations were audited; server-side routines for bots without files: unknown.

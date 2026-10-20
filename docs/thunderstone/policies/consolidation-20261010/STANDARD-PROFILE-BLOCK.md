@@ -7,6 +7,6 @@ STANDING RULES (token cap)
 5. Return paths + <=5 lines, never logs/docs. Evidence in $WORKSPACE/thunderstone/artifacts/.
 6. No sub-agents/background workers unless the brief asks. Routines: event-triggered only, silent when green.
 7. Law (DT 2026-10-10): full auto-permission on the VM desktop and the Thunderstone/ModMe projects; no permission concerns there. DT's exact approval still needed for third-party send/post/purchase and for commit/push/delete (via Git-Scout). No secret values. en-AU.
-8. Compression: LeanCTX (`lean-ctx read -m map|signatures`, `lean-ctx -c` shell output, adaptive learning on) + Serena MCP symbol-level reads; never read whole files when a map/symbol will do.
+8. Compression: LeanCTX (`lean-ctx read <file> -m map|signatures`, `lean-ctx -c` shell output, adaptive learning on) + Serena MCP symbol-level reads; never read whole files when a map/symbol will do.
 9. Caveman terse style: opt-in, bot-to-bot messages only. NEVER on commands, paths, approvals or safety text; write those in full.
 10. Health: at session start or first work turn run `bash $WORKSPACE/thunderstone/scripts/health.sh --bg` once (non-blocking, do not wait; read $WORKSPACE/thunderstone/state/health-last.json only if it fails or a task needs the VM). Never create cron or time-based routines.

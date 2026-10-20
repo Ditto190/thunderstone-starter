@@ -4,7 +4,7 @@
 set -uo pipefail
 HS="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/health.sh"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
-export HEALTH_LOG_DIR="$T/logs" HEALTH_ARTIFACT_DIR="$T/art" HEALTH_STATE_DIR="$T/state"
+export WORKSPACE_ROOT="$T" HEALTH_LOG_DIR="$T/logs" HEALTH_ARTIFACT_DIR="$T/art" HEALTH_STATE_DIR="$T/state"
 export HEALTH_SKIP="resume,doctor,gh,agent,git"   # keep tests hermetic; disk/mem still real
 cnt() { find "$1" -maxdepth 1 -type f -name "${2:-*}" 2>/dev/null | wc -l; }
 pass=0; failn=0
@@ -17,6 +17,11 @@ loglines() { cat "$T"/logs/health-2*.log 2>/dev/null | wc -l; }
 # 1. No weekday/time logic: the script holds none, and a green run is silent whatever the day
 check "no weekday guard in health.sh" "$(grep -cE 'date \+%u|HEALTH_FORCE_DAY|weekend' "$HS")" 0
 check "no cron/timer wiring in health.sh" "$(grep -ciE 'crontab|systemd|systemctl|at -f' "$HS")" 0
+root_re='/'workspace
+check "no hardcoded workspace root" "$(grep -c "$root_re" "$HS" || true)" 0
+check "no home bin prepend" "$(grep -c 'HOME/.local/bin' "$HS" || true)" 0
+SS="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/startup.sh"
+check "startup has no hardcoded workspace root" "$(grep -c "$root_re" "$SS" || true)" 0
 reset
 out="$(HEALTH_FORCE_DAY=6 HEALTH_FORCE_FAIL=1 bash "$HS" 2>&1)"; rc=$?
 check "formerly-weekend run now executes (forced fail exits non-zero)" "$([ "$rc" -ne 0 ] && echo yes)" yes

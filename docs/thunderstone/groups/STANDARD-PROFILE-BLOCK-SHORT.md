@@ -6,6 +6,6 @@ RULES
 5 Return path + <=5 lines.
 6 No sub-agents; routines event-only, no cron.
 7 Law (DT 10-10): full auto-permission on VM + Thunderstone/ModMe; DT approval: third-party send/post/purchase, commit/push/delete; no secrets; en-AU.
-8 LeanCTX strict: lean-ctx read -m map|signatures; lean-ctx -c for shell; ctx_* MCP over raw cat/grep; no whole-file reads; adaptive learning on.
+8 LeanCTX strict: lean-ctx read <file> -m map|signatures; lean-ctx -c for shell; ctx_* MCP over raw cat/grep; no whole-file reads; adaptive learning on.
 9 Caveman: bot-to-bot only; never on commands, paths, approvals, safety text.
 10 First turn: bash $WORKSPACE/thunderstone/scripts/health.sh --bg once; no wait.

@@ -130,6 +130,7 @@ Cursor CLI docs: https://cursor.com/docs/cli/reference/configuration (approvalMo
 |---|---|---|---|
 | ~/.cursor/cli-config.json approvalMode | "allowlist" | "unrestricted" | ~/.cursor/cli-config.json.bak.20261010 (mode 600; contains login info, not printed) |
 | ~/.config/lean-ctx/config.toml shell_security | unset (default guard on) | "off" | ~/.config/lean-ctx/config.toml.bak2.20261010 |
+
 Only those two lines changed (permissions.allow list, sandbox.mode=disabled untouched).
 Verified: `$(...)` at command position now runs in the Shell tool; lean-ctx allow --list "disabled (every command is allowed)"; journal_enabled, debug_log, auto_capture, tee_mode, auto_mode_learning still true; `lean-ctx doctor` 37/37 passed (was 38/38 before shell_security off; the count drop is one fewer check, no failures).
 Caveat: unrestricted auto-approves everything for interactive `agent` (shell, MCP, fetch, file writes) with no classifier. Revert: copy the .bak files back.

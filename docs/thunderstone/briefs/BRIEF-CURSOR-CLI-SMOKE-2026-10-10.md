@@ -6,7 +6,7 @@ Goal: prove heavy work can run through the Cursor CLI on the shared computer ins
 Scope (read-only, no push, no deploy, no messages, no installs):
 1. In $WORKSPACE/thunderstone-starter, report current branch, HEAD short SHA, and `git status --short` count.
 2. List the files in scripts/ and confirm AGENTS.md exists.
-3. Write a 5-line report to $WORKSPACE/thunderstone-starter$WORKSPACE/reports/cursor-smoke-20261010.md.
+3. Write a 5-line report to $WORKSPACE/thunderstone-starter/workspace/reports/cursor-smoke-20261010.md.
 
 How to run (Runner does this, not chat analysis):
 - `tmux new-session -d -s cursor-smoke "cd $WORKSPACE/thunderstone-starter && env -u CURSOR_AGENT bash scripts/run-task.sh $WORKSPACE/thunderstone/briefs/BRIEF-CURSOR-CLI-SMOKE-2026-10-10.md > $WORKSPACE/thunderstone/artifacts/cursor-cli-smoke-20261010.log 2>&1; echo exit=\$? >> $WORKSPACE/thunderstone/artifacts/cursor-cli-smoke-20261010.log"`

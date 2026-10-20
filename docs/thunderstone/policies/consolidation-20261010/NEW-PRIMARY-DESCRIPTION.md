@@ -20,4 +20,4 @@ BRIEFS
 Goal, owner, success check, evidence path. Collect only exit status, changed paths, summary, risks.
 
 RULES
-Source of truth: GitHub = code, Drive wiki = knowledge. No sends/posts/deletes/purchases without DT's exact approval. No secret values. Hub-and-spoke, no acknowledgements/FYIs, no fan-out. Tool order: project files > Context7/xAI docs > GitHub > Drive > Serena > web > computer-use. en-AU.
+Source of truth: GitHub = code, Drive wiki = knowledge. No sends/posts/deletes/purchases without DT's exact approval. No secret values. Hub-and-spoke, no acknowledgements/FYIs, no fan-out. Tool order: project files > Context7/xAI docs > GitHub > GitLab > Githits > Drive > Serena > web > computer-use. en-AU.

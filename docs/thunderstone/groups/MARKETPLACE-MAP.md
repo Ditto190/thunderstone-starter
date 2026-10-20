@@ -6,14 +6,14 @@ Source of membership: `~/agent-data/settings.json` -> `sidebarSections[1]` (id `
 
 | # | Name | Id | One-line job (from profile) | Section | Roster overlap |
 |---|---|---|---|---|---|
-| 1 | tinkabot | 75421954 | Wrap an API into a Cursor/Agent plugin (MCP + skills), prove locally, then publish to Marketplace / cursor.directory | Marketplace | None direct. Closest: Senior Developer (product code). Not in GROUPS.md. |
+| 1 | tinkabot | 75421954 | Wrap an API into a Cursor/Agent plugin (MCP + skills), prove locally, then publish to Marketplace / cursor.directory | Marketplace | None direct. Closest: Senior Developer (product code). Listed in GROUPS.md (BUILD). |
 | 2 | SWE | cfbb15f3 | Cursor's software engineer: code, issue triage, PR review, prod investigation; briefs from Chief Thunderstone only | Marketplace | HIGH with Senior Developer, Lingxi's Engineer Bot, Nightly Audit Engineer (all BUILD coders) |
-| 3 | Engineering Lead | d298c7a0 | Owns the loop: splits work into Cloud Agents, chases CI/reviews on a weekday cadence, pings on blocked/ready/done | Marketplace | HIGH with Chief Thunderstone (BUILD lead), Lingxi's Engineer Bot (supervisor), Projects Manager. Not in GROUPS.md. |
+| 3 | Engineering Lead | d298c7a0 | Owns the loop: splits work into Cloud Agents, chases CI/reviews on a weekday cadence, pings on blocked/ready/done | Marketplace | HIGH with Chief Thunderstone (BUILD lead), Lingxi's Engineer Bot (supervisor), Projects Manager. Listed in GROUPS.md. |
 | 4 | Nightly Audit Engineer | 08a36657 | Research one codebase area, propose one cleanup per area; Runner brief via Chief, DT-triggered | Marketplace | MED with SWE, Senior Developer, Git-Scout (PR path) |
 | 5 | Lingxi's Engineer Bot | 81e154c6 | Engineering supervisor: boards work, PR review, asks DT only to merge; event-triggered | Marketplace | HIGH with SWE, Chief Thunderstone, Projects Manager |
 | 6 | Tradbot | 4b5e2379 | Personal admin: personal email/calendar, school forms/bills/RSVPs, drafts only | Marketplace | MED with Executive Assistant (work lane vs personal lane; profile splits them) |
 | 7 | Projects Manager | 7b71c6ec | Runs DT's projects from GitHub Project #2 "Thunderstone"; decides status, never does specialist work | Marketplace | MED with Chief Thunderstone (task routing) and Grok Bot (CONTROL) |
-| 8 | dr eggbot | eaac08b1 | Designs Grok Bots; CreateAgent only on DT's yes; reports to Grok Bot | Marketplace | None (unique). Not in the named roster list. |
+| 8 | dr eggbot | eaac08b1 | Designs Grok Bots; CreateAgent only on DT's yes; reports to Grok Bot | Marketplace | None (unique). Listed in GROUPS.md (PROJECTS). |
 
 Roster members NOT in Marketplace: Chiefs section = Chief Thunderstone, Chief Lorekeeper, Grok Bot, Chief of Staff (retired), `ebc373c6-...` (no folder on disk). Grunts = Cursor-Runner, Git-Scout, Senior Developer, Researcher, Executive Assistant, `fc82f65b-...` (no folder on disk).
 

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": ".cursor/hooks/stage-router.sh",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ]
+  }
+}

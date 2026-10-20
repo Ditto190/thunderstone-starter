@@ -3,7 +3,7 @@ Owner: Chief Thunderstone -> Cursor-Runner (Class C). Requester: Grok Bot (DT ap
 
 Part A: validate Cursor (must produce a VALID result, not a claim)
 - DT logged in to Cursor Pro. `agent models` now works; `agent status` still prints "Not logged in" (inconsistent: investigate quickly, e.g. `agent about`/`agent whoami` if they exist).
-- Re-run $WORKSPACE/thunderstone/briefs/BRIEF-CURSOR-CLI-SMOKE-2026-10-10.md ONCE via detached tmux `bash scripts/run-task.sh` with --trust-aware launch as before. Valid = exit 0 AND workspace/reports/cursor-smoke-20261010.md refreshed AND log shows no usage-limit text. Also clear the stale $WORKSPACE/thunderstone/state usage-limit flag logic if present, and run `health.sh --bg --force`; confirm health-last.json is green.
+- Re-run $WORKSPACE/thunderstone/briefs/BRIEF-CURSOR-CLI-SMOKE-2026-10-10.md ONCE via detached tmux `bash scripts/run-task.sh` with --trust-aware launch as before. Valid = exit 0 AND workspace/reports/cursor-smoke-20261010.md refreshed AND log shows no usage-limit text. Also clear the stale $WORKSPACE/thunderstone/state usage-limit flag logic if present, and run `health.sh --bg --force`. That mode returns before the worker writes state: record the previous health-last.json mtime, then poll until the file is newer and `status` is `green` (or the run fails). Do not treat a pre-existing green file as this run.
 - If it fails, report exact cause (auth vs plan vs limit) with the log tail, stop.
 
 Part B: reorganize ALL bots into groups (design + files only, you do NOT call UpdateAgent; Grok Bot applies)

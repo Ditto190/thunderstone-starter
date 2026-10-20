@@ -2,33 +2,33 @@
   "hooks": {
     "preCompact": [
       {
-        "command": "$HOME/.local/bin/lean-ctx hook observe"
+        "command": "lean-ctx hook observe"
       }
     ],
     "preToolUse": [
       {
-        "command": "$HOME/.local/bin/lean-ctx hook rewrite",
+        "command": "lean-ctx hook rewrite",
         "matcher": "Shell"
       },
       {
-        "command": "$HOME/.local/bin/lean-ctx hook deny",
+        "command": "lean-ctx hook deny",
         "matcher": "Grep|Glob"
       },
       {
-        "command": "$HOME/.local/bin/lean-ctx hook redirect",
+        "command": "lean-ctx hook redirect",
         "matcher": "Read"
       },
       {
-        "command": "$HOME/.local/bin/lean-ctx hook deny",
+        "command": "lean-ctx hook deny",
         "matcher": "StrReplace|Write|Edit|EditNotebook|MultiEdit"
       }
     ],
     "sessionStart": [
       {
-        "command": "$HOME/.local/bin/lean-ctx hook observe"
+        "command": "lean-ctx hook observe"
       },
       {
-        "command": "bash $WORKSPACE_ROOT/thunderstone/scripts/health.sh --bg",
+        "command": "bash thunderstone/scripts/health.sh --bg",
         "failClosed": false,
         "timeout": 5,
         "timeoutSec": 5

@@ -10,13 +10,13 @@ Found on disk: ~/agent-data/agents/<id>/automations/*/automation.json. All are m
 | 5 | Lorekeeper | lorekeeper-morning-context-health | 25 8 * * 1-5 | ran | file-exists checks | CONVERT into script H |
 | 6 | Lorekeeper | lorekeeper-drive-freshness-pulse | 0 15 * * 1-5 | never | Needs Drive connector (model); low value daily | PAUSE; run on demand (or weekly) |
 | 7 | Lorekeeper | lorekeeper-evening-registry-sync | 45 16 * * 1-5 | never | git status + mtime check | CONVERT into script H |
-| 8 | Git-Scout | weekday-lean-git-status | 30 16 * * 1-5 | never | git status again (3rd copy) | CONVERT into script H; Scout wakes only on dirty/unexpected remote |
-| 9 | Executive Assistant | weekly-investment-gmail-scan | 0 8 * * 1 | ran (1 ok) | Needs Gmail (model) but weekly and wanted by DT | KEEP (weekly) |
+| 8 | Git-Scout | weekday-lean-git-status | 30 16 * * 1-5 | never | git status again (3rd copy) | PAUSE. health.sh records a dirty-file count and does not fail on it, does not check remotes, and does not wake Scout. Wake Scout from a brief when a human reads that count. |
+| 9 | Executive Assistant | weekly-investment-gmail-scan | 0 8 * * 1 | ran (1 ok) | Needs Gmail (model) but weekly and wanted by DT | KEEP as the one approved time-based exception |
 
 Result: 8 weekday model runs/day (~40/wk, mostly duplicates of one check) -> 1 script/day, 0 model runs when green.
 
-## Script H (to build via Runner brief; not created yet)
-$WORKSPACE/thunderstone/scripts/health-check.sh: resume.sh, doctor.sh, git status -sb + remote check for thunderstone-starter, .context file/HEAD checks, `gh auth status`; writes $WORKSPACE/reports/health-YYYYMMDD.md; exit non-zero on any failure/dirty tree; the scheduler wakes Chief Thunderstone only on non-zero, with the path.
+## Script H (implemented as health.sh, not health-check.sh)
+$WORKSPACE/thunderstone/scripts/health.sh: resume.sh, doctor.sh, `git status --short` counts for thunderstone-starter and modme-ui-01 (a dirty tree is a count in the log, not a failure), `gh auth status`, Cursor login. It does not check remotes and it does not wake Git-Scout. On failure it writes an artifact and exits non-zero; a caller may wake Chief Thunderstone. There is no scheduler.
 
 ## Other bots (no routines on disk for these; only profiles)
 | Bot | Finding | Route heavy work |
