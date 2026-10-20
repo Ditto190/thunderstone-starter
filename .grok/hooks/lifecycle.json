@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "../../.cursor/hooks/lifecycle.sh PermissionDenied",
+            "command": ".cursor/hooks/lifecycle.sh PermissionDenied",
             "timeout": 5
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "../../.cursor/hooks/lifecycle.sh StopFailure",
+            "command": ".cursor/hooks/lifecycle.sh StopFailure",
             "timeout": 5
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "../../.cursor/hooks/lifecycle.sh StopCancelled",
+            "command": ".cursor/hooks/lifecycle.sh StopCancelled",
             "timeout": 5
           }
         ]
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "../../.cursor/hooks/lifecycle.sh PostCompact",
+            "command": ".cursor/hooks/lifecycle.sh PostCompact",
             "timeout": 5
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "../../.cursor/hooks/lifecycle.sh Notification",
+            "command": ".cursor/hooks/lifecycle.sh Notification",
             "timeout": 5
           }
         ]

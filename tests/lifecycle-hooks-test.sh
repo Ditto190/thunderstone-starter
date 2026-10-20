@@ -58,12 +58,13 @@ for event in "${grok_events[@]}"; do
   fi
   cmd="$(jq -r --arg e "$event" '.hooks[$e][0].hooks[0].command' "$GROK_HOOKS")"
   case "$cmd" in
-    "../../.cursor/hooks/lifecycle.sh $event") ;;
+    ".cursor/hooks/lifecycle.sh $event") ;;
     *) fail "grok $event command is [$cmd]" ;;
   esac
-  resolved="$(cd "$(dirname "$GROK_HOOKS")" && cd "$(dirname "${cmd%% *}")" && pwd)/$(basename "${cmd%% *}")"
-  if [ ! -x "$resolved" ] && [ ! -f "$resolved" ]; then
-    fail "grok $event command does not resolve ($resolved)"
+  # Grok runs hook commands from the checkout root, same as Cursor.
+  script="${cmd%% *}"
+  if [ ! -f "${ROOT}/${script}" ]; then
+    fail "grok $event command does not resolve from checkout root ($script)"
   fi
 done
 

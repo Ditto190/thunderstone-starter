@@ -11,6 +11,8 @@ shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 bash tests/lifecycle-hooks-test.sh
 bash tests/composio-provenance-test.sh
+bash tests/check-hygiene-identity-test.sh
+bash tests/doctor-lean-ctx-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'
 entry="$(bash scripts/changelog-entry.sh --from-json tests/fixtures/pr.json)"
