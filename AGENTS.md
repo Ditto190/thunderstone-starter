@@ -19,8 +19,9 @@ Read this file, the assigned brief and current status only.
   (see `.cursor/rules/multi-agent-worktrees.mdc`). No blind parallel agents.
 - Inside Cursor CLI/Cloud, execute directly. Never recursively invoke an agent.
 - Work on a branch and open a PR. Never push to `main` or change rulesets.
-- Roles: Chief of Chiefs routes tasks, Thunder-Terminal owns the VM, Cursor-Hammer implements,
-  Watcher of Broken Things verifies, Keeper of Stone Tablets keeps briefs and handoffs.
+<!-- clan:roles -->
+- Roles: Chief of Chiefs routes tasks, Thunder-Terminal owns the VM, Keeper of Stone Tablets keeps briefs and handoffs (instruction-only). Cursor-Hammer implements, Watcher of Broken Things verifies, Chief Investigator investigates with deep research (runnable: `bash scripts/run-task.sh <ID>`).
+<!-- /clan:roles -->
 
 ## Safety
 - Do not auto-approve MCP or shell, push, deploy, delete remote data, or message others.

@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
-mkdir -p "$ROOT"/workspace/{briefs,reports,exports} "$ROOT/.state"
+mkdir -p "$ROOT/workspace/items" "$ROOT/.state"
 command -v tmux >/dev/null || { echo "Run sh scripts/bootstrap.sh first." >&2; exit 1; }
 # A kernel file lock works even before the first tmux server exists.
 exec 9>"$ROOT/.state/resume.lock"

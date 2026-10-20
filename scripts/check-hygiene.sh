@@ -6,6 +6,12 @@ cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
 self="scripts/check-hygiene.sh"
 fail=0
+files_only=0
+if [ "${1:-}" = "--files" ]; then
+  files_only=1
+  shift
+  [ "${1:-}" = "--" ] && shift
+fi
 
 # rule name | ERE pattern
 rules=(
@@ -20,16 +26,23 @@ rules=(
   "aws-access-key|AKIA[0-9A-Z]{16}"
   "google-api-key|AIza[0-9A-Za-z_-]{35}"
   "slack-token|xox[baprs]-[A-Za-z0-9-]{10,}"
+  "perplexity-key|pplx-[A-Za-z0-9]{20,}"
   "credential-assignment|(api[_-]?key|secret|token|passw(or)?d)[A-Za-z_]*[[:space:]]*[=:][[:space:]]*[\"']?[A-Za-z0-9/+_-]{20,}"
 )
 
 # Allowed email domains (placeholders and GitHub noreply addresses)
 email_allow='@(users\.noreply\.github\.com|noreply\.github\.com|example\.(com|org|net))$'
 
-while IFS= read -r -d '' file; do
-  [ "$file" = "$self" ] && continue
-  [ -f "$file" ] || continue
-  grep -Iq . "$file" 2>/dev/null || continue
+scan_file() {
+  local file="$1" rule name pattern lineno match
+  [ -f "$file" ] || {
+    if [ "$files_only" -eq 1 ]; then
+      echo "hygiene: $file [missing]"
+      fail=1
+    fi
+    return 0
+  }
+  grep -Iq . "$file" 2>/dev/null || return 0
   for rule in "${rules[@]}"; do
     name="${rule%%|*}"
     pattern="${rule#*|}"
@@ -42,6 +55,22 @@ while IFS= read -r -d '' file; do
       fail=1
     done < <(grep -nEoi -e "$pattern" -- "$file" || true)
   done
+}
+
+if [ "$files_only" -eq 1 ]; then
+  for file in "$@"; do
+    scan_file "$file"
+  done
+  if [ "$fail" -ne 0 ]; then
+    echo "Hygiene check failed. Use relative paths and keep secrets in untracked .env files." >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+while IFS= read -r -d '' file; do
+  [ "$file" = "$self" ] && continue
+  scan_file "$file"
 done < <(git ls-files -z)
 
 # Commit identities: every non-merge commit reachable from HEAD must be authored by the public alias

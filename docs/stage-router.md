@@ -16,7 +16,7 @@ Precedence: **Monitor** → **Triage** → **Build**.
 
 | Stage | Signals |
 |-------|---------|
-| **Monitor** | Latest workflow run on the default branch failed (`gh run list`); latest deployment status `failure` or `error` (`gh api` deployment statuses); or an open issue labeled `incident`, `regression`, or `p0` (GitHub only). |
+| **Monitor** | Latest workflow run on the default branch failed (`gh run list`); latest deployment status `failure` or `error` (`gh api` deployment statuses); or an open issue labeled with a name in `config/monitor-labels.txt` (`incident`, `regression`, `p0`). That file is generated from `scripts/clan-contract.mjs`. |
 | **Triage** | Dirty tree plus: `git diff --check` fails (tracked, staged, **and untracked** via `git diff --no-index`); working tree text matches secret/absolute-path patterns (includes untracked file contents); `.state/tests-known-red` present; or changes under `.github/workflows/**`, `scripts/**`, `.husky/**`, `.cursor/hooks/**`, or common lockfiles. Also: open PR with failing checks (even when the tree is clean). |
 | **Build** | Dirty tree without triage signals; docs-only (`**/*.md`) edits; commits ahead of remote with no open PR; open PR approved with all checks green; clean synced **default branch** → suggest claiming a Project #2 item. |
 

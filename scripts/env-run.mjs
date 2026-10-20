@@ -1,15 +1,17 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 const [command, ...args] = process.argv.slice(2);
 if (!command) throw new Error("Usage: node scripts/env-run.mjs <command> [args...]");
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const env = { ...process.env };
 for (const path of [
   "/run/secrets/thunderstone.env",
   resolve(homedir(), ".config/thunderstone/env"),
-  resolve(".env.local"),
-  resolve(".env.defaults"),
+  resolve(root, ".env.local"),
+  resolve(root, ".env.defaults"),
 ]) {
   if (!existsSync(path)) continue;
   // Use an isolated Node process to parse dotenv, with existing values authoritative.
