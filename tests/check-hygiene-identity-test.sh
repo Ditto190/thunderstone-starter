@@ -29,8 +29,9 @@ init_repo() {
 
 expect_pass() {
   local name="$1" repo="$2" out status
+  shift 2
   set +e
-  out="$(bash "$repo/scripts/check-hygiene.sh" 2>&1)"
+  out="$(bash "$repo/scripts/check-hygiene.sh" "$@" 2>&1)"
   status=$?
   set -e
   if [ "$status" -ne 0 ]; then
@@ -42,8 +43,9 @@ expect_pass() {
 
 expect_fail() {
   local name="$1" repo="$2" out status
+  shift 2
   set +e
-  out="$(bash "$repo/scripts/check-hygiene.sh" 2>&1)"
+  out="$(bash "$repo/scripts/check-hygiene.sh" "$@" 2>&1)"
   status=$?
   set -e
   if [ "$status" -eq 0 ]; then
@@ -86,6 +88,56 @@ personal_email="$(printf '%s@%s.%s' "person" "personal" "example")"
 commit_as "$personal_repo" "Some Person" "$personal_email" \
   "Some Person" "$personal_email" "personal identity"
 expect_fail "personal email identity" "$personal_repo"
+
+actions_repo="$TMP_BASE/actions"
+init_repo "$actions_repo"
+actions_email="$(printf '%s+%s@%s.%s.%s' "41898282" "github-actions[bot]" "users" "noreply" "github.com")"
+commit_as "$actions_repo" \
+  "github-actions[bot]" "$actions_email" \
+  "github-actions[bot]" "$actions_email" \
+  "ci: workflow update"
+expect_pass "github-actions app author and committer" "$actions_repo"
+
+cursor_email="$(printf '%s@%s.%s' "cursoragent" "cursor" "com")"
+cursor_repo="$TMP_BASE/cursor"
+init_repo "$cursor_repo"
+commit_as "$cursor_repo" "Cursor Agent" "$cursor_email" \
+  "Cursor Agent" "$cursor_email" "cursor exact pair"
+expect_pass "cursor agent exact pair" "$cursor_repo"
+
+cursor_web_repo="$TMP_BASE/cursor-web"
+init_repo "$cursor_web_repo"
+commit_as "$cursor_web_repo" "Cursor Agent" "$cursor_email" \
+  "GitHub" "$github_committer_email" "cursor author, github web-flow committer"
+expect_pass "cursor agent with github committer" "$cursor_web_repo"
+
+cursor_bad_mail_repo="$TMP_BASE/cursor-bad-mail"
+init_repo "$cursor_bad_mail_repo"
+other_cursor_email="$(printf '%s@%s.%s' "other" "cursor" "com")"
+commit_as "$cursor_bad_mail_repo" "Cursor Agent" "$other_cursor_email" \
+  "Cursor Agent" "$other_cursor_email" "cursor name, other email"
+expect_fail "cursor name with other email" "$cursor_bad_mail_repo"
+
+cursor_bad_name_repo="$TMP_BASE/cursor-bad-name"
+init_repo "$cursor_bad_name_repo"
+commit_as "$cursor_bad_name_repo" "Not Cursor" "$cursor_email" \
+  "Not Cursor" "$cursor_email" "other name, cursor email"
+expect_fail "other name with cursor email" "$cursor_bad_name_repo"
+
+range_repo="$TMP_BASE/range"
+init_repo "$range_repo"
+commit_as "$range_repo" "Some Person" "$personal_email" \
+  "Some Person" "$personal_email" "bad identity on main"
+git -C "$range_repo" checkout -q -b feature
+commit_as "$range_repo" "Ditto190" "Ditto190@users.noreply.github.com" \
+  "Ditto190" "Ditto190@users.noreply.github.com" "alias on branch"
+HYGIENE_RANGE="main..HEAD" expect_pass "range env skips main personal commit" "$range_repo"
+expect_pass "positional range skips main personal commit" "$range_repo" "main..HEAD"
+expect_fail "full HEAD includes personal commit on main" "$range_repo"
+
+invalid_range_repo="$TMP_BASE/invalid-range"
+init_repo "$invalid_range_repo"
+HYGIENE_RANGE="nonexistent-ref..HEAD" expect_fail "invalid identity range" "$invalid_range_repo"
 
 if [ "$failures" -ne 0 ]; then
   exit 1
