@@ -8,17 +8,25 @@ case "$src" in
   ''|-*) echo "usage: $0 --from-json <file|-> | <pr-number>" >&2; exit 2 ;;
   *) data="$(gh pr view "$src" --json number,title,labels,files,commits)" ;;
 esac
-printf '%s' "$data" | jq -r '
-  def section:
-    ((.labels // []) | map(.name)) as $l
-    | if ($l | index("breaking")) then "Changed"
-      elif ($l | index("security")) then "Security"
-      elif ($l | index("deps")) then "Changed"
-      elif ($l | index("docs")) then "Changed"
-      else "Added" end;
-  (.files // []) as $f
-  | (.commits // []) as $c
-  | "\(section)\t- \(.title) (#\(.number))"
-    + (if ((.labels // []) | length) > 0 then " [" + ((.labels | map(.name)) | join(", ")) + "]" else "" end)
-    + "\n  - files (\($f | length)): " + (($f | map(.path))[0:8] | join(", ")) + (if ($f | length) > 8 then ", ..." else "" end)
-    + "\n  - commits (\($c | length)): " + (($c | map(.messageHeadline))[0:6] | join("; ")) + (if ($c | length) > 6 then "; ..." else "" end)'
+printf '%s' "$data" | node -e '
+  let s = "";
+  process.stdin.on("data", (d) => { s += d; });
+  process.stdin.on("end", () => {
+    const j = JSON.parse(s);
+    const names = (j.labels || []).map((l) => l.name);
+    let section = "Added";
+    if (names.includes("breaking")) section = "Changed";
+    else if (names.includes("security")) section = "Security";
+    else if (names.includes("deps") || names.includes("docs")) section = "Changed";
+    const files = j.files || [];
+    const commits = j.commits || [];
+    const labelBit = names.length ? " [" + names.join(", ") + "]" : "";
+    const fileList = files.slice(0, 8).map((f) => f.path).join(", ") + (files.length > 8 ? ", ..." : "");
+    const commitList = commits.slice(0, 6).map((c) => c.messageHeadline).join("; ") + (commits.length > 6 ? "; ..." : "");
+    process.stdout.write(
+      section + "\t- " + j.title + " (#" + j.number + ")" + labelBit + "\n"
+      + "  - files (" + files.length + "): " + fileList + "\n"
+      + "  - commits (" + commits.length + "): " + commitList + "\n"
+    );
+  });
+'

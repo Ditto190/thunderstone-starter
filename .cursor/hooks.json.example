@@ -1,0 +1,18 @@
+{
+  "_comment": "TEMPLATE: Cursor project hooks (.cursor/hooks.json.example; DT opts in by copying to hooks.json). One dispatcher, fail-open, short timeouts, silent when green [L2, M1]. Never set failClosed true. No clock triggers exist here: every entry is an agent event.",
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      { "command": ".cursor/hooks/dispatch.sh", "timeout": 5, "failClosed": false }
+    ],
+    "stop": [
+      { "command": ".cursor/hooks/dispatch.sh", "timeout": 5, "failClosed": false, "loop_limit": 0 }
+    ],
+    "postToolUseFailure": [
+      { "command": ".cursor/hooks/dispatch.sh", "timeout": 3, "failClosed": false }
+    ],
+    "afterFileEdit": [
+      { "command": ".cursor/hooks/dispatch.sh", "timeout": 3, "failClosed": false, "matcher": "Write" }
+    ]
+  }
+}

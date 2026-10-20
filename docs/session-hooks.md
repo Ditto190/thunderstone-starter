@@ -34,8 +34,24 @@ The next `sessionStart` appends `last local CI: FAIL (exit N, .state/session-ci/
 
 Hooks never commit, push, open a pull request, or call `agent` / CodeRabbit. `sessionStart` makes no network calls. Push stays with Git-Scout at milestones. That push runs GitHub CI (`ci.yml`, `codeql.yml`, CodeRabbit), including CodeQL and PR review.
 
+## Dispatcher (opt-in)
+
+`.cursor/hooks.json.example` points `sessionStart`, `stop`, `postToolUseFailure`, and `afterFileEdit` at `.cursor/hooks/dispatch.sh`. Copy that file over `.cursor/hooks.json` only when you want the dispatcher. The checked-in `.cursor/hooks.json` stays on the stage router, skill note, and session-end CI.
+
+`dispatch.sh` reads stdin JSON with `node`, routes `hook_event_name`, and kills a handler that exceeds `HOOKS_BUDGET_SEC` (default 4). Malformed JSON, an unknown event, a timeout, or non-JSON handler output all print `{}` and exit 0. `failClosed` stays false. Green runs print `{}` and write no stderr.
+
+| Event | Handler | Side effect |
+| --- | --- | --- |
+| `sessionStart` | `events/session-start.sh` | Calls the stage router and skill note, merges `additional_context`, and once per session may add `DRIFT bridge: N files` when both bridge trees exist and differ. |
+| `stop` | `events/stop.sh` | If `state/active-brief` exists, writes a receipt stub once per session. Stdout stays `{}`. |
+| `postToolUseFailure` | `events/tool-failure.sh` | Appends one redacted line to `.cursor/hooks/state/tool-failures.jsonl`. |
+| `afterFileEdit` | `events/report-edit.sh` | Indexes a path under `reports/` or `workspace/reports/` in `.cursor/hooks/state/reports-index.md`. |
+
+`.cursor/hooks/state/` is gitignored.
+
 ## Disable and rollback
 
 - `SESSION_CI_DISABLE=1` skips the detached test.
 - Remove the `session-skills.sh` or `session-end-ci.sh` entry from `.cursor/hooks.json`.
 - Leave the `stage-router.sh` entry in place.
+- To drop the dispatcher, restore the previous `.cursor/hooks.json` and leave `hooks.json.example` unused. No handler runs unless that example is copied into place.

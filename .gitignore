@@ -43,6 +43,7 @@ tmp/
 coverage/
 .lean-ctx/
 .cursor/*.local.*
+.cursor/hooks/state/
 .cursor/mcp.json
 .vscode/
 .idea/
