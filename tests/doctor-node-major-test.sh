@@ -19,6 +19,15 @@ fi
 EOF
 chmod +x "$TMP/.local/bin/node"
 
+# CI runners lack VM-only tools (tmux, rclone, fzf...). Stub any missing
+# required tool so only the node-major check decides the exit status.
+for tool in bash tmux git curl unzip zip jq rg fzf python3 npm rclone shellcheck make cc; do
+  if ! command -v "$tool" >/dev/null; then
+    printf '#!/bin/sh\nexit 0\n' >"$TMP/.local/bin/$tool"
+    chmod +x "$TMP/.local/bin/$tool"
+  fi
+done
+
 run_doctor() {
   HOME="$TMP" FAKE_NODE_MAJOR="$1" bash "$ROOT/scripts/doctor.sh"
 }
