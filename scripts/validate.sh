@@ -4,7 +4,9 @@ cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 sh -n scripts/bootstrap.sh
 for script in scripts/*.sh; do bash -n "$script"; done
 for script in scripts/*.mjs; do node --check "$script"; done
-node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json"]) JSON.parse(require("fs").readFileSync(f))'
+for script in plugins/cursor-cloud-agents/server/*.mjs plugins/cursor-cloud-agents/scripts/*.mjs; do node --check "$script"; done
+node --test "plugins/cursor-cloud-agents/test/*.test.mjs"
+node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json","plugins/cursor-cloud-agents/plugin.json","plugins/cursor-cloud-agents/mcp.json"]) JSON.parse(require("fs").readFileSync(f))'
 bash scripts/check-hygiene.sh
 command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
 shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
