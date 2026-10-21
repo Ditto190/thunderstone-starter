@@ -17,8 +17,9 @@ reviews:
   architecture_diagrams: false
   external_contributors_require_manual_review: true
   resolve_threads_when_addressed: true
-  auto_approve_behavior: disabled
-  auto_approve: disabled
+  # live submits the approval on GitHub. always approves a clean review run.
+  auto_approve_behavior: live
+  auto_approve: always
   ultrareview: disabled
   custom_instructions: |
     Public shell and GitHub Actions starter repo. Report only real bugs, security problems and
