@@ -147,7 +147,15 @@ build_reason=""
 
 if [ "$gh_ok" -eq 1 ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
   run_json="$(gh_timed_capture 1 run list --branch "$default_branch" -L1 --json conclusion,status || true)"
-  run_conclusion="$(printf '%s' "${run_json:-[]}" | jq -r '.[0].conclusion // empty' 2>/dev/null || true)"
+  run_conclusion="$(printf '%s' "${run_json:-[]}" | node -e '
+      let s=""; process.stdin.on("data",d=>s+=d); process.stdin.on("end",()=>{
+        try {
+          const j = JSON.parse(s || "[]");
+          const c = Array.isArray(j) && j[0] && j[0].conclusion ? String(j[0].conclusion) : "";
+          process.stdout.write(c);
+        } catch (e) {}
+      });
+    ' 2>/dev/null || true)"
   if [ "$run_conclusion" = "failure" ]; then
     monitor_reason="default-branch CI run failed"
   fi
@@ -156,7 +164,14 @@ fi
 if [ "$gh_ok" -eq 1 ] && [ -z "$monitor_reason" ] && [ "$(budget_remaining_sec)" -gt 0 ]; then
   for label in incident regression p0; do
     issue_json="$(gh_timed_capture 1 issue list --label "$label" --state open --limit 1 --json number || true)"
-    issue_n="$(printf '%s' "${issue_json:-[]}" | jq -r 'length' 2>/dev/null || echo 0)"
+    issue_n="$(printf '%s' "${issue_json:-[]}" | node -e '
+      let s=""; process.stdin.on("data",d=>s+=d); process.stdin.on("end",()=>{
+        try {
+          const j = JSON.parse(s || "[]");
+          process.stdout.write(String(Array.isArray(j) ? j.length : 0));
+        } catch (e) { process.stdout.write("0"); }
+      });
+    ' 2>/dev/null || echo 0)"
     if [ "${issue_n:-0}" -gt 0 ] 2>/dev/null; then
       monitor_reason="open issue labeled ${label}"
       break
@@ -215,15 +230,21 @@ if [ "$gh_ok" -eq 1 ] && [ -n "$branch" ] && [ "$(budget_remaining_sec)" -gt 0 ]
   pr_json="$(gh_timed_capture 1 pr list --head "$branch" --state open --json number,reviewDecision,statusCheckRollup || true)"
   if [ -n "$pr_json" ] && [ "$pr_json" != "[]" ]; then
     has_open_pr=1
-    pr_eval="$(printf '%s' "$pr_json" | jq -r '
-      .[0] as $pr |
-      if $pr == null then "none"
-      else
-        ($pr.statusCheckRollup // []) as $r |
-        if any($r[]?; ((.conclusion // .state // "") | test("fail|cancel|timed_?out|action_required"; "i"))) then "failing"
-        elif $pr.reviewDecision == "APPROVED" and ($r | length) > 0 and all($r[]?; ((.conclusion // .state // "") | ascii_downcase | IN("success", "neutral", "skipped"))) then "approved_green"
-        else "open" end
-      end
+    pr_eval="$(printf '%s' "$pr_json" | node -e '
+      let s=""; process.stdin.on("data",d=>s+=d); process.stdin.on("end",()=>{
+        const bad = /fail|cancel|timed_?out|action_required/i;
+        const ok = new Set(["success","neutral","skipped"]);
+        try {
+          const j = JSON.parse(s);
+          const pr = Array.isArray(j) ? j[0] : null;
+          if (!pr) { process.stdout.write("none"); return; }
+          const r = Array.isArray(pr.statusCheckRollup) ? pr.statusCheckRollup : [];
+          const state = (x) => String((x && (x.conclusion || x.state)) || "");
+          if (r.some((x) => bad.test(state(x)))) process.stdout.write("failing");
+          else if (pr.reviewDecision === "APPROVED" && r.length > 0 && r.every((x) => ok.has(state(x).toLowerCase()))) process.stdout.write("approved_green");
+          else process.stdout.write("open");
+        } catch (e) { process.stdout.write("none"); }
+      });
     ' 2>/dev/null || true)"
     case "$pr_eval" in
       failing) pr_failing_checks=1 ;;

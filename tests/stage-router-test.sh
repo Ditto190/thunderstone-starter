@@ -35,7 +35,7 @@ assert_exact() {
 assert_valid_json() {
   local name="$1"
   local out="$2"
-  if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
+  if ! printf '%s' "$out" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{JSON.parse(s);});'; then
     echo "stage-router test FAIL: $name (invalid JSON)" >&2
     echo "  got: $out" >&2
     failures=1

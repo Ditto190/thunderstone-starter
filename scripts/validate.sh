@@ -4,11 +4,13 @@ cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 sh -n scripts/bootstrap.sh
 for script in scripts/*.sh; do bash -n "$script"; done
 for script in scripts/*.mjs; do node --check "$script"; done
-node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json"]) JSON.parse(require("fs").readFileSync(f))'
+node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json",".cursor/hooks.json.example"]) JSON.parse(require("fs").readFileSync(f))'
 bash scripts/check-hygiene.sh
 command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
-shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
+shellcheck scripts/*.sh .cursor/hooks/*.sh .cursor/hooks/events/*.sh tests/*.sh
+bash tests/hooks-dispatch-test.sh
 bash tests/stage-router-test.sh
+bash tests/session-hooks-test.sh
 bash tests/check-hygiene-identity-test.sh
 bash tests/run-task-usage-limit-test.sh
 bash tests/thunderstone-workspace-test.sh
