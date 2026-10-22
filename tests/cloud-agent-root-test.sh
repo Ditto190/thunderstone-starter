@@ -4,15 +4,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=scripts/cloud-agent-root.sh
 . "$ROOT/scripts/cloud-agent-root.sh"
 
-fail=0
-got="$(cloud_agent_repo_root)" || fail=1
-if [[ "$fail" -eq 1 ]]; then
-  echo "cloud_agent_repo_root failed on live VM" >&2
-  exit 1
-fi
-if [[ "$got" != "$ROOT" ]]; then
-  echo "expected repo root $ROOT, got $got" >&2
-  exit 1
+# Live Cloud roots only exist on Cursor Cloud pods — skip on GHA/local.
+if [[ -f /workspace/scripts/bootstrap.sh || -f /agent/repos/thunderstone-starter/scripts/bootstrap.sh ]]; then
+  fail=0
+  got="$(cloud_agent_repo_root)" || fail=1
+  if [[ "$fail" -eq 1 ]]; then
+    echo "cloud_agent_repo_root failed on live VM" >&2
+    exit 1
+  fi
+  if [[ "$got" != "$ROOT" ]]; then
+    echo "expected repo root $ROOT, got $got" >&2
+    exit 1
+  fi
 fi
 
 tmpdir="$(mktemp -d)"
