@@ -205,7 +205,7 @@ JS
   else
     while IFS= read -r id; do
       [ -n "$id" ] || continue
-      if ! grep -Fq -- "[$id]" "$llms"; then
+      if ! grep -Fq -- "- [$id](" "$llms"; then
         add_row pickup "$id" catalog "missing-from-llms"
         fail=1
       fi
@@ -227,8 +227,8 @@ fi
 finger() {
   node --input-type=module - "$1" <<'JS'
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, lstatSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync, lstatSync, readlinkSync, realpathSync } from 'node:fs';
+import { join, isAbsolute } from 'node:path';
 const root = process.argv[2];
 const lines = [];
 function walk(dir, base) {
@@ -241,7 +241,13 @@ function walk(dir, base) {
     const rel = base ? `${base}/${e.name}` : e.name;
     let st;
     try { st = lstatSync(p); } catch { continue; }
-    if (st.isSymbolicLink()) lines.push(`${rel}\tsymlink`);
+    if (st.isSymbolicLink()) {
+      // Fingerprint the link target: relative targets as written, absolute ones resolved.
+      let t = '';
+      try { t = readlinkSync(p); } catch { t = '?'; }
+      if (isAbsolute(t)) { try { t = realpathSync(p); } catch { /* dangling: keep raw */ } }
+      lines.push(`${rel}\tsymlink:${t}`);
+    }
     else if (st.isDirectory()) walk(p, rel);
     else if (st.isFile()) {
       const h = createHash('sha256').update(readFileSync(p)).digest('hex');
@@ -257,7 +263,7 @@ JS
 
 mirror_index() {
   node --input-type=module - "$1" <<'JS'
-import { readdirSync, lstatSync } from 'node:fs';
+import { readdirSync, lstatSync, statSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 const root = process.argv[2];
 const rows = [];
@@ -270,7 +276,13 @@ function walk(dir, depth) {
     const p = join(dir, e.name);
     let st;
     try { st = lstatSync(p); } catch { continue; }
-    if (st.isSymbolicLink()) continue;
+    if (st.isSymbolicLink()) {
+      // Index (do not follow) symlinked skill dirs so --strict sees them.
+      let isDir = false;
+      try { isDir = statSync(p).isDirectory(); } catch { isDir = false; }
+      if (isDir && existsSync(join(p, 'SKILL.md'))) rows.push(`${e.name}\t${p.slice(root.length + 1)}`);
+      continue;
+    }
     if (st.isDirectory()) walk(p, depth + 1);
     else if (st.isFile() && e.name === 'SKILL.md' && dir !== root) {
       rows.push(`${basename(dir)}\t${dir.slice(root.length + 1)}`);
@@ -291,10 +303,10 @@ if [ "${#mirrors[@]}" -gt 0 ]; then
       continue
     fi
     mirror=$(CDPATH='' cd -- "$mirror" && pwd)
-    : >"$work/seen.ids"
+    : >"$work/seen.rels"
     while IFS=$'\t' read -r id rel _scope _name _reason; do
       [ -n "${id:-}" ] || continue
-      printf '%s\n' "$id" >>"$work/seen.ids"
+      printf '%s\n' "$rel" >>"$work/seen.rels"
       dest="$mirror/$rel"
       src="$canonical/$rel"
       if [ -L "$dest" ]; then
@@ -331,7 +343,7 @@ if [ "${#mirrors[@]}" -gt 0 ]; then
     if [ -s "$work/mirror.idx" ]; then
       while IFS=$'\t' read -r mid mrel; do
         [ -n "${mid:-}" ] || continue
-        if ! grep -Fxq -- "$mid" "$work/seen.ids"; then
+        if ! grep -Fxq -- "$mrel" "$work/seen.rels"; then
           add_row extra "$mid" "$mirror" "$mrel"
           if [ "$strict" -eq 1 ]; then
             fail=1

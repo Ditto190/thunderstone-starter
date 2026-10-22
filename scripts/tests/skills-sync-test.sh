@@ -170,4 +170,42 @@ if grep -q $'\t'"$M"$'\t' "$out"; then
   fail "no-mirror printed a mirror row"
 fi
 
+# review fixes (#51 cubic P2): symlink targets, llms prefix, rel-path extras, symlinked extras
+R2="$T/canon2"; M2="$T/mirror2"; X="$T/ext"
+mkdir -p "$R2" "$M2" "$X"
+skill "$R2" gamma
+printf 'a\n' >"$X/a.txt"; printf 'b\n' >"$X/b.txt"
+ln -s "$X/a.txt" "$R2/gamma/ref.txt"
+cp -a "$R2/gamma" "$M2/gamma"
+set +e; bash "$CHK" --canonical "$R2" --mirror "$M2" --quiet >"$out"; code=$?; set -e
+[ "$code" -eq 0 ] || fail "same symlink target exit $code"
+rm "$M2/gamma/ref.txt"; ln -s "$X/b.txt" "$M2/gamma/ref.txt"
+set +e; bash "$CHK" --canonical "$R2" --mirror "$M2" >"$out"; code=$?; set -e
+[ "$code" -eq 1 ] || fail "symlink target drift exit $code"
+grep -q $'^drift\tgamma\t' "$out" || fail "symlink target drift row missing"
+rm -rf "$M2/gamma"; cp -a "$R2/gamma" "$M2/gamma"
+# same id at another path in the mirror is an extra under --strict
+skill "$M2/nested" gamma
+set +e; bash "$CHK" --canonical "$R2" --mirror "$M2" --strict >"$out"; code=$?; set -e
+[ "$code" -eq 1 ] || fail "strict shadow path exit $code"
+grep -q $'^extra\tgamma\tnested/gamma' <(cut -f1,2,4 "$out") || fail "shadow extra row missing"
+rm -rf "$M2/nested"
+# symlinked extra skill dir is an extra under --strict
+skill "$X" linked
+ln -s "$X/linked" "$M2/linked"
+set +e; bash "$CHK" --canonical "$R2" --mirror "$M2" --strict >"$out"; code=$?; set -e
+[ "$code" -eq 1 ] || fail "strict symlinked extra exit $code"
+grep -q $'^extra\tlinked\t' "$out" || fail "symlinked extra row missing"
+rm "$M2/linked"
+# llms.txt: an id only mentioned in another entry's text is not a pickup
+G2="$T/cat2"
+node "$CAT" gen --root "$R2" --out "$G2" 2>/dev/null
+set +e; bash "$CHK" --canonical "$R2" --catalog "$G2" --quiet >"$out"; code=$?; set -e
+[ "$code" -eq 0 ] || fail "llms fresh exit $code"
+printf -- '- [other](x): see [gamma] too\n' >"$G2/llms.txt"
+touch "$G2/catalog.json"
+set +e; bash "$CHK" --canonical "$R2" --catalog "$G2" >"$out"; code=$?; set -e
+[ "$code" -eq 1 ] || fail "llms mention-only exit $code"
+grep -q $'^pickup\tgamma\tcatalog\tmissing-from-llms' "$out" || fail "llms missing row absent"
+
 echo "skills-sync tests passed"
