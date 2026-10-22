@@ -35,6 +35,11 @@ while IFS= read -r -d '' file; do
     pattern="${rule#*|}"
     while IFS=: read -r lineno match; do
       [ -n "$lineno" ] || continue
+      if [ "$name" = "absolute-workspace-path" ]; then
+        case "$file" in
+          .cursor/environment.json|scripts/cloud-agent-root.sh|tests/cloud-agent-root-test.sh) continue ;;
+        esac
+      fi
       if [ "$name" = "email-address" ] && printf '%s' "$match" | grep -Eq "$email_allow"; then
         continue
       fi
