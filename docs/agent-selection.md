@@ -66,3 +66,5 @@ THUNDERSTONE_REAL_SKILLS=<skills-root> bash scripts/tests/select-test.sh
 ```
 
 `THUNDERSTONE_REAL_SKILLS` points gate 11 at a real skills tree. `SELECT_TEST_VERBOSE=1` prints per-test names. `npm test` also runs ShellCheck and `scripts/check-hygiene.sh`.
+
+Mirror drift and catalog pickup are checked on demand by `scripts/skills-sync-check.sh`. See [skills-sync.md](skills-sync.md).
