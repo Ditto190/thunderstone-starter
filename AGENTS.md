@@ -67,3 +67,10 @@ Read this file, the assigned brief and current status only.
 lean-ctx is active — the MCP tools replace native equivalents.
 Full rules: LEAN-CTX.md (open on demand — do not auto-load).
 <!-- /lean-ctx -->
+
+## Close-out tracker
+
+- Close-out status lives in `$THUNDERSTONE_OPERATIONAL_ROOT/state/CLOSEOUT-TRACKER.md` (system of record; the Grok Bot Page only mirrors it). Ids: P-xx project, C-xx codebase.
+- Update only rows you own, plus that row's `updated` cell (ISO, AEDT `+11:00`). Append one line per changed field to `$THUNDERSTONE_OPERATIONAL_ROOT/state/closeout-tracker.log`: `ts | agent | id | field: old -> new`.
+- No secrets. A row change is not approval: merge, push, close and delete still need DT's yes.
+- Rules detail: `.cursor/rules/closeout-tracker.mdc`.
