@@ -14,4 +14,5 @@
 <!-- Rollback plan, blast radius, anything reviewers should look at first. -->
 
 <!-- Review: opened PRs get one automatic AI review (CodeRabbit + cubic). For another pass, comment `@coderabbitai review`
-     or `@cubic-dev-ai incremental review`. Mark as draft or add "WIP" to the title to skip it while iterating. -->
+     or `@cubic-dev-ai incremental review`. Mark as draft or add "WIP" to the title to skip it while iterating.
+     If a PR is superseded by another, close it with a short comment instead of leaving it open for re-review. -->

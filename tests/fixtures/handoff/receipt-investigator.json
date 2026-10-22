@@ -1,0 +1,12 @@
+{
+  "protocol_version": 1,
+  "handoff_id": "pilot-fixture",
+  "receipt_id": "inv-fixture-1",
+  "role": "investigator",
+  "status": "validated",
+  "created_at_ms": 1,
+  "parent_receipt_id": null,
+  "brief_path": "workspace/briefs/TASK-fixture.md",
+  "context_bytes": 120,
+  "validation": { "passed": true, "runner": "scripts/validate-brief.sh" }
+}
