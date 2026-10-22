@@ -50,6 +50,8 @@ bash scripts/cursor-worker.sh status
 
 Then start a Cloud Agent and pick **My Machines → grok-shared** (or your `CURSOR_WORKER_NAME`). Full steps: `docs/grok-vm/cursor-cloud-bridge.md`.
 
+Portable Dev Container / Codespaces and local MCP wiring (Context7, Caveman Cloud): `docs/dev-stack/LOCAL-DEV.md`.
+
 ## Environment and Drive
 
 `env-run.mjs` loads real dotenv syntax with Node's parser. Precedence: injected environment, `/run/secrets/thunderstone.env`, `~/.config/thunderstone/env`, project `.env.local`, project `.env.defaults`. It never sources shell code or prints values. Node 22+ is required. Explicit empty environment values remain authoritative.

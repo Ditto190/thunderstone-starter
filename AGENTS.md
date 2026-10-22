@@ -7,6 +7,7 @@ Read this file, the assigned brief and current status only.
 - Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
 - Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
 - Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
+- Local-dev MCP + Dev Container runbook: `docs/dev-stack/LOCAL-DEV.md` (copy `config/dev-stack/mcp.example.json` → `.cursor/mcp.json`).
 
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
