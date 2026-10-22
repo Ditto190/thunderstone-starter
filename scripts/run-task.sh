@@ -19,7 +19,8 @@ if [[ -n "$ops_root" ]]; then
   # Block only when today's row has a status field (last column) starting with
   # "usage-limit"; free-text mentions elsewhere in a row must not block.
   if [[ -r "$L" ]] && awk -F'|' -v d="$D" '
-    { n=NF; if ($n ~ /^[[:space:]]*$/) n--; date=$2; st=$n
+    { n=NF; while (n > 2 && $n ~ /^[[:space:]]*$/) n--; if (n <= 2) next
+      date=$2; st=$n
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", date); gsub(/^[[:space:]]+/, "", st)
       if (date == d && tolower(st) ~ /^usage-limit/) { found=1; exit } }
     END { exit !found }' "$L"; then echo "blocked: usage-limit recorded today (no retry)"; exit 75; fi
