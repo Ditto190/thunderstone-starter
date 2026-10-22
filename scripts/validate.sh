@@ -11,6 +11,7 @@ shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
 bash tests/run-task-usage-limit-test.sh
+bash tests/run-task-guard-test.sh
 bash tests/thunderstone-workspace-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'

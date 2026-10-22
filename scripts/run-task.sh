@@ -16,7 +16,13 @@ fi
 if [[ -n "$ops_root" ]]; then
   L="$ops_root/state/cloud-agent-ledger.md"
   D=$(TZ=Australia/Sydney date +%F)
-  if [[ -r "$L" ]] && grep -F "| $D |" "$L" | grep -qi 'usage-limit'; then echo "blocked: usage-limit recorded today (no retry)"; exit 75; fi
+  # Block only when today's row has a status field (last column) starting with
+  # "usage-limit"; free-text mentions elsewhere in a row must not block.
+  if [[ -r "$L" ]] && awk -F'|' -v d="$D" '
+    { n=NF; if ($n ~ /^[[:space:]]*$/) n--; date=$2; st=$n
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", date); gsub(/^[[:space:]]+/, "", st)
+      if (date == d && tolower(st) ~ /^usage-limit/) { found=1; exit } }
+    END { exit !found }' "$L"; then echo "blocked: usage-limit recorded today (no retry)"; exit 75; fi
 fi
 command -v agent >/dev/null || { echo "Install Cursor CLI first"; exit 1; }
 # DT standing law: VM agents have full auto-permission; keep --trust --force.
