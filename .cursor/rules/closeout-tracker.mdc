@@ -8,7 +8,7 @@ alwaysApply: false
 - **Read/update:** `$THUNDERSTONE_OPERATIONAL_ROOT/state/CLOSEOUT-TRACKER.md`. It is the system of record for close-out status; the Grok Bot Page is a mirror.
 - **Columns:** id | item | repo | status | owner | next | link | updated. Ids are stable: P-xx (project), C-xx (codebase). New items take the next free id.
 - **Rules:**
-  1. Edit only rows where you are the owner, plus that row's `updated` cell (`date -Iseconds`, AEDT `+11:00`).
+  1. Edit only rows where you are the owner, plus that row's `updated` cell (`TZ=Australia/Sydney date -Iseconds`, Sydney time, e.g. AEDT `+11:00`).
   2. For each changed field, append one line to `$THUNDERSTONE_OPERATIONAL_ROOT/state/closeout-tracker.log`: `ts | agent | id | field: old -> new`.
   3. Write the file in one go (temp file + `mv`) so the sync watcher fires once.
   4. No secrets (tokens, keys, key prefixes, env values) in the tracker or log.
