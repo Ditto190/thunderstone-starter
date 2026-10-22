@@ -6,6 +6,37 @@
         "command": ".cursor/hooks/stage-router.sh",
         "timeout": 5,
         "failClosed": false
+      },
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": ".cursor/hooks/handoff-duplicate-guard.sh"
+      },
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": ".cursor/hooks/collection-metrics.sh"
       }
     ]
   }
