@@ -23,10 +23,13 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+    # false = one review when the PR is opened or marked ready; pushes do not trigger another pass.
     auto_incremental_review: false
     ignore_title_keywords:
       - "WIP"
       - "[skip review]"
+      - "superseded"
+      - "no-auto-review"
     ignore_usernames:
       - "dependabot[bot]"
 
@@ -42,6 +45,11 @@ reviews:
       instructions: |
         Shell safety: quoting, set -euo pipefail, no absolute or user-specific paths,
         never print secret values. Flag anything that would fail shellcheck.
+    - path: "docs/grok-vm/**"
+      instructions: |
+        Ops runbooks: steps must match scripts in scripts/ (resume.sh, cursor-worker.sh,
+        doctor.sh). Flag nested-agent use and runbook guidance that conflicts with
+        AGENTS.md's one-worktree-per-concurrent-writer rule.
     - path: ".github/workflows/**"
       instructions: |
         Actions must be pinned to full commit SHAs, use least-privilege permissions,

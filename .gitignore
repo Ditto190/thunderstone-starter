@@ -50,6 +50,7 @@ coverage/
 .lean-ctx/
 .cursor/*.local.*
 .cursor/mcp.json
+.cursor/hooks/state/*.jsonl
 .vscode/
 .idea/
 *.swp

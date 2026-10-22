@@ -36,9 +36,11 @@ reviews:
       - workspace/**
     head_branches:
       - "dependabot/**"
+      - "cursor/env-*"
     pr_labels:
       - skip-review
       - WIP
+      - superseded
     pr_titles:
       - "WIP*"
       - "no-auto-review:*"
