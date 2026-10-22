@@ -2,9 +2,15 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
+import { fetchManagedSecrets, parseEnvFile } from "./secret-backends.mjs";
+
 const [command, ...args] = process.argv.slice(2);
 if (!command) throw new Error("Usage: node scripts/env-run.mjs <command> [args...]");
 const env = { ...process.env };
+const managed = fetchManagedSecrets(env);
+for (const [key, value] of Object.entries(managed)) {
+  if (!(key in env)) env[key] = value;
+}
 for (const path of [
   "/run/secrets/thunderstone.env",
   resolve(homedir(), ".config/thunderstone/env"),
@@ -12,10 +18,7 @@ for (const path of [
   resolve(".env.defaults"),
 ]) {
   if (!existsSync(path)) continue;
-  // Use an isolated Node process to parse dotenv, with existing values authoritative.
-  const parsed = spawnSync(process.execPath, [`--env-file=${path}`, "-e", "process.stdout.write(JSON.stringify(process.env))"], { env, encoding: "utf8" });
-  if (parsed.status !== 0) throw new Error(`Environment parsing failed for ${path}`);
-  const values = JSON.parse(parsed.stdout);
+  const values = parseEnvFile(path, env);
   for (const [key, value] of Object.entries(values)) if (!(key in env)) env[key] = value;
 }
 const result = spawnSync(command, args, { env, stdio: "inherit" });

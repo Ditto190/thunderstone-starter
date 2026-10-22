@@ -8,8 +8,9 @@ Do not open a public issue for security problems.
 
 ## Handling secrets
 
-- Never commit credentials. Real values belong in untracked files (`.env.local`,
-  `~/.config/thunderstone/env`) or injected environment variables.
+- Never commit credentials. Real values belong in Infisical/Doppler, untracked files
+  (`.env.local`, `~/.config/thunderstone/env`), or injected environment variables.
+  See `docs/env-surfaces.md`.
 - `.env.example` and `.env.defaults` must only hold empty or non-sensitive placeholders.
 - Use relative paths only. Absolute local paths (home directories, drive letters) are rejected by
   `scripts/check-hygiene.sh`, which runs in CI and in the Husky pre-commit and pre-push hooks.

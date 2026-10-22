@@ -19,6 +19,7 @@ CURSOR_WORKER_AUTOSTART=0 \
   bash tests/cursor-worker-test.sh
 node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="thunderstone")process.exit(1)'
 CLAN_NAME=override node scripts/env-run.mjs node -e 'if(process.env.CLAN_NAME!=="override")process.exit(1)'
+bash tests/env-secrets-test.sh
 entry="$(bash scripts/changelog-entry.sh --from-json tests/fixtures/pr.json)"
 grep -qF "(#7) [ci, security]" <<<"$entry"
 test -f CHANGELOG.md

@@ -16,4 +16,8 @@ if [[ -f scripts/cursor-worker.sh ]]; then
   echo "--- cursor-worker ---"
   bash scripts/cursor-worker.sh status || true
 fi
+if [[ -f scripts/env-doctor.mjs ]]; then
+  echo "--- env-doctor ---"
+  node scripts/env-doctor.mjs || true
+fi
 exit "$failed"

@@ -5,8 +5,9 @@ Read this file, the assigned brief and current status only.
 
 ## Setup
 - Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
-- Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
-- Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
+- Copy `.env.example` to `.env.local` or `~/.config/thunderstone/env`. Never commit secrets.
+- Prefer **Infisical** or **Doppler** via `THUNDERSTONE_SECRETS_BACKEND`; see `docs/env-surfaces.md` and `config/env.registry.json`.
+- Environment loading goes through `scripts/env-run.mjs`; run `node scripts/env-doctor.mjs` to verify keys without printing values.
 
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.

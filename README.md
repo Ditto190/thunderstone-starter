@@ -52,7 +52,7 @@ Then start a Cloud Agent and pick **My Machines → grok-shared** (or your `CURS
 
 ## Environment and Drive
 
-`env-run.mjs` loads real dotenv syntax with Node's parser. Precedence: injected environment, `/run/secrets/thunderstone.env`, `~/.config/thunderstone/env`, project `.env.local`, project `.env.defaults`. It never sources shell code or prints values. Node 22+ is required. Explicit empty environment values remain authoritative.
+`env-run.mjs` loads real dotenv syntax with Node's parser. Precedence: injected environment, optional **Infisical or Doppler** (`THUNDERSTONE_SECRETS_BACKEND`), `/run/secrets/thunderstone.env`, `~/.config/thunderstone/env`, project `.env.local`, project `.env.defaults`. It never sources shell code or prints values. Node 22+ is required. Explicit empty environment values remain authoritative. Key registry: `config/env.registry.json`. Setup: `docs/env-surfaces.md`. Check coverage: `node scripts/env-doctor.mjs`.
 
 GitHub Actions secrets are not retrievable from a VM. Map them explicitly to environment variables inside an authorized workflow; provision VM/Cursor secrets separately. A connected Drive tool in Grok does not automatically authenticate rclone inside its VM.
 
