@@ -45,6 +45,11 @@ reviews:
       instructions: |
         Shell safety: quoting, set -euo pipefail, no absolute or user-specific paths,
         never print secret values. Flag anything that would fail shellcheck.
+    - path: "docs/grok-vm/**"
+      instructions: |
+        Ops runbooks: steps must match scripts in scripts/ (resume.sh, cursor-worker.sh,
+        doctor.sh). Flag nested-agent use and runbook guidance that conflicts with
+        AGENTS.md's one-worktree-per-concurrent-writer rule.
     - path: ".github/workflows/**"
       instructions: |
         Actions must be pinned to full commit SHAs, use least-privilege permissions,

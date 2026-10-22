@@ -40,6 +40,16 @@ node scripts/env-run.mjs bash scripts/run-task.sh workspace/briefs/TASK-001.md
 
 This launches Cursor CLI once, in the current checkout, without auto-approval flags. It does not recursively launch another Cursor agent inside a Cursor Cloud agent: Cloud agents execute directly using their existing agent runtime. Authenticate with `agent login` once or inject `CURSOR_API_KEY`. Do not infer that a login here registers a Cursor My Machines worker.
 
+To let a **Cursor Cloud Agent** run tools on this VM (chat in the browser, build on the shared computer), use the My Machines worker bridge:
+
+```sh
+# Copy config/cursor-worker.example.env keys into .env.local; set CURSOR_WORKER_AUTOSTART=1 to wire resume.sh
+bash scripts/cursor-worker.sh start
+bash scripts/cursor-worker.sh status
+```
+
+Then start a Cloud Agent and pick **My Machines → grok-shared** (or your `CURSOR_WORKER_NAME`). Full steps: `docs/grok-vm/cursor-cloud-bridge.md`.
+
 ## Environment and Drive
 
 `env-run.mjs` loads real dotenv syntax with Node's parser. Precedence: injected environment, `/run/secrets/thunderstone.env`, `~/.config/thunderstone/env`, project `.env.local`, project `.env.defaults`. It never sources shell code or prints values. Node 22+ is required. Explicit empty environment values remain authoritative.

@@ -23,6 +23,6 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck tmux
       - run: npm ci --no-audit --no-fund
       - run: npm test
