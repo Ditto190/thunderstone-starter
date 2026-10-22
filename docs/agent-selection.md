@@ -29,6 +29,27 @@ node scripts/catalog.mjs select CATALOG "<task>" [--kind k] [--top N] [--json] [
 
 `catalog/` is generated and gitignored. Paths inside it are machine-local. Do not commit it.
 
+## Frontmatter
+
+Each indexed file is `<id>/SKILL.md`. `tags` is a kebab-case list, either `tags: a, b` or `tags: [a, b]`. A query token that matches a tag gets a +1.5 score boost on top of the usual keyword score. `scope` is `shared` or `private`. Omitted scope means `shared`. `private` is never indexed and never returned.
+
+```markdown
+---
+name: example-skill
+description: Use when packing crates for storage.
+tags: [crate-pack, storage]
+scope: shared
+---
+```
+
+## Wire-in
+
+Add this line to agent prompts (already in `AGENTS.md`):
+
+`Unsure which skill? Run bash scripts/select.sh "<task>" and load only the top hit's SKILL.md. NO_MATCH (exit 1) -> route per house-rules; never guess.`
+
+`scripts/ts-select.sh` is the `ts-*` wrapper. It resolves `select.sh` beside itself, forwards every argument, and returns the same stdout and exit code. `--help` prints usage and exits 0. It does not use the network unless `--external` is passed through.
+
 ## Private deny-by-default
 
 Only the canonical root is read. Symlinks are not followed. Frontmatter `scope: private` is never written and never returned, including an exact id match. Unknown scope, duplicate keys, unreadable frontmatter, or a missing description skips the item. `select` drops a hit whose file is private, missing, or outside the root.
