@@ -28,4 +28,7 @@ if [[ -f tests/agent-collection-invariants.sh ]]; then
 fi
 bash tests/validate-brief-test.sh
 bash tests/collection-hooks-test.sh
+if [[ -f tests/infisical-run-test.sh ]]; then
+  bash tests/infisical-run-test.sh
+fi
 echo "Infrastructure validation passed."

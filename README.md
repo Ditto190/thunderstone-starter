@@ -58,6 +58,10 @@ Portable Dev Container / Codespaces and local MCP wiring (Context7, Caveman Clou
 
 GitHub Actions secrets are not retrievable from a VM. Map them explicitly to environment variables inside an authorized workflow; provision VM/Cursor secrets separately. A connected Drive tool in Grok does not automatically authenticate rclone inside its VM.
 
+### Infisical secrets
+
+The optional `scripts/infisical-run.sh` launcher retrieves a selected Infisical environment and folder, then starts the requested process with those secrets. Setup steps, local login, and unattended machine identity configuration are in [`docs/infisical-secrets.md`](docs/infisical-secrets.md). Copy the non-secret settings from `config/infisical.example.env` into `.env.local` or supply them through the runtime environment.
+
 For unattended Drive access inject `RCLONE_CONFIG` pointing to a protected rclone configuration, or `RCLONE_CONFIG_GDRIVE_TYPE=drive` and the relevant rclone remote environment fields. For personal My Drive use user OAuth and your own Google OAuth client ID; service accounts are primarily suitable for appropriately authorized shared drives and have storage/ownership constraints. Configure initially with `rclone config`. Reference: https://rclone.org/drive/
 
 Download a released starter into a new directory:
