@@ -15,7 +15,7 @@ line_ending:
 # Valid values: LSP, JetBrains
 # Note: the backend is fixed at startup. If a project with a different backend
 # is activated post-init, an error will be returned.
-language_backend:
+language_backend: LSP
 
 # whether to use project's .gitignore files to ignore files
 ignore_all_files_in_gitignore: true
@@ -146,6 +146,7 @@ ls_additional_workspace_folders: []
 # Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
 language_servers:
 - bash
+- typescript
 
 # list of APIs (facades or facade methods, e.g. "lsp" or "lsp.get_diagnostics_for_symbol") to include in the REPL
 # that would otherwise be disabled (particularly optional methods, which are disabled by default).

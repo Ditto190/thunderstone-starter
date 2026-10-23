@@ -45,6 +45,19 @@ Optional: merge browser stack keys from `config/browser/mcp.example.json` into t
 
 Attach Context7 (HTTP + `Context7-API-Key` header) and Caveman Cloud in the Cloud Agent MCP UI. Prefer the same services as local; never commit keys.
 
+### Serena project configuration
+
+The versioned `.serena/project.yml` selects the LSP backend and Bash and
+TypeScript language servers for this starter. This is project configuration;
+it does not install or expose the Serena MCP server on a laptop, VM, or Cloud
+Agent host. Configure Serena in each host's approved agent settings separately.
+
+After starting Serena from the repository root, read its initial instructions,
+activate `thunderstone-starter`, and run onboarding when the project has not
+been onboarded. A successful MCP tool call alone is not proof that language
+servers started: verify the active backend is LSP and resolve a Bash symbol
+and a TypeScript symbol before relying on Serena for code work.
+
 ## Dev Container / Codespaces
 
 ```sh
