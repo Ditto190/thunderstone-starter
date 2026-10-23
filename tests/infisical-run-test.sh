@@ -9,12 +9,12 @@ mkdir -p "$tmp/bin"
 cat >"$tmp/bin/infisical" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" == "fixture-client-secret" ]] || exit 1
+[[ "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" == "fixture-secret" ]] || exit 1
 printf '%s\n' "$@" >"$INFISICAL_TEST_ARGS_FILE"
 while (($#)); do
   if [[ "$1" == "--" ]]; then
     shift
-    export XAI_API_KEY="fixture-provider-key"
+    export XAI_API_KEY="fixture-provider"
     exec "$@"
   fi
   shift
@@ -30,9 +30,9 @@ output="$(
     INFISICAL_ENVIRONMENT="dev" \
     INFISICAL_SECRET_PATH="/coding" \
     INFISICAL_UNIVERSAL_AUTH_CLIENT_ID="fixture-client-id" \
-    INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET="fixture-client-secret" \
+    INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET="fixture-secret" \
     bash scripts/infisical-run.sh -- bash -c '
-      [[ "${XAI_API_KEY:-}" == "fixture-provider-key" ]]
+      [[ "${XAI_API_KEY:-}" == "fixture-provider" ]]
       [[ -z "${INFISICAL_TOKEN:-}" ]]
       [[ -z "${INFISICAL_UNIVERSAL_AUTH_ACCESS_TOKEN:-}" ]]
       [[ -z "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" ]]
@@ -44,7 +44,7 @@ output="$(
 grep -qF -- "--projectId=fixture-project" "$tmp/args"
 grep -qF -- "--env=dev" "$tmp/args"
 grep -qF -- "--path=/coding" "$tmp/args"
-if grep -qF "fixture-client-secret" "$tmp/args"; then
+if grep -qF "fixture-secret" "$tmp/args"; then
   echo "machine credential appeared in CLI arguments" >&2
   exit 1
 fi
