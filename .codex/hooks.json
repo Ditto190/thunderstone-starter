@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\run-hook.mjs' 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\stage-router.sh'",
+            "command": "node .codex/hooks/run-hook.mjs .codex/hooks/stage-router.sh",
             "timeout": 5
           }
         ]
@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\collection-metrics.mjs'"
+            "command": "node .codex/hooks/collection-metrics.mjs"
           }
         ]
       }
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\handoff-duplicate-guard.mjs'"
+            "command": "node .codex/hooks/handoff-duplicate-guard.mjs"
           }
         ]
       },
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\collection-metrics.mjs'"
+            "command": "node .codex/hooks/collection-metrics.mjs"
           }
         ]
       }
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\collection-metrics.mjs'"
+            "command": "node .codex/hooks/collection-metrics.mjs"
           }
         ]
       }
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\collection-metrics.mjs'"
+            "command": "node .codex/hooks/collection-metrics.mjs"
           }
         ]
       }
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\dylan\\projects\\thunderstone-starter\\.codex\\hooks\\collection-metrics.mjs'"
+            "command": "node .codex/hooks/collection-metrics.mjs"
           }
         ]
       }
