@@ -1,0 +1,15 @@
+{
+  "protocol_version": 1,
+  "handoff_id": "pilot-ag2-001",
+  "receipt_id": "impl-1792681788",
+  "role": "implementer",
+  "status": "patch_ready",
+  "created_at_ms": 1792681788293,
+  "parent_receipt_id": "inv-1792681788",
+  "brief_path": "workspace/briefs/pilot-ag2-001.md",
+  "context_bytes": 378,
+  "validation": {
+    "passed": true,
+    "runner": "test_suite"
+  }
+}

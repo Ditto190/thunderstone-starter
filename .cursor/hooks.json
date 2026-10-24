@@ -3,40 +3,53 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": ".cursor/hooks/stage-router.sh",
+        "command": "node .cursor/hooks/run-hook.mjs .cursor/hooks/stage-router.sh",
         "timeout": 5,
         "failClosed": false
       },
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
+      },
+      {
+        "command": "node .cursor/hooks/skills-catalog-stale.mjs",
+        "timeout": 5,
+        "failClosed": false
       }
     ],
     "subagentStart": [
       {
-        "command": ".cursor/hooks/handoff-duplicate-guard.sh"
+        "command": "node .cursor/hooks/handoff-duplicate-guard.mjs"
       },
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
       }
     ],
     "subagentStop": [
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
       }
     ],
     "postToolUseFailure": [
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
       }
     ],
     "stop": [
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
       }
     ],
     "beforeSubmitPrompt": [
       {
-        "command": ".cursor/hooks/collection-metrics.sh"
+        "command": "node .cursor/hooks/collection-metrics.mjs"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/commit-gate.mjs",
+        "matcher": "git(\\s+|\\.exe\\s+)commit|checkpoint\\.sh|ALLOW_LOCAL_COMMITS=1",
+        "failClosed": false,
+        "timeout": 20
       }
     ]
   }

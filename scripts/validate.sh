@@ -4,6 +4,9 @@ cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 sh -n scripts/bootstrap.sh
 for script in scripts/*.sh; do bash -n "$script"; done
 for script in scripts/*.mjs; do node --check "$script"; done
+if compgen -G ".cursor/hooks/*.mjs" > /dev/null; then
+  for script in .cursor/hooks/*.mjs; do node --check "$script"; done
+fi
 node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json","config/dev-stack/mcp.example.json","config/browser/mcp.example.json",".devcontainer/devcontainer.json"]) JSON.parse(require("fs").readFileSync(f))'
 bash scripts/check-hygiene.sh
 command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
@@ -28,4 +31,10 @@ if [[ -f tests/agent-collection-invariants.sh ]]; then
 fi
 bash tests/validate-brief-test.sh
 bash tests/collection-hooks-test.sh
+if [[ -f tests/infisical-run-test.sh ]]; then
+  bash tests/infisical-run-test.sh
+fi
+if [[ -f tests/skills-catalog.mjs ]]; then
+  node tests/skills-catalog.mjs
+fi
 echo "Infrastructure validation passed."

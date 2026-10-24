@@ -1,0 +1,10 @@
+{
+  "id": "thunderstone-house",
+  "name": "Thunderstone house",
+  "description": "Project .agents/skills overrides only.",
+  "skills": [
+    "caveman",
+    "caveman-setup",
+    "lean-ctx"
+  ]
+}
