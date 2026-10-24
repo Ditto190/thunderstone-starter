@@ -21,12 +21,14 @@ function readStdin() {
   });
 }
 
-function tsMsNow() {
-  return Date.now();
-}
-
 function nullIfEmpty(s) {
   return s === undefined || s === null || s === "" ? null : s;
+}
+
+function resolveTsMs(value) {
+  if (value === undefined || value === null || value === "") return Date.now();
+  const n = Number(value);
+  return Number.isNaN(n) ? Date.now() : n;
 }
 
 const raw = await readStdin();
@@ -40,12 +42,7 @@ try {
 mkdirSync(stateDir, { recursive: true });
 
 const event = input.hook_event_name ?? "unknown";
-let ts = input.timestamp_ms;
-if (ts === undefined || ts === null || ts === "" || Number.isNaN(Number(ts))) {
-  ts = tsMsNow();
-} else {
-  ts = Number(ts);
-}
+const ts = resolveTsMs(input.timestamp_ms);
 
 const line = {
   ts_ms: ts,

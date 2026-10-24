@@ -51,6 +51,25 @@ function releaseLock() {
   }
 }
 
+function launchKeySeen(key) {
+  if (!existsSync(launches)) return false;
+  return readFileSync(launches, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .some((line) => {
+      try {
+        return JSON.parse(line).key === key;
+      } catch {
+        return false;
+      }
+    });
+}
+
+function allow() {
+  process.stdout.write('{"permission":"allow"}\n');
+  process.exit(0);
+}
+
 const raw = await readStdin();
 let input = {};
 try {
@@ -61,40 +80,26 @@ try {
 
 const subagentType = input.subagent_type ?? "unknown";
 const taskId = input.handoff_id ?? input.task_id ?? "";
-const ts = Date.now();
+if (!taskId) allow();
 
+const key = `${taskId}:${subagentType}`;
+const ts = Date.now();
 const locked = await acquireLock();
 try {
-  if (taskId) {
-    const key = `${taskId}:${subagentType}`;
-    if (existsSync(launches)) {
-      const seen = readFileSync(launches, "utf8")
-        .split("\n")
-        .filter(Boolean)
-        .some((line) => {
-          try {
-            return JSON.parse(line).key === key;
-          } catch {
-            return false;
-          }
-        });
-      if (seen) {
-        appendFileSync(
-          metrics,
-          `${JSON.stringify({
-            ts_ms: ts,
-            event: "duplicate_launch",
-            launch_key: key,
-          })}\n`,
-          "utf8",
-        );
-      }
-    }
-    appendFileSync(launches, `${JSON.stringify({ ts_ms: ts, key })}\n`, "utf8");
+  if (launchKeySeen(key)) {
+    appendFileSync(
+      metrics,
+      `${JSON.stringify({
+        ts_ms: ts,
+        event: "duplicate_launch",
+        launch_key: key,
+      })}\n`,
+      "utf8",
+    );
   }
+  appendFileSync(launches, `${JSON.stringify({ ts_ms: ts, key })}\n`, "utf8");
 } finally {
   if (locked) releaseLock();
 }
 
-process.stdout.write('{"permission":"allow"}\n');
-process.exit(0);
+allow();

@@ -2,14 +2,37 @@
 /**
  * beforeShellExecution gate for git commit / checkpoint.
  * Runs check-hygiene before allowing the agent to commit.
- * Fail-open on spawn errors so a broken hook never bricks the shell.
+ * Fail-open only after all bash candidates miss so a broken
+ * hook never bricks the shell; Windows must still find Git Bash.
  */
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const hooksDir = dirname(fileURLToPath(import.meta.url));
 const root = join(hooksDir, "../..");
+
+function bashCandidates() {
+  const out = [];
+  // CURSOR_HOOK_BASH is handled exclusively in main — do not list it here.
+  out.push("bash");
+  if (process.env.ProgramFiles) {
+    out.push(join(process.env.ProgramFiles, "Git", "bin", "bash.exe"));
+  }
+  const pf86 = process.env["ProgramFiles(x86)"];
+  if (pf86) out.push(join(pf86, "Git", "bin", "bash.exe"));
+  return out;
+}
+
+function runHygiene(bash) {
+  return spawnSync(bash, ["scripts/check-hygiene.sh"], {
+    cwd: root,
+    encoding: "utf8",
+    windowsHide: true,
+    timeout: 15000,
+  });
+}
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -54,15 +77,30 @@ const isCommit =
 
 if (!isCommit) allow();
 
-const result = spawnSync("bash", ["scripts/check-hygiene.sh"], {
-  cwd: root,
-  encoding: "utf8",
-  windowsHide: true,
-  timeout: 15000,
-});
+let result = null;
+const preferred = process.env.CURSOR_HOOK_BASH;
+if (preferred) {
+  // Explicit override: never fall through to other bash candidates.
+  const attempt = runHygiene(preferred);
+  if (attempt.error) {
+    deny(
+      `Commit blocked: CURSOR_HOOK_BASH failed to run.\n${attempt.error.message}`,
+      "Fix CURSOR_HOOK_BASH or unset it so Git Bash discovery can run.",
+    );
+  }
+  result = attempt;
+} else {
+  for (const bash of bashCandidates()) {
+    if (bash !== "bash" && !existsSync(bash)) continue;
+    const attempt = runHygiene(bash);
+    if (attempt.error) continue;
+    result = attempt;
+    break;
+  }
+}
 
-if (result.error) {
-  // Fail open — hygiene runner unavailable (e.g. no bash in PATH).
+if (!result) {
+  // Fail-open: no bash candidate could be spawned.
   allow();
 }
 
