@@ -1,4 +1,4 @@
 {
-  "install": "SKIP_CURSOR_INSTALL=1 sh /agent/repos/thunderstone-starter/scripts/bootstrap.sh",
-  "start": "bash /agent/repos/thunderstone-starter/scripts/resume.sh"
+  "install": "for d in /workspace /agent/repos/thunderstone-starter; do test -f \"$d/scripts/cloud-agent-install.sh\" && exec bash \"$d/scripts/cloud-agent-install.sh\"; done; echo 'Error: cloud-agent-install.sh not found under /workspace or /agent/repos/thunderstone-starter' >&2; exit 1",
+  "start": "for d in /workspace /agent/repos/thunderstone-starter; do test -f \"$d/scripts/cloud-agent-start.sh\" && exec bash \"$d/scripts/cloud-agent-start.sh\"; done; echo 'Error: cloud-agent-start.sh not found under /workspace or /agent/repos/thunderstone-starter' >&2; exit 1"
 }
