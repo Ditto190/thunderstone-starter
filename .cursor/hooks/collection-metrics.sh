@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Prefer collection-metrics.mjs from hooks.json on Windows (no console / file open).
 # Append agent-collection KPI events to collection-metrics.jsonl (fail-open).
 set -euo pipefail
 ROOT="$(cd "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
