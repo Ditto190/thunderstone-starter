@@ -34,4 +34,7 @@ bash tests/collection-hooks-test.sh
 if [[ -f tests/infisical-run-test.sh ]]; then
   bash tests/infisical-run-test.sh
 fi
+if [[ -f tests/skills-catalog.mjs ]]; then
+  node tests/skills-catalog.mjs
+fi
 echo "Infrastructure validation passed."

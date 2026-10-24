@@ -9,7 +9,7 @@ Harden thunderstone-starter for day-to-day agent work. **Grok / My Machines VM**
 | L0 Bootstrap | `scripts/bootstrap.sh` → `doctor.sh` → `resume.sh` | Grok VM (primary); Dev Container `post-create` mirrors deps with `SKIP_CURSOR_INSTALL=1` |
 | L1 Env | `.env.local` via `scripts/env-run.mjs` | Never commit; see `.env.example` |
 | L2 MCP | `config/dev-stack/mcp.example.json` → `.cursor/mcp.json` | Context7 + Caveman Cloud only in this file |
-| L3 Skills | `/caveman`, `/cursor-sdk`, `/agent-development`, `/orchestrate` | User/plugin skills (not vendored here) |
+| L3 Skills | Rampstack + house via `catalogue/` | Prefer `catalogue/llms.txt` or `node scripts/suggest-skills.mjs "<task>"`; Read `SKILL.md` on demand only |
 | L4 Collection | investigator → implementer → verifier | `.cursor/agents/collection-*.md` + handoff receipts |
 | L5 Fan-out | My Machines worker `grok-shared` | `scripts/cursor-worker.sh` + Cloud Agent |
 

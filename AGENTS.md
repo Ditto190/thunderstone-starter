@@ -15,6 +15,7 @@ Read this file, the assigned brief and current status only.
 - `bash scripts/cursor-worker.sh status` reports the Cursor My Machines worker (see `docs/grok-vm/cursor-cloud-bridge.md`).
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
+- Skills catalogue: load `catalogue/llms.txt` or run `node scripts/suggest-skills.mjs "<task>"` first; Read a skill's `SKILL.md` only on demand.
 
 ## Agent collection KPIs
 - Baseline collection: one investigator, one implementer, one verifier before adding agents (`docs/adr-agent-collection-kpis.md`).

@@ -1,0 +1,334 @@
+{
+  "generatedAt": "2026-10-24T09:48:44.063Z",
+  "sourceRootHint": "../_explore-claude-skills/dist/codex/.agents/skills",
+  "accessibility-audit": {
+    "SKILL.md": "2d4bda8c3c31805d140049aa6e6c871010bfeccc8f4947bac3f2111b375549c8"
+  },
+  "ads-creative-development": {
+    "SKILL.md": "0b441139ef81b2a17f7369082c396cc7d9b73224725a6b3ffc822304251a9fc4"
+  },
+  "ads-performance-analytics": {
+    "SKILL.md": "e8aca922653440f9421899279cb130bd6a002a96461b3e477942b5b786b2424f"
+  },
+  "after-action-report": {
+    "SKILL.md": "96bd377c89fb763617c038e5456fe4a3e3e2e031cc47012628776b5faa6b3c11"
+  },
+  "ai-content-collaboration": {
+    "SKILL.md": "c988d860a225a1d8dea81a997b093608c6c1415ec01fec2d1d74b2cf2ac3e728"
+  },
+  "analytics-strategy": {
+    "SKILL.md": "765377959db248490dbc8e60b628c3b0b05f9562b730442b5e9893139e3ffd00"
+  },
+  "art-direction": {
+    "SKILL.md": "883d7101c9c5cb95336c188ca3dac78617df72bac28f29d0af979198a2923b1f"
+  },
+  "backup-and-disaster-recovery": {
+    "SKILL.md": "c5ec51fcc5bd2c266e26750b7ab12e3f3b5576e34c485aae8116d489aae4e146"
+  },
+  "beta-program-management": {
+    "SKILL.md": "e76a53f09295c92ddc5b2fd6e9401944e6069d518c02ef05b169d23d0095e2bc"
+  },
+  "brand-archetype-system": {
+    "SKILL.md": "b5791c7810b09b38e2bc964f4249172fd76bbfc06a7978edd3c7948dd453b878"
+  },
+  "brand-discovery": {
+    "SKILL.md": "6c48296fb92bf2f699374bbc2897e4643901b169921df64854b87c508a5998ec"
+  },
+  "brand-ideation": {
+    "SKILL.md": "4f7103367f39bf311d37db3a66e63f5fe5d2b95f718bd8a440aee6ca6458675a"
+  },
+  "brand-identity": {
+    "SKILL.md": "a15057f63e81f8adbeb77538d8cebf0421cced126ac6477fd70e4aa9bd74b8e6"
+  },
+  "brand-style-guide": {
+    "SKILL.md": "0da5b49d062f39553464a492ed9803cbe5d61d2b55ba17fb8fdf5cd4fd659716"
+  },
+  "brand-voice": {
+    "SKILL.md": "49cc2883c1edddc982d50253401939945ae27ff564344a5e52d380aa6af1e849"
+  },
+  "calculator-design": {
+    "SKILL.md": "293b6cb8d3549e02a3e25c9670cfb14385ecb0105ee6a480e24b54389e2a4e02"
+  },
+  "caveman": {
+    "SKILL.md": "c33dd784e56d50073d7dd5bc37a1af5b08a3842e031dd2a99b2f270300ba6ad9"
+  },
+  "caveman-setup": {
+    "SKILL.md": "7f0441e087b58d76583eff22343bd3dca8dd479e2a29acf43a160812ce0ebdd8"
+  },
+  "chatbot-flow-design": {
+    "SKILL.md": "7084547db11c52389600a9ca92b0d68505311f05c86d1a46b53190e4ec453853"
+  },
+  "code-review-web": {
+    "SKILL.md": "5e5e1c0e9f962281b1b631efe5772ac854ea5e0565770ec4a35b4777dcb5a705"
+  },
+  "comparison-tool-design": {
+    "SKILL.md": "fbcea6c0c9cade0a3e99690fd68b5fcb19841437358722b70692b6b749a0748b"
+  },
+  "competitor-experience-audit": {
+    "SKILL.md": "55a22ab91cb31bab9d395ccdc15023abd2a072b28fb9f6f7a1a8a25e9f8f7bac"
+  },
+  "content-and-copy": {
+    "SKILL.md": "06d1cc7dc6763fe0452dc6a938f9ac49e379a0f520862bbe737b52b203b07041"
+  },
+  "content-brief-authoring": {
+    "SKILL.md": "1e89482faf97d474b1478769975a6d374b02fab0768cd19bda7af94cc0c31e43"
+  },
+  "content-distribution": {
+    "SKILL.md": "526052100e21d1b03905b66cb348cfe76548bd6323b877ac4a38d3c6a3d38910"
+  },
+  "content-migration": {
+    "SKILL.md": "e32e8cc6502e3e80d2e5ee8cc23aa23d8c0f5ac344ecc970830e76b9b82eff06"
+  },
+  "content-refresh-system": {
+    "SKILL.md": "9bc81e5a398569139eb52117b9d4d0eabcc8a979d2d06bdfe6b12102847729f7"
+  },
+  "content-repurposing": {
+    "SKILL.md": "af84b583caae6e2579979f49f35a775edc98ac8a8c519dc276c5f5498815bc35"
+  },
+  "content-strategy": {
+    "SKILL.md": "438dd1c3f5894fe560f58c39fa0f93d2a6a49092bbdde29a27f3c8f3b0e429ae"
+  },
+  "cost-optimization": {
+    "SKILL.md": "63c2be059c3f61f2cd6066e076fd19be0dff2ee3bf2905b9ade6a2b0221deccf"
+  },
+  "creative-brief": {
+    "SKILL.md": "891f8f898a9e06dbda6512fe680785769dcb84030c48650b2ec15316c82390ad"
+  },
+  "creative-brief-selector": {
+    "SKILL.md": "fb4e4e56c083d816193b8758d8eb11e8d988984f4c83f781ff60c54dfff081d2"
+  },
+  "creative-direction": {
+    "SKILL.md": "16878f75a69cd26239d8303693c0caa2c1c9c2e7deacdb2c7c4ec89800fa318c"
+  },
+  "cro-optimization": {
+    "SKILL.md": "ba9722c705a5c33b1f39d714b6009e11cb32beb877223df83b812804970d838c"
+  },
+  "data-warehouse-experimentation": {
+    "SKILL.md": "09e77e7ee8c7ba9e03926f79bf97c9c87eadb1bf36f1cc2c88e487bab51d543c"
+  },
+  "dependency-management": {
+    "SKILL.md": "f5902744bceee57fc74a6767342dea82ca0ca9962d801512a2162a10e96d81c8"
+  },
+  "design-standards": {
+    "SKILL.md": "a1848e60ee32454280f4bc6fd47239f1003c86f556acbe852daab07a3ac3161b"
+  },
+  "design-system": {
+    "SKILL.md": "76c90e63d54fe01d586968c05f6f7a479572a9a94056bf8cd83a4894d5bd6f7b"
+  },
+  "discovery-research-synthesis": {
+    "SKILL.md": "a59c594f64ea8c312f2d33e4d9d9fc47ac92c90073ecd0ff1a75af6ada098307"
+  },
+  "dispatch-authoring": {
+    "SKILL.md": "b926b557ec02d8fad19e0c4a2fd8c2fb1fd0e22f07cf92158af1c570228a0794"
+  },
+  "documentation-strategy": {
+    "SKILL.md": "ad3bab154042f506266e600378fd96361e5d9c1cc8daa08e749699a70141ef67"
+  },
+  "domain-strategy": {
+    "SKILL.md": "d033452fc4e292d044d6759bdc9cafe7dd91e5bacd564eb6045862a43abe27ff"
+  },
+  "editorial-qa": {
+    "SKILL.md": "3474ca5b204d87552c709e9cdaa8dfe332ad96cc3084b2c66196d125272f1c24"
+  },
+  "email-deliverability": {
+    "SKILL.md": "00625709b76747810c6650992775d743dfd135c44809210082db5c797e10a5c8"
+  },
+  "email-sequences": {
+    "SKILL.md": "6c13085f1de3bc6a9e91c2233a38bf6a3fe3c13cee8a88dc780d40217c7093db"
+  },
+  "evidence-based-reviews": {
+    "SKILL.md": "37d606103c77514a67bbf8c2159fd3d51965f2a8369408ec62dca9380e1f1f12"
+  },
+  "experiment-design": {
+    "SKILL.md": "a7e0f2f863e51dd9dc2ad33e5be19de36db217f38beaa836f100096958f8ca7d"
+  },
+  "experimentation-analytics": {
+    "SKILL.md": "fd75ccf99c447a6a548956f4a85d2a43d93498ecf6a325682482c1b2d99acf46"
+  },
+  "experimentation-platform-orchestrator": {
+    "SKILL.md": "b3928276b4fdf4664d6d43103972469a137854ad6386c652e8e57b6c291f5f5f"
+  },
+  "feature-flagging": {
+    "SKILL.md": "72c714d5a55ac090759e4a94a8e4845f3b40f0643c66a36d817fe7dc96000830"
+  },
+  "feature-launch-playbook": {
+    "SKILL.md": "99f90e89e644960237c31cece55987b09f843f8d8a91bd999dea49467a5c0bcc"
+  },
+  "form-strategy": {
+    "SKILL.md": "7bcd7d7b1c4a8b6b908b31f3481e31d4e256bee47e624155c089bfaedf241baf"
+  },
+  "frontend-component-build": {
+    "SKILL.md": "15f525aabf04acb12111808bb82c361b6f51c6604ffa3a933b1c8df67b392f1e"
+  },
+  "funnel-flow-architecture": {
+    "SKILL.md": "8f050091068806c694b8559e6ebdf0742fe757229f1cd6bbb8c19d3350c2170f"
+  },
+  "incident-response": {
+    "SKILL.md": "d1bfd5b37583a1d0b0f8951f754a623abac35182210394b1540467a755e26269"
+  },
+  "information-architecture": {
+    "SKILL.md": "e7fa0d1a6952c6f4b0ad7c35c54fad287bf2769f9f4ae91a30e9ac88b4e60a2b"
+  },
+  "integration-orchestrator": {
+    "SKILL.md": "da0ef99c14b1e945dc5f2055c6d2af12dda113564cdc5bd7650491533205252a"
+  },
+  "interactive-product-tour": {
+    "SKILL.md": "23506cccdc96da3e9cf280e32592fc3cd5f09795d85de12b19a2343e18d459a7"
+  },
+  "internationalization": {
+    "SKILL.md": "69d8bb1e80316644c007490d47da148d47cc9427708542e5823edf1a3919dd2b"
+  },
+  "journey-mapping": {
+    "SKILL.md": "ba21a010083b1628b78cd9eeacc8ea9467a7eba8c8b1b6dd0f09bb7a0e8e38ae"
+  },
+  "jtbd-framing": {
+    "SKILL.md": "b34d02271c74bda5e3f37d969417a51ec24a4e94294dc9a68a0669d6c633049c"
+  },
+  "landing-page-copy": {
+    "SKILL.md": "7bb86c4767c97e67559aac61808c324a480e6cd836cba5b7dc09f20128224b39"
+  },
+  "launch-runbook": {
+    "SKILL.md": "79bc773fbbb0234e00431ac5bee133e5088f50de91055f91a62fe2e2e96f1584"
+  },
+  "lead-magnet-design": {
+    "SKILL.md": "a2f2778429741ff1e0f0870a599bfa95d60ce8cfb4b90ae3e04126c5702302e6"
+  },
+  "lean-ctx": {
+    "SKILL.md": "3906f84325df4b87e2fef6709dd47039684bef87dac56a4202dddac6c1082bf3"
+  },
+  "logo-design": {
+    "SKILL.md": "97f7b28b06d18131ec635f2c3db57868cfa8998b2d06e718f97af5726fc415dd"
+  },
+  "long-form-content-frameworks": {
+    "SKILL.md": "c5a53a732402767f3ca7f182600a5c2f06e00037003330579b4aa4bd46e64069"
+  },
+  "media-asset-management": {
+    "SKILL.md": "1301f2808c46637a8ca082c55fae3240ebcfaa2e30892859ca1dd6fc99e98a25"
+  },
+  "monitoring-and-alerting": {
+    "SKILL.md": "c13b4e447499ac90da97796b6fa781eebefb68d8f25f9313e81eccaeeff32914"
+  },
+  "multi-step-form-design": {
+    "SKILL.md": "c40b3568c2d775155eb8b6e7d67cdd35aac5b150a5650666829d0533f021c5df"
+  },
+  "okr-design": {
+    "SKILL.md": "15a1af5f6d14d320614567fcef59438503a7f7a0f53bcecdfb15338d55cc1ccf"
+  },
+  "onboarding-wizard-design": {
+    "SKILL.md": "f5d8971a3b7be0d817313032941076bcf9361605a993de25b3986473b575fa67"
+  },
+  "oss-contribution-research": {
+    "SKILL.md": "a237720109b5778955f91fe864d49d57d8661f9593b190f4b379e8a70033f082"
+  },
+  "paid-media-strategy": {
+    "SKILL.md": "03f16f374ce745b6b1a48e5d9ae3999fec598822ab42cf0afde92675a0fe2d60"
+  },
+  "performance-optimization": {
+    "SKILL.md": "07217989ca76e4e6a89425810239615f05dbc5a9f9228579283fd6a3200a00ce"
+  },
+  "pillar-content-architecture": {
+    "SKILL.md": "13485ae7e84ae077fc54e898112915352645a739b2e2fd7d9209a0923d602e19"
+  },
+  "pm-spec-writing": {
+    "SKILL.md": "19255cb13a578a20d749cdb80ff3f7165a64799b85ee02829bfe29473480e44c"
+  },
+  "product-analytics-setup": {
+    "SKILL.md": "d2d06db371be31ef5782b209be1c9f9d287370129670db6112e28d2734759801"
+  },
+  "product-configurator-design": {
+    "SKILL.md": "cc07759d032a9c0d2f55c917af4deb9be437a0b010ad9a7c88d2a11adf51eed0"
+  },
+  "programmatic-seo": {
+    "SKILL.md": "8495148cc565b2e8da9bcfa26da78125f24e3abf123f60b1782a93a3077c8854"
+  },
+  "qa-testing": {
+    "SKILL.md": "4ae211b6d32a78b6d277bfeeefaf65b17aed60f0acb5eaa5eb565fff9e236170"
+  },
+  "quiz-and-assessment-design": {
+    "SKILL.md": "70d7bf3beb780c1beb924d72bc753a3660c03473925bf571c2476ab0f5bccee0"
+  },
+  "roadmap-planning": {
+    "SKILL.md": "fc589b62a72414ba50c54a2384bd95db5157bec6949c89cee964d12cb762e8fd"
+  },
+  "scheduler-and-booking-design": {
+    "SKILL.md": "d19873bb0d48e0dd1843da8d9476f9a876e3f3c502eab4b8dd2ec807a1616f38"
+  },
+  "security-baseline": {
+    "SKILL.md": "14195420cf18777ef09110bea7d098e60e4f7bf91c8ead0a5dcbb29181bc1edd"
+  },
+  "seo-aeo-geo": {
+    "SKILL.md": "dab3d3e8e468d9c7562bb80e5f1480e1fa753a0539641227018be9fd651ce45e"
+  },
+  "seo-audit-orchestration": {
+    "SKILL.md": "f6010bec983bd116b90013bd507ef28e13971d36e36ef0c2fb2ccd8225aa34f1"
+  },
+  "seo-backlink-audit": {
+    "SKILL.md": "c61832f1a88be7cf027f47de8f5f86398a188d2de339c30529d721a1525dfc0c"
+  },
+  "seo-competitor": {
+    "SKILL.md": "5c6d48c4fbe32adf88f4b8680b3c6229c0ef78e87741d173e32ef9a73e7da311"
+  },
+  "seo-content-audit": {
+    "SKILL.md": "56c346fb524e29321fffdb558e8816d4aef6c74492bf12c1575b6f9140a203a8"
+  },
+  "seo-content-gap-audit": {
+    "SKILL.md": "b14432f197f0e15195033267c6ec883f73be03e5d4c100409a628479fe567c87"
+  },
+  "seo-keyword": {
+    "SKILL.md": "8a905a4c772c2c2fc12b353d2fd6ed09ceca5112665a235caafb2030724b0e5d"
+  },
+  "seo-keyword-gap-audit": {
+    "SKILL.md": "904c8745c53fd90960a22500fbb25c9d02759d44de3569e2cb9f1070c690d65d"
+  },
+  "seo-offpage": {
+    "SKILL.md": "8e82f27f498b87844e0fe36df27d75103ada17ccedcbc47daea10268e3bdda29"
+  },
+  "seo-onpage": {
+    "SKILL.md": "da3ff5798d93938e1527883add8c3a340a3f15a14e20538c8f46f6b5998574b7"
+  },
+  "seo-rank-tracking": {
+    "SKILL.md": "e22ba4eb8f6679acfd98db1eceadd939f1fca855ec7a0288f61853a2076593cb"
+  },
+  "seo-site-health-audit": {
+    "SKILL.md": "219963b6591256dd9bfb496c4988fc3119d55c4861f373ac576509f5327ce548"
+  },
+  "seo-technical": {
+    "SKILL.md": "d1f314820d266791473f5427b8a8821c2d01c9944cb0527f40941c469aad0518"
+  },
+  "seo-traffic-diagnosis": {
+    "SKILL.md": "aeb39555b3ebf5306aea9a14d63cf5451e9518bb86acece2f68a2c0fb3e18fd3"
+  },
+  "skill-creation-walkthrough": {
+    "SKILL.md": "7680e21bf9d2b00cde960c0bd0c2e3a426249f80b28443df3cfff8ff2d8488b7"
+  },
+  "sprint-operations": {
+    "SKILL.md": "bfa705b8fce438ccbf264e4086d6e4fad46ec0fbe40319f40cf170871ef0b37b"
+  },
+  "stakeholder-communication": {
+    "SKILL.md": "26c38dc0a879373d2ae0bcca6a2cb0b6f056360176c2f9c9e8dded224c6a5ec1"
+  },
+  "team-onboarding-playbook": {
+    "SKILL.md": "19fb70c86c26bf2fa6c2b309a4e6fb037840bce310536ff4f9b591f3a52aec67"
+  },
+  "ticket-authoring": {
+    "SKILL.md": "8edaaf5b6f96cf722b1c30605cead21176a1c1f11a974b60a28c4f5b063730fa"
+  },
+  "upgrade-flow-design": {
+    "SKILL.md": "06aaa00b9ddd3d3d895ba065a9479f2e9cc93d3cd766207e41d6256b43cccfd6"
+  },
+  "usability-testing": {
+    "SKILL.md": "1daa7902e588419ccde0ccdbb9d5667d502eb7ce399eee740217ce34f0bc3b18"
+  },
+  "user-feedback-aggregation": {
+    "SKILL.md": "ff60b543e460813a6ce4c1ebdf2d915b4e0c1f88ded68f885e6b48a18f7ea2c4"
+  },
+  "ux-research": {
+    "SKILL.md": "2f530e5ea465567832a742deca174562fcf19267173cdc71f6baae99e37595f9"
+  },
+  "vendor-evaluation": {
+    "SKILL.md": "3a5fa045be5c6b57769d22f89b9b60cd7323b216e9aa1ff1a2dd48461e420ade"
+  },
+  "vertical-site-conventions": {
+    "SKILL.md": "9463127992344e265f0db5e3df7bfcc16698aa0640e590b80b937bb3fd0a7844"
+  }
+}

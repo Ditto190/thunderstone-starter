@@ -1,0 +1,116 @@
+# Thunderstone skills catalogue (metadata)
+# generatedAt: 2026-10-24T09:48:44.063Z
+# count: 110
+# Load this or run: node scripts/suggest-skills.mjs "<task>"
+# Then Read the selected SKILL.md on demand (global or .agents/skills).
+
+accessibility-audit — WCAG compliance audit with remediation plan
+ads-creative-development — Hook patterns, format selection, video pacing, variation systems, testing methodology, fatigue detection, and the platform-specific creative norms that separate ads from clutter
+ads-performance-analytics — Read paid media dashboards without fooling yourself: attribution models, platform reporting quirks, ROAS vs LTV, multi-platform reconciliation, incrementality testing, and the interpretation failures that compound into wasted budget
+after-action-report — Post-mortems, retros, learnings documentation
+ai-content-collaboration — How humans and AI compose in content workflows: participation boundaries, hybrid patterns, voice ownership, the AI slop problem, disclosure and transparency, team calibration, and the ethics of honest AI-assisted production
+analytics-strategy — Measurement frameworks, dashboard design, event taxonomy
+art-direction — Photography, illustration, and visual direction for campaigns
+backup-and-disaster-recovery — RPO/RTO targets, backup strategy, restoration drills
+beta-program-management — Running betas that produce real signal. Participant selection, structured feedback, beta-to-GA decisions. Distinguishes soft-launch (no structure) from kitchen-sink (everyone in) from structured-beta (calibrated cohort with intentional feedback loops)
+brand-archetype-system — 12 archetype defaults across 18 verticals: color, type, voice, imagery starters
+brand-discovery — Audience research, competitive scan, positioning territory exploration
+brand-ideation — Naming, positioning territories, mood directions, narrative angles
+brand-identity — Logo system, color, typography, imagery, iconography, motion
+brand-style-guide — The canonical reference document for the full brand system
+brand-voice — Voice attributes, tone shifts, vocabulary, paired-example library
+calculator-design — Designing interactive calculators that deliver decision-support value while qualifying leads. Distinguishes vanity-calculator (no real value) from lead-trap (hides answer behind email) from transparent-decision-tool (gives genuine value, captures leads honestly)
+caveman — Terse style for bot-to-bot and group-chat messages, status pings and internal notes only
+caveman-setup — Wire a repository through the Caveman Cloud gateway so every LLM request is measured, with no behavior change
+chatbot-flow-design — Designing conversational flows for chatbots and AI agents on websites. Distinguishes scripted-bot (rigid trees, fail edge cases) from hallucinating-bot (LLM without structure, makes things up) from structured-guided-conversation (LLM-powered with intent architecture and fallback discipline)
+code-review-web — PR review, build error diagnosis, security and quality checks
+comparison-tool-design — Designing comparison tools that help users decide. Distinguishes feature-list-dump (every feature in a row, no decision support) from hidden-recommendation (biased comparison pretending to be neutral) from honest-comparison-with-guidance (genuine comparison plus opinionated recommendation)
+competitor-experience-audit — Cross-site experience patterns and gaps across a vertical
+content-and-copy — Website copy, blog content, content production frameworks
+content-brief-authoring — Per-piece editorial brief: target keyword, intent, audience, outline, entity coverage, internal linking, success criteria, and the discipline that distinguishes useful briefs from bloat
+content-distribution — Content distribution discipline: owned, earned, and paid channels matched to audience and content type. Channel-fit decisions, distribution cadence, the strategic alternative to spam-everywhere or hope-and-pray
+content-migration — Platform migrations with SEO equity preservation
+content-refresh-system — Systematic content refresh: quarterly audits, refresh prioritization, refresh-vs-merge-vs-delete decisions, the lifecycle discipline that distinguishes intentional programs from set-and-forget decay
+content-repurposing — Cross-format content adaptation: one piece becomes many (blog series, email, social, webinar, podcast, video) with per-format adaptation rather than mass-blast that ignores medium constraints
+content-strategy — Editorial strategy, content calendar, topical authority planning
+cost-optimization — Infrastructure spend audits, rightsizing, contract negotiation
+creative-brief — Project briefs that align stakeholders before work starts
+creative-brief-selector — Live-reference-grounded creative briefs with divergence check against prior builds
+creative-direction — Four-axis aesthetic brief (tone, aesthetic, audience, sensory ambition) for cross-skill coherence
+cro-optimization — Hypothesis-driven testing, conversion optimization
+data-warehouse-experimentation — Run experiments out of the warehouse: SQL assignment, exposure logs, dbt metric definitions, statistical analysis, variance reduction with CUPED, sequential testing, and the operational tradeoffs vs platforms
+dependency-management — Package updates, security patches, lockfile hygiene
+design-standards — Production-grade page and component design standards
+design-system — Component library, design tokens, design system documentation
+discovery-research-synthesis — Synthesizing customer interviews, research notes, and support tickets into actionable PM decisions. Distinguishes data-dump (no synthesis) from insight-theater (overpolished narrative) from actionable synthesis (decision-grade clarity)
+dispatch-authoring — Planner-to-agent handoffs with Gate 0, verification, held draft PRs, and stop conditions
+documentation-strategy — Documentation systems, what to document, maintenance cadence
+domain-strategy — DNS architecture, redirects, registrars, multi-domain portfolios
+editorial-qa — Pre-publish QA framework: brief adherence, voice consistency, fact accuracy, AI-content audit, AEO/SEO compliance, sampling at scale, and the workflow that distinguishes catch-problems QA from process theater
+email-deliverability — DMARC, SPF, DKIM, sender reputation, deliverability monitoring
+email-sequences — Onboarding flows, lifecycle campaigns, transactional copy
+evidence-based-reviews — Evidence tiers, methodology disclosure, honest review claims
+experiment-design — Hypothesis to decision: sample size, duration, segment analysis, interpretation, and the failure modes that produce wrong shipping calls
+experimentation-analytics — Read result panels without fooling yourself: confidence intervals, p-values, multiple testing, sequential testing, CUPED, ratio metrics, network effects, dashboard reconciliation
+experimentation-platform-orchestrator — Pick the right experimentation platform, migrate when wrong, coordinate when multi-platform: a decision framework for Statsig, PostHog, GrowthBook, Optimizely, Amplitude, Eppo, Kameleoon
+feature-flagging — Flags as production infrastructure: types, naming, lifecycle, targeting, rollout, stale flag cleanup, governance
+feature-launch-playbook — The operational discipline of launching a feature well: positioning, internal alignment, customer comms, sales enablement, support readiness, rollout strategy, monitoring, and post-launch measurement
+form-strategy — Form design, validation patterns, spam prevention, conversion tuning
+frontend-component-build — Component architecture, props design, accessibility from the start
+funnel-flow-architecture — Architecting cross-tool conversion flows that match audience and stage. Distinguishes silo-funnels (every tool standalone) from kitchen-sink-funnels (every audience squeezed through one path) from matched-funnels (architecture matched to audience-and-stage)
+incident-response — Incident triage, comms, mitigation, escalation
+information-architecture — Sitemap, navigation, URL structure, content types, taxonomy
+integration-orchestrator — Sequence creative-direction work across phases, gates, handoffs, and QA verification
+interactive-product-tour — Designing in-product tours and contextual help. Distinguishes tooltip-spam (every button has a tour stop) from one-and-done (tour shows once, never seen again) from contextual-when-needed (surfaces help at the moment friction occurs)
+internationalization — Locale strategy, hreflang, translation workflow, RTL design
+journey-mapping — Customer journey maps, service blueprints, friction analysis
+jtbd-framing — Jobs-to-be-Done framework. Job statements, struggling moments, hire/fire criteria, the difference between feature-thinking and job-thinking. Honest about where JTBD earns its keep and where it becomes performative
+landing-page-copy — Landing pages, sales pages, hero-to-CTA flow
+launch-runbook — Go-live runbook, DNS cutover, deploy day procedures
+lead-magnet-design — Designing gated content that earns the email. Distinguishes thin-bait (overpromises, underdelivers) from kitchen-sink-resource (everything, helps with nothing) from earned-value-magnet (delivers standalone value while qualifying the lead)
+lean-ctx — Use on the shared box for any shell command or file read whose output may be long
+logo-design — Logo variants across architectures (wordmark, lockup, monogram, letterform-as-symbol), with rationale and application specs
+long-form-content-frameworks — Structural patterns for individual long-form pieces (case studies, whitepapers, research reports, definitive guides, manifestos, ebooks, long-form tutorials) that distinguish publication-quality work from bloggy-long padding or academic bloat
+media-asset-management — Image pipelines, video hosting, asset libraries, format selection
+monitoring-and-alerting — SLO design, uptime checks, alert routing, on-call rotations
+multi-step-form-design — Designing multi-step forms that respect cognitive load while maintaining completion intent. Distinguishes kitchen-sink-single-page (overwhelms) from progress-theater (steps without genuine staging) from genuinely-staged (each step earns its own page)
+okr-design — OKR design discipline. Outcome statements, key results, scoring, mid-quarter recalibration. Distinguishes sandbagged OKRs (always hit, useless) from aspirational fantasy (impossible, demoralizing) from stretch OKRs (genuine ambition with quarterly accountability)
+onboarding-wizard-design — Designing first-run product onboarding wizards. Distinguishes tutorial-overload (dump everything upfront) from skip-friendly-empty (skipped onboarding leads to abandoned product) from earned-progressive-disclosure (right things at the right moments)
+oss-contribution-research — Gated research and patch prep for outside open-source PRs, ending in a human-approved queue item
+paid-media-strategy — Hypothesis to spend: channel selection, budget allocation, audience targeting, bid strategy, attribution reality, and the failure modes that burn agency-scale budgets
+performance-optimization — Core Web Vitals, asset optimization, render performance
+pillar-content-architecture — Hub-level content architecture: pillar topic selection, cluster planning, internal linking, URL structure, pillar and cluster page anatomy, topical authority signals, refresh discipline
+pm-spec-writing — PRDs, user stories, acceptance criteria, dev briefs
+product-analytics-setup — Instrument product analytics correctly: event taxonomy, properties, naming conventions, schema versioning, funnels, retention cohorts, North Star selection, and the instrumentation debt that compounds without discipline
+product-configurator-design — Designing interactive product configurators. Distinguishes infinite-options (decision paralysis from too many options) from canned-bundles-only (no real customization) from guided-configuration (smart defaults plus meaningful constraints plus escape hatches)
+programmatic-seo — Designing pSEO programs that work: data sources, template design, quality control at scale, internal linking, crawl budget, AEO/GEO patterns, refresh discipline, and when pSEO is and is not the right answer
+qa-testing — Pre-launch QA, regression testing, cross-browser checks
+quiz-and-assessment-design — Designing quizzes and assessments that produce actionable segmentation. Distinguishes clickbait-quiz (engagement only) from vanity-result (entertaining, not useful) from actionable-segmentation (genuine categorization that drives next-step recommendations)
+roadmap-planning — Quarterly planning, prioritization, dependency mapping
+scheduler-and-booking-design — Designing schedulers and booking flows. Distinguishes any-time-friction (no qualification, just a booking link) from interrogation-gate (so much qualification it scares users off) from qualified-fast-path (just enough qualification to set up the call well)
+security-baseline — HTTPS, security headers, CSP, secrets management, vulnerability scans
+seo-aeo-geo — AI search optimization, llms.txt, extraction-friendly content
+seo-audit-orchestration — Master orchestrator: sequences the suite, produces a rollup report
+seo-backlink-audit — Profile health, anchor mix, toxic links, reclamation, gap analysis
+seo-competitor — SERP overlap, content gaps, backlink gaps, technical comparison
+seo-content-audit — Keep/update/merge/redirect/delete decisions across a site
+seo-content-gap-audit — Missing topics, thin coverage, outdated content, decay diagnosis
+seo-keyword — Discovery, intent classification, clustering, prioritization
+seo-keyword-gap-audit — Competitor keyword gaps with opportunity scoring and clustering
+seo-offpage — Link building, digital PR, citations, linkable assets
+seo-onpage — Single-page audits and optimization across 8 dimensions
+seo-rank-tracking — Setup, baseline, segmentation, alerting, dashboarding
+seo-site-health-audit — Triage Ahrefs Site Audit findings by SEO impact, not severity
+seo-technical — Crawlability, indexability, rendering, schema, page experience
+seo-traffic-diagnosis — Diagnose drops, stalls, or wins via 5-layer root cause analysis
+skill-creation-walkthrough — The meta-skill: how to write your own custom skills
+sprint-operations — PMO metrics, capacity, ceremonies, sprint reports, and agent-lane measurement
+stakeholder-communication — Status updates, exec readouts, project communications
+team-onboarding-playbook — 30-60-90 onboarding plans for new hires and contractors
+ticket-authoring — Bugs, tasks, stories, spikes, and epics with a definition of ready per type
+upgrade-flow-design — Designing free-to-paid conversion flows. Distinguishes paywall-everywhere (gates everything aggressively) from free-forever-trap (no upgrade path surfaces) from value-triggered-upgrade (paywall surfaces at moments of demonstrated value)
+usability-testing — Test design, moderation, findings reports
+user-feedback-aggregation — Collecting and synthesizing user feedback across channels into continuous decision signal. Triage discipline that distinguishes loudest-voice (whoever complains most) from averaged-noise (every signal weighted equally) from triaged-synthesis (weighted by source quality and decision relevance)
+ux-research — Research planning, user interviews, qualitative synthesis
+vendor-evaluation — Tool and vendor selection using a structured rubric
+vertical-site-conventions — Vertical page and site composition built to the experience bar

@@ -9,6 +9,11 @@
       },
       {
         "command": "node .cursor/hooks/collection-metrics.mjs"
+      },
+      {
+        "command": "node .cursor/hooks/skills-catalog-stale.mjs",
+        "timeout": 5,
+        "failClosed": false
       }
     ],
     "subagentStart": [
