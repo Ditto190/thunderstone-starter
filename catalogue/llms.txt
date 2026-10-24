@@ -1,5 +1,5 @@
 # Thunderstone skills catalogue (metadata)
-# generatedAt: 2026-10-24T09:48:44.063Z
+# generatedAt: 2026-10-24T11:03:29.850Z
 # count: 110
 # Load this or run: node scripts/suggest-skills.mjs "<task>"
 # Then Read the selected SKILL.md on demand (global or .agents/skills).

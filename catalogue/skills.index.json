@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T09:48:44.063Z",
+  "generatedAt": "2026-10-24T11:03:29.850Z",
   "count": 110,
   "skills": [
     {
@@ -400,7 +400,7 @@
       "path": ".agents/skills/caveman/SKILL.md",
       "source": "thunderstone",
       "status": "live",
-      "updated": "2026-10-22"
+      "updated": "2026-10-24"
     },
     {
       "id": "caveman-setup",
@@ -412,7 +412,7 @@
       "path": ".agents/skills/caveman-setup/SKILL.md",
       "source": "thunderstone",
       "status": "live",
-      "updated": "2026-10-22"
+      "updated": "2026-10-24"
     },
     {
       "id": "chatbot-flow-design",
@@ -1508,7 +1508,7 @@
       "path": ".agents/skills/lean-ctx/SKILL.md",
       "source": "thunderstone",
       "status": "live",
-      "updated": "2026-10-22"
+      "updated": "2026-10-24"
     },
     {
       "id": "logo-design",
