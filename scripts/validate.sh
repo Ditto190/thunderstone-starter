@@ -37,4 +37,7 @@ fi
 if [[ -f tests/skills-catalog.mjs ]]; then
   node tests/skills-catalog.mjs
 fi
+if [[ -f tests/handoff-check-test.sh ]]; then
+  env -u BASH_ENV PATH="/usr/bin:/bin:$PATH" bash tests/handoff-check-test.sh
+fi
 echo "Infrastructure validation passed."
