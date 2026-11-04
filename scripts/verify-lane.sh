@@ -3,7 +3,8 @@
 # Usage: verify-lane.sh [--worktree DIR] [--branch NAME] [--paths "a b"] [--evidence FILE] [--ci]
 #   --worktree  repo/worktree to check (default: this repo)
 #   --branch    expected current branch
-#   --paths     exact set of paths that should be staged (order free)
+#   --paths     exact set of paths that should be staged (space-separated, order free)
+#   --path      one expected staged path (repeatable; use for names with spaces)
 #   --evidence  artifact whose line 1 must be the 1-line JSON brief header
 #               (keys goal, owner, success, evidence_path, approval, return)
 #   --ci        also run scripts/ci-mimic.sh in the worktree
@@ -16,10 +17,11 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --worktree) wt="${2:?}"; shift 2 ;;
     --branch) branch="${2:?}"; shift 2 ;;
-    --paths) paths="${2:?}"; shift 2 ;;
+    --paths) paths+="$(tr ' ' '\n' <<<"${2:?}")"$'\n'; shift 2 ;;
+    --path) paths+="${2:?}"$'\n'; shift 2 ;;
     --evidence) evidence="${2:?}"; shift 2 ;;
     --ci) ci=1; shift ;;
-    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
     *) echo "verify-lane: unknown arg $1" >&2; exit 2 ;;
   esac
 done
@@ -37,7 +39,7 @@ staged="$(git -C "$wt" diff --cached --name-only | LC_ALL=C sort)"
 if [[ -n "$staged" ]]; then ok "staged $(wc -l <<<"$staged") path(s)"; else bad "nothing staged"; fi
 
 if [[ -n "$paths" ]]; then
-  want="$(tr ' ' '\n' <<<"$paths" | sed '/^$/d' | LC_ALL=C sort -u)"
+  want="$(sed '/^$/d' <<<"$paths" | LC_ALL=C sort -u)"
   if [[ "$staged" == "$want" ]]; then ok "staged set matches --paths"; else
     extra="$(comm -23 <(echo "$staged") <(echo "$want") | tr '\n' ' ')"
     miss="$(comm -13 <(echo "$staged") <(echo "$want") | tr '\n' ' ')"
@@ -46,7 +48,9 @@ if [[ -n "$paths" ]]; then
 fi
 
 if [[ -n "$staged" ]]; then
-  partial="$(comm -12 <(echo "$staged") <(git -C "$wt" diff --name-only | LC_ALL=C sort) | tr '\n' ' ')"
+  # Untracked too: catches an untracked replacement for a staged deletion.
+  dirty="$( { git -C "$wt" diff --name-only; git -C "$wt" ls-files --others --exclude-standard; } | LC_ALL=C sort -u)"
+  partial="$(comm -12 <(echo "$staged") <(echo "$dirty") | tr '\n' ' ')"
   if [[ -z "$partial" ]]; then ok "no unstaged edits on staged paths"; else bad "staged paths also have unstaged edits: $partial"; fi
 fi
 

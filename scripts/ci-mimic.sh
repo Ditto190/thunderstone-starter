@@ -27,7 +27,8 @@ hide="$hide agent cursor-agent"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 shim="$tmp/bin"
-mkdir -p "$shim"
+mkdir -p "$shim" "$tmp/home"
+# Isolated HOME: scripts that re-prepend $HOME/.local/bin cannot recover the real agent CLI.
 auto_log=0
 if [[ -z "$log" ]]; then log="$(mktemp "${TMPDIR:-/tmp}/ci-mimic.XXXXXX")"; auto_log=1; fi
 : >"$log"
@@ -36,6 +37,7 @@ if [[ -z "$log" ]]; then log="$(mktemp "${TMPDIR:-/tmp}/ci-mimic.XXXXXX")"; auto
 IFS=: read -r -a dirs <<<"$PATH"
 for d in "${dirs[@]}"; do
   [[ -d "$d" ]] || continue
+  d="$(cd "$d" && pwd)"  # relative PATH entries must not resolve against the shim dir
   for f in "$d"/*; do
     n="${f##*/}"
     [[ -x "$f" && ! -d "$f" ]] || continue
@@ -49,7 +51,7 @@ run_step() {
   local name="$1" rc=0
   shift
   echo "== $name" >>"$log"
-  (cd "$root" && env -u BASH_ENV -u ENV PATH="$shim" HUSKY=0 CI=true "$@") >>"$log" 2>&1 || rc=$?
+  (cd "$root" && env -u BASH_ENV -u ENV HOME="$tmp/home" PATH="$shim" HUSKY=0 CI=true "$@") >>"$log" 2>&1 || rc=$?
   if [[ "$rc" -eq 0 ]]; then echo "ci-mimic: ok   $name"; else
     echo "ci-mimic: FAIL $name rc=$rc (log: $log)"
     tail -n 15 "$log" | sed 's/^/  | /'
@@ -59,11 +61,13 @@ run_step() {
 
 rc=0
 if [[ ${#cmd[@]} -gt 0 ]]; then
-  run_step "${cmd[*]}" "${cmd[@]}" || rc=$?
+  # Constant label: arguments may carry secrets and must not reach the log/stdout.
+  run_step "custom command" "${cmd[@]}" || rc=$?
 else
-  run_step "git diff --check" git diff --check || rc=$?
-  run_step "git diff --cached --check" git diff --cached --check || rc=$?
-  run_step "npm test" npm test || rc=$?
+  # Keep the first failure; a later passing step must not reset rc.
+  run_step "git diff --check" git diff --check || { s=$?; [[ "$rc" -ne 0 ]] || rc=$s; }
+  run_step "git diff --cached --check" git diff --cached --check || { s=$?; [[ "$rc" -ne 0 ]] || rc=$s; }
+  run_step "npm test" npm test || { s=$?; [[ "$rc" -ne 0 ]] || rc=$s; }
 fi
 if [[ "$rc" -eq 0 ]]; then echo "ci-mimic: PASS (hidden: $hide)"; else echo "ci-mimic: FAIL (hidden: $hide)"; fi
 # Keep a caller-supplied log always; an auto log only when something failed.

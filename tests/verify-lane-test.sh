@@ -32,6 +32,14 @@ set +e; out="$(vl)"; code=$?; set -e
 { [[ "$code" -eq 1 ]] && grep -qF 'FAIL git diff --cached --check' <<<"$out"; } || fail "whitespace not caught: $out"
 g rm -q --cached ws.txt
 
+# Path with a space via --path; untracked replacement of a staged deletion is caught.
+echo s >"${repo}/a b.txt"; g add "a b.txt"
+vl --path "a b.txt" --paths "a.txt b.txt" >/dev/null || fail "--path with space should pass"
+g rm -q --cached a.txt
+set +e; out="$(vl)"; code=$?; set -e
+{ [[ "$code" -eq 1 ]] && grep -qF 'unstaged edits: a.txt' <<<"$out"; } || fail "untracked replacement not caught: $out"
+g add a.txt; g reset -q -- "a b.txt"; rm -f "${repo}/a b.txt"
+
 ev="${TMP}/ev.md"
 printf '{"goal":"g","owner":"o","success":"s","evidence_path":"e","approval":"a","return":"r"}\nbody\n' >"$ev"
 vl --evidence "$ev" >/dev/null || fail "good header rejected"
