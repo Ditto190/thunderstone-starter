@@ -46,6 +46,22 @@ LONG=$(python3 -c 'print("{\"goal\":\"g\",\"owner\":\"o\",\"success\":\"s\",\"ev
 assert_exit 1 fail-over300 "$H" --check "$LONG"
 assert_exit 1 fail-legacy-long "$H" --check "$(python3 -c 'print("ASK: "+"y"*310)')"
 
+# --- review regressions (PR #68 batch) ---
+R6='"goal":"g","owner":"o","success":"s","evidence_path":"/p","approval":"ro","return":"path+<=5"'
+assert_exit 1 fail-dup-approval "$H" --check "{$R6,\"approval\":\"ro\"}"
+assert_exit 1 fail-comma-key "$H" --check "{$R6,\"pri,due\":\"P9\"}"
+assert_exit 1 fail-null-goal "$H" --check '{"goal":null,"owner":"o","success":"s","evidence_path":"/p","approval":"ro","return":"path+<=5"}'
+assert_exit 1 fail-approval-newline "$H" --check '{"goal":"g","owner":"o","success":"s","evidence_path":"/p","approval":"ro\n","return":"path+<=5"}'
+assert_exit 0 pass-leading-space "$H" --check " {$R6}"
+assert_exit 1 fail-legacy-misplaced "$H" --check $'IN: /tmp/x\nASK: task'
+# Same-second handoffs never overwrite; long ASK is kept (truncated inline + full in .ask.md).
+LASK=$(printf 'q%.0s' {1..400})
+m1=$(echo one | "$H" a b s "$LASK"); echo two | "$H" a b s short >/dev/null
+if [[ $(find "$HANDOFF_DIR" -maxdepth 1 -name '*-a-b-s.*.md' ! -name '*.ask.md' | wc -l) -eq 2 ]]; then PASS=$((PASS+1)); else FAIL=$((FAIL+1)); echo "FAIL unique-files" >&2; fi
+askf=$(sed -n 's/^IN: //p' <<<"$m1")
+if [[ "$m1" == ASK:\ qq* && ${#m1} -le 300 ]] && grep -qF "ASK: $LASK" "$askf"; then PASS=$((PASS+1)); else FAIL=$((FAIL+1)); echo "FAIL fallback-keeps-ask: $m1" >&2; fi
+HANDOFF_DIR="$HANDOFF_DIR/$(printf 'd%.0s' {1..280})" assert_exit 1 fail-fallback-too-long "$H" a b s "$LASK" </dev/null
+
 # --- regression: 3 fixtures must pass --check ---
 for i in 1 2 3; do
   assert_exit 0 "regress-m$i" "$H" --check "tests/fixtures/comms-spec/m$i.header.json"
@@ -78,12 +94,16 @@ if cur_chars > tb:
 print(f"fallback-guard ok total_chars={cur_chars} baseline={tb}")
 
 # Optional tiktoken path when the module is importable.
+# Opt-in only (HANDOFF_TOKEN_GUARD=1): get_encoding() may download without a timeout.
+if os.environ.get("HANDOFF_TOKEN_GUARD") != "1":
+    print("token guard off (set HANDOFF_TOKEN_GUARD=1); fallback-only")
+    sys.exit(0)
 try:
     import tiktoken
-except ImportError:
-    print("tiktoken absent; fallback-only")
+    enc = tiktoken.get_encoding("cl100k_base")
+except Exception as e:  # missing module or no offline cache
+    print(f"tiktoken unavailable ({type(e).__name__}); fallback-only")
     sys.exit(0)
-enc = tiktoken.get_encoding("cl100k_base")
 cur_tok = 0
 for i in range(1, 4):
     line = (fixdir / f"m{i}.header.json").read_text().rstrip("\n")
@@ -115,11 +135,14 @@ GROW="$HANDOFF_DIR/grown-fixtures"
 mkdir -p "$GROW"
 cp tests/fixtures/comms-spec/m1.header.json tests/fixtures/comms-spec/m2.header.json \
   tests/fixtures/comms-spec/m3.header.json "$GROW/"
-FIXDIR="$GROW" "$TOKEN_PY" - <<'PY'
+FIXDIR="$GROW" BASEJSON=tests/fixtures/comms-spec/cl100k-baseline.json "$TOKEN_PY" - <<'PY'
 import json, os, pathlib
 p = pathlib.Path(os.environ["FIXDIR"]) / "m1.header.json"
+base = json.loads(pathlib.Path(os.environ["BASEJSON"]).read_text())["m1"]["fallback_chars"]
 o = json.loads(p.read_text())
-o["goal"] = o["goal"] + "X"
+cur = len(p.read_text().rstrip("\n").encode())
+# Pad past the stored baseline, whatever the current m1 size is.
+o["goal"] = o["goal"] + "X" * (base - cur + 1 if cur <= base else 1)
 order = ["goal", "owner", "success", "evidence_path", "approval", "return", "pri", "due", "body"]
 ordered = {k: o[k] for k in order if k in o}
 p.write_text(json.dumps(ordered, separators=(",", ":"), ensure_ascii=False) + "\n")
