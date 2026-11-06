@@ -15,6 +15,9 @@ bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
 bash tests/run-task-usage-limit-test.sh
 bash tests/run-task-guard-test.sh
+bash tests/run-task-bashenv-test.sh
+bash tests/ci-mimic-test.sh
+bash tests/verify-lane-test.sh
 bash tests/thunderstone-workspace-test.sh
 CURSOR_WORKER_NAME=grok-shared \
 CURSOR_WORKER_SESSION="thunderstone-worker-test-$$" \

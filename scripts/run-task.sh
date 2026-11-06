@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# BASH_ENV (vm-ops-env on the VM) re-prepends PATH in every child bash the agent
+# starts, which breaks hermetic tests and stubs. Never pass it to the agent.
+unset BASH_ENV ENV
 export PATH="$HOME/.local/bin:$PATH"
 brief="${1:?Usage: run-task.sh <brief.md>}"
 [[ -r "$brief" ]] || { echo "Brief not readable"; exit 1; }
