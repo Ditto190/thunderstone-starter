@@ -35,7 +35,10 @@ if [[ -n "$branch" ]]; then
   if [[ "$cur" == "$branch" ]]; then ok "branch $cur"; else bad "branch is '${cur:-DETACHED}', want $branch"; fi
 fi
 
-staged="$(git -C "$wt" diff --cached --name-only | LC_ALL=C sort)"
+# NUL-delimited (-z): literal pathnames, no core.quotePath escapes.
+# --no-renames: staged rename sources appear as deletions so a recreated old name is caught.
+_nul_lines() { LC_ALL=C sort -zu | tr '\0' '\n' | sed '/^$/d'; }
+staged="$(git -C "$wt" diff --cached --name-only -z --no-renames | _nul_lines)"
 if [[ -n "$staged" ]]; then ok "staged $(wc -l <<<"$staged") path(s)"; else bad "nothing staged"; fi
 
 if [[ -n "$paths" ]]; then
@@ -48,8 +51,16 @@ if [[ -n "$paths" ]]; then
 fi
 
 if [[ -n "$staged" ]]; then
-  # Untracked too: catches an untracked replacement for a staged deletion.
-  dirty="$( { git -C "$wt" diff --name-only; git -C "$wt" ls-files --others --exclude-standard; } | LC_ALL=C sort -u)"
+  # Untracked + unstaged; also any staged-deletion path still on disk (even if ignored).
+  dirty="$(
+    {
+      git -C "$wt" diff --name-only -z --no-renames
+      git -C "$wt" ls-files -z --others --exclude-standard
+      while IFS= read -r -d '' p; do
+        if [[ -e "$wt/$p" || -L "$wt/$p" ]]; then printf '%s\0' "$p"; fi
+      done < <(git -C "$wt" diff --cached --name-only -z --diff-filter=D --no-renames)
+    } | _nul_lines
+  )"
   partial="$(comm -12 <(echo "$staged") <(echo "$dirty") | tr '\n' ' ')"
   if [[ -z "$partial" ]]; then ok "no unstaged edits on staged paths"; else bad "staged paths also have unstaged edits: $partial"; fi
 fi
