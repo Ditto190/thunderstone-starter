@@ -1,0 +1,1 @@
+{"goal":"fleet health","owner":"Token-optimizer","success":"token.json written","evidence_path":"artifacts/FLEET-HEALTH-2026-11-02/token.json","approval":"ro","return":"path+<=5","pri":"P2","body":"tests/fixtures/comms-spec/bodies/m2-fleet-health.md"}

@@ -1,0 +1,22 @@
+{
+  "m1": {
+    "chars": 275,
+    "tokens_cl100k": 86,
+    "fallback_chars": 275
+  },
+  "m2": {
+    "chars": 251,
+    "tokens_cl100k": 72,
+    "fallback_chars": 251
+  },
+  "m3": {
+    "chars": 260,
+    "tokens_cl100k": 79,
+    "fallback_chars": 260
+  },
+  "total": {
+    "chars": 786,
+    "tokens_cl100k": 237,
+    "fallback_chars": 786
+  }
+}

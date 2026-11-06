@@ -1,0 +1,1 @@
+{"goal":"A+B closeout stage","owner":"Cursor-Runner","success":"A ff; B staged","evidence_path":"artifacts/CLOSEOUT-RUN-2026-10-23.md","approval":"stage","return":"path+<=5","pri":"P1","due":"next-turn","body":"tests/fixtures/comms-spec/bodies/m3-closeout.md"}
