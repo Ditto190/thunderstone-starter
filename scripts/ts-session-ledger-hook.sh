@@ -46,7 +46,7 @@ sys.stdout.write(sid or "-")
   _detail="${_detail//$'\n'/ }"
   mkdir -p "$(dirname "$_ledger")"
   (
-    flock -w 5 9
+    flock -w 5 9 || exit 0
     printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
       "$_ts" "$_actor" "sessionStart" "-" "${_sid:--}" "${_detail:0:200}" >>"$_ledger"
   ) 9>>"$_ledger.lock"

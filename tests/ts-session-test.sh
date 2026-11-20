@@ -3,7 +3,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TS="$ROOT/scripts/ts-session.sh"
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+S=""
+cleanup() {
+  if [[ -n "$S" ]]; then
+    bash "$TS" stop "$S" >/dev/null 2>&1 || true
+  fi
+  rm -rf "$TMP"
+}
+trap cleanup EXIT
 export TS_STATE="$TMP/state" TS_LEDGER="$TMP/ledger.tsv" TS_SOCKET="${TS_SOCKET:-ts-shared}"
 mkdir -p "$TS_STATE"
 
@@ -42,5 +49,4 @@ if bash "$TS" wait "$S" 'DONE-BOUNDARY-1' 2; then
   exit 1
 fi
 
-bash "$TS" stop "$S" >/dev/null
 echo "ts-session-test passed"

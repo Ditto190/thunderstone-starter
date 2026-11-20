@@ -82,6 +82,8 @@ wait_pane_has() { # NAME NEEDLE SECS — 0 if capture-pane shows NEEDLE (fixed s
 
 _start_session() { # name chat mode cwd force raw launch
   local name="$1" chat="$2" mode="$3" cwd="$4" force="$5" raw="$6" launch="$7"
+  mkdir -p "$TS_STATE"
+  rm -f "$TS_STATE/$name.wait.snap"
   tm new-session -d -s "$name" -x 200 -y 50 -c "$cwd" "$launch"
   tm set-option -t "=$name:" @ts_chat "${chat:--}" >/dev/null
   tm set-option -t "=$name:" @ts_owner "$TS_ACTOR" >/dev/null
