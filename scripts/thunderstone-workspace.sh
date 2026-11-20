@@ -52,3 +52,17 @@ dc-bridge-test() {
   fi
   (cd "$THUNDERSTONE_BRIDGE_DIR" && npm test)
 }
+
+# ts-session (DT 2026-11-20 t241s854): interactive `agent` with no args, outside tmux,
+# launches `agent persist`. Bypass with TS_NO_PERSIST=1.
+agent() {
+  if [[ "${TS_NO_PERSIST:-}" == 1 ]]; then
+    command agent "$@"
+    return
+  fi
+  if [[ $- == *i* && -t 0 && $# -eq 0 && -z "${TMUX:-}" ]]; then
+    command agent persist
+  else
+    command agent "$@"
+  fi
+}
