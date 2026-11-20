@@ -1,0 +1,1 @@
+{"parent_receipt_id":"rcpt-implementer-dev-stack","context_bytes":0,"brief_path":"workspace/briefs/dev-stack-local.md","protocol_version":1,"role":"verifier","status":"accepted","receipt_id":"rcpt-verifier-dev-stack","handoff_id":"tsk-dev-stack-local","created_at_ms":1792681681937,"validation":{"passed":true,"runner":"npm test"}}

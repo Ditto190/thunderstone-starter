@@ -55,7 +55,7 @@ Defaults (overridable in `.env.local`):
 2. Open [cursor.com/agents](https://cursor.com/agents) → **New agent**.
 3. Select repository `Ditto190/thunderstone-starter` (must match worker git remote).
 4. Under **My Machines**, choose **`grok-shared`** (or your `CURSOR_WORKER_NAME`).
-5. Attach MCPs you need (Google Drive, GitHub plugin, Context7 per project policy).
+5. Attach MCPs you need (Google Drive, GitHub plugin, Context7 per project policy). Dev-stack template (Context7 + Caveman Cloud): `config/dev-stack/mcp.example.json` and `docs/dev-stack/LOCAL-DEV.md`.
 
 From Slack/GitHub/Linear you can route with `worker=grok-shared` when the repo matches.
 

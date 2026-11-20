@@ -1,0 +1,146 @@
+{
+  "development": [
+    "accessibility-audit",
+    "code-review-web",
+    "frontend-component-build",
+    "oss-contribution-research",
+    "performance-optimization"
+  ],
+  "marketing": [
+    "ads-creative-development",
+    "ads-performance-analytics",
+    "paid-media-strategy"
+  ],
+  "operations": [
+    "after-action-report",
+    "backup-and-disaster-recovery",
+    "domain-strategy",
+    "email-deliverability",
+    "incident-response",
+    "launch-runbook",
+    "media-asset-management",
+    "monitoring-and-alerting",
+    "security-baseline"
+  ],
+  "content": [
+    "ai-content-collaboration",
+    "content-and-copy",
+    "content-brief-authoring",
+    "content-distribution",
+    "content-refresh-system",
+    "content-repurposing",
+    "editorial-qa",
+    "email-sequences",
+    "evidence-based-reviews",
+    "landing-page-copy",
+    "long-form-content-frameworks",
+    "pillar-content-architecture",
+    "programmatic-seo"
+  ],
+  "growth": [
+    "analytics-strategy",
+    "cro-optimization"
+  ],
+  "design": [
+    "art-direction",
+    "design-standards",
+    "design-system",
+    "vertical-site-conventions"
+  ],
+  "product": [
+    "beta-program-management",
+    "data-warehouse-experimentation",
+    "experiment-design",
+    "experimentation-analytics",
+    "experimentation-platform-orchestrator",
+    "feature-flagging",
+    "feature-launch-playbook",
+    "integration-orchestrator",
+    "jtbd-framing",
+    "okr-design",
+    "pm-spec-writing",
+    "product-analytics-setup",
+    "roadmap-planning",
+    "ticket-authoring"
+  ],
+  "brand": [
+    "brand-archetype-system",
+    "brand-ideation",
+    "brand-identity",
+    "brand-style-guide",
+    "brand-voice",
+    "creative-brief-selector",
+    "logo-design"
+  ],
+  "strategy-and-discovery": [
+    "brand-discovery",
+    "content-strategy",
+    "creative-brief",
+    "creative-direction",
+    "information-architecture"
+  ],
+  "growth-tooling": [
+    "calculator-design",
+    "chatbot-flow-design",
+    "comparison-tool-design",
+    "funnel-flow-architecture",
+    "interactive-product-tour",
+    "lead-magnet-design",
+    "multi-step-form-design",
+    "onboarding-wizard-design",
+    "product-configurator-design",
+    "quiz-and-assessment-design",
+    "scheduler-and-booking-design",
+    "upgrade-flow-design"
+  ],
+  "thunderstone": [
+    "caveman",
+    "caveman-setup",
+    "lean-ctx"
+  ],
+  "research": [
+    "competitor-experience-audit",
+    "discovery-research-synthesis",
+    "journey-mapping",
+    "usability-testing",
+    "user-feedback-aggregation",
+    "ux-research"
+  ],
+  "cross-cutting": [
+    "content-migration",
+    "cost-optimization",
+    "dependency-management",
+    "form-strategy",
+    "internationalization"
+  ],
+  "process-and-team": [
+    "dispatch-authoring",
+    "documentation-strategy",
+    "skill-creation-walkthrough",
+    "sprint-operations",
+    "stakeholder-communication",
+    "team-onboarding-playbook",
+    "vendor-evaluation"
+  ],
+  "qa": [
+    "qa-testing"
+  ],
+  "seo-foundation": [
+    "seo-aeo-geo",
+    "seo-competitor",
+    "seo-content-audit",
+    "seo-keyword",
+    "seo-offpage",
+    "seo-onpage",
+    "seo-technical"
+  ],
+  "seo-audit-suite": [
+    "seo-audit-orchestration",
+    "seo-backlink-audit",
+    "seo-content-gap-audit",
+    "seo-keyword-gap-audit",
+    "seo-rank-tracking",
+    "seo-site-health-audit",
+    "seo-traffic-diagnosis"
+  ]
+}

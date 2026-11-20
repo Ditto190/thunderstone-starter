@@ -1,0 +1,21 @@
+{
+  "id": "rampstack-starter",
+  "name": "Rampstack starter",
+  "description": "Curated subset matching rampstackco/claude-skills-starter (brand/SEO/PM/dev core).",
+  "skills": [
+    "accessibility-audit",
+    "code-review-web",
+    "content-and-copy",
+    "content-strategy",
+    "cro-optimization",
+    "design-standards",
+    "frontend-component-build",
+    "performance-optimization",
+    "pm-spec-writing",
+    "qa-testing",
+    "seo-aeo-geo",
+    "seo-keyword",
+    "seo-onpage",
+    "skill-creation-walkthrough"
+  ]
+}

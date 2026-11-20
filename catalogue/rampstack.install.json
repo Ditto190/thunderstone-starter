@@ -1,0 +1,19 @@
+{
+  "installedAt": "2026-10-24T09:47:12.092Z",
+  "sourceCommit": "9b90db257f7395fab76ff9bfcb808456709f6af3",
+  "sourcePath": "$HOME/projects/_explore-claude-skills/dist/codex/.agents/skills",
+  "count": 107,
+  "expectedCount": 107,
+  "agentsRoot": "$HOME/.agents/skills",
+  "cursorRoot": "$HOME/.cursor/skills",
+  "agentsInstalled": 107,
+  "cursorInstalled": 107,
+  "linkModes": {
+    "junction": 107,
+    "symlink": 0,
+    "copy": 0
+  },
+  "skipped": [],
+  "dryRun": false,
+  "force": false
+}

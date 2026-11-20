@@ -1,0 +1,4 @@
+# Shell and Node entrypoints must stay LF so WSL/VM/CI bash accepts `set -o pipefail`.
+*.sh text eol=lf
+*.mjs text eol=lf
+.devcontainer/** text eol=lf

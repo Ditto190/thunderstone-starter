@@ -4,13 +4,20 @@ cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 sh -n scripts/bootstrap.sh
 for script in scripts/*.sh; do bash -n "$script"; done
 for script in scripts/*.mjs; do node --check "$script"; done
-node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json"]) JSON.parse(require("fs").readFileSync(f))'
+if compgen -G ".cursor/hooks/*.mjs" > /dev/null; then
+  for script in .cursor/hooks/*.mjs; do node --check "$script"; done
+fi
+node -e 'for (const f of ["package.json",".cursor/environment.json",".cursor/hooks.json","config/dev-stack/mcp.example.json","config/browser/mcp.example.json",".devcontainer/devcontainer.json"]) JSON.parse(require("fs").readFileSync(f))'
 bash scripts/check-hygiene.sh
 command -v shellcheck >/dev/null || { echo "ShellCheck required"; exit 1; }
 shellcheck scripts/*.sh .cursor/hooks/*.sh tests/*.sh
 bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
 bash tests/run-task-usage-limit-test.sh
+bash tests/run-task-guard-test.sh
+bash tests/run-task-bashenv-test.sh
+bash tests/ci-mimic-test.sh
+bash tests/verify-lane-test.sh
 bash tests/thunderstone-workspace-test.sh
 bash tests/thunderstone-workspace-agent-test.sh
 bash tests/ts-session-ledger-hook-test.sh
@@ -30,4 +37,13 @@ if [[ -f tests/agent-collection-invariants.sh ]]; then
 fi
 bash tests/validate-brief-test.sh
 bash tests/collection-hooks-test.sh
+if [[ -f tests/infisical-run-test.sh ]]; then
+  bash tests/infisical-run-test.sh
+fi
+if [[ -f tests/skills-catalog.mjs ]]; then
+  node tests/skills-catalog.mjs
+fi
+if [[ -f tests/handoff-check-test.sh ]]; then
+  env -u BASH_ENV bash tests/handoff-check-test.sh
+fi
 echo "Infrastructure validation passed."

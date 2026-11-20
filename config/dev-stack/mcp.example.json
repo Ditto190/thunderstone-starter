@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "node",
+      "args": ["scripts/env-run.mjs", "npx", "-y", "@upstash/context7-mcp"]
+    },
+    "caveman-cloud": {
+      "url": "https://your-installation.example/mcp",
+      "auth": {
+        "CLIENT_ID": "caveman-cursor"
+      }
+    }
+  }
+}

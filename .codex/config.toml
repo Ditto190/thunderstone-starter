@@ -1,0 +1,15 @@
+[mcp_servers.caveman-cloud]
+command = "cvm"
+args = ["mcp"]
+
+[mcp_servers.context7]
+command = "node"
+args = [
+    "scripts/env-run.mjs",
+    "npx",
+    "-y",
+    "@upstash/context7-mcp",
+]
+
+[mcp_servers.lean-ctx]
+command = "lean-ctx"

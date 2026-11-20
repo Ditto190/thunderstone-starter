@@ -1,0 +1,1 @@
+{"parent_receipt_id":null,"context_bytes":0,"brief_path":"workspace/briefs/dev-stack-local.md","protocol_version":1,"role":"investigator","status":"validated","receipt_id":"rcpt-investigator-dev-stack","handoff_id":"tsk-dev-stack-local","created_at_ms":1792681681935,"validation":{"passed":true,"runner":"scripts/validate-brief.sh"}}

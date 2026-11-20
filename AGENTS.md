@@ -7,6 +7,7 @@ Read this file, the assigned brief and current status only.
 - Run `sh scripts/bootstrap.sh`, then `bash scripts/resume.sh` (Node 22+).
 - Copy `.env.example` to `.env.local` and fill values locally. Never commit it.
 - Environment loading goes through `scripts/env-run.mjs`; credentials are injected at runtime.
+- Local-dev MCP + Dev Container runbook: `docs/dev-stack/LOCAL-DEV.md` (copy `config/dev-stack/mcp.example.json` → `.cursor/mcp.json`).
 
 ## Commands
 - `npm test` runs validation, ShellCheck and `scripts/check-hygiene.sh`.
@@ -14,6 +15,7 @@ Read this file, the assigned brief and current status only.
 - `bash scripts/cursor-worker.sh status` reports the Cursor My Machines worker (see `docs/grok-vm/cursor-cloud-bridge.md`).
 - `ALLOW_LOCAL_COMMITS=1 bash scripts/checkpoint.sh "<message>" <files>` makes a local checkpoint.
 - Prefer deterministic CLI tools and APIs over browser clicking.
+- Skills catalogue: load `catalogue/llms.txt` or run `node scripts/suggest-skills.mjs "<task>"` first; Read a skill's `SKILL.md` only on demand.
 
 ## Agent collection KPIs
 - Baseline collection: one investigator, one implementer, one verifier before adding agents (`docs/adr-agent-collection-kpis.md`).
@@ -67,3 +69,10 @@ Read this file, the assigned brief and current status only.
 lean-ctx is active — the MCP tools replace native equivalents.
 Full rules: LEAN-CTX.md (open on demand — do not auto-load).
 <!-- /lean-ctx -->
+
+## Close-out tracker
+
+- Close-out status lives in `$THUNDERSTONE_OPERATIONAL_ROOT/state/CLOSEOUT-TRACKER.md` (system of record; the Grok Bot Page only mirrors it). Ids: P-xx project, C-xx codebase.
+- Update only rows you own, plus that row's `updated` cell (ISO, AEDT `+11:00`). Append one line per changed field to `$THUNDERSTONE_OPERATIONAL_ROOT/state/closeout-tracker.log`: `ts | agent | id | field: old -> new`.
+- No secrets. A row change is not approval: merge, push, close and delete still need DT's yes.
+- Rules detail: `.cursor/rules/closeout-tracker.mdc`.

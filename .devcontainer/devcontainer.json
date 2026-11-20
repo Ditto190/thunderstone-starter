@@ -1,0 +1,23 @@
+{
+  "name": "thunderstone-starter",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "SKIP_CURSOR_INSTALL": "1"
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    },
+    "codespaces": {
+      "openFiles": ["docs/dev-stack/LOCAL-DEV.md"]
+    }
+  },
+  "forwardPorts": [],
+  "features": {}
+}

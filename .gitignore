@@ -60,3 +60,6 @@ Thumbs.db
 *.rej
 npm-debug.log*
 workspace/reports/
+workspace/briefs/
+workspace/handoffs/
+workspace/exports/
