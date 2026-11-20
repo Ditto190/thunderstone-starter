@@ -9,6 +9,11 @@
       },
       {
         "command": ".cursor/hooks/collection-metrics.sh"
+      },
+      {
+        "command": "scripts/ts-session-ledger-hook.sh",
+        "timeout": 5,
+        "failClosed": false
       }
     ],
     "subagentStart": [

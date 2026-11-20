@@ -12,6 +12,9 @@ bash tests/stage-router-test.sh
 bash tests/check-hygiene-identity-test.sh
 bash tests/run-task-usage-limit-test.sh
 bash tests/thunderstone-workspace-test.sh
+bash tests/thunderstone-workspace-agent-test.sh
+bash tests/ts-session-ledger-hook-test.sh
+bash tests/ts-session-test.sh
 CURSOR_WORKER_NAME=grok-shared \
 CURSOR_WORKER_SESSION="thunderstone-worker-test-$$" \
 CURSOR_WORKER_DIR="$PWD" \

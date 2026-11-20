@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# sessionStart hook: append one ts-ledger line (timestamp, cwd, session id if given).
+# sessionStart hook: append one ts-ledger line (ts-session 6-column TSV shape).
 # Always silent, always exit 0. failClosed should be false; timeout 5.
-{
-  _ts=$(date +%Y-%m-%dT%H:%M:%S%z)
-  _cwd=$(pwd)
-  _sid=""
-  _raw=""
-  if IFS= read -r _line || [[ -n "${_line:-}" ]]; then
-    _raw="$_line"
+(
+  set -euo pipefail
+  _repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+  if [[ -d "$_repo/../thunderstone" ]]; then
+    _state="$_repo/../thunderstone/state/ts-sessions"
+  else
+    _state="$_repo/.state/ts-sessions"
   fi
-  # slurp any remainder so we never block the host
-  cat >/dev/null 2>&1 || true
-  if [[ -n "$_raw" ]]; then
-    _sid=$(printf '%s' "$_raw" | python3 -c '
+  _ledger="${TS_HOOK_LEDGER:-$_state/ledger.tsv}"
+  _actor="${TS_HOOK_ACTOR:-${USER:-unknown}}"
+  _payload="$(cat)"
+  _ts="$(date +%Y-%m-%dT%H:%M:%S%z)"
+  _sid="-"
+  _cwd="$(pwd)"
+  if [[ -n "$_payload" ]]; then
+  _sid="$(printf '%s' "$_payload" | python3 -c '
 import sys, json
 raw = sys.stdin.read().strip()
 sid = ""
@@ -34,11 +38,17 @@ try:
                         break
 except Exception:
     pass
-sys.stdout.write(sid)
-' 2>/dev/null || true)
+sys.stdout.write(sid or "-")
+' 2>/dev/null || echo '-')"
   fi
-  _ledger="${TS_HOOK_LEDGER:-/workspace/thunderstone/state/ts-sessions/ledger.tsv}"
+  _detail="cwd=$_cwd"
+  _detail="${_detail//$'\t'/ }"
+  _detail="${_detail//$'\n'/ }"
   mkdir -p "$(dirname "$_ledger")"
-  printf '%s\t%s\t%s\n' "$_ts" "$_cwd" "${_sid:--}" >> "$_ledger"
-} >/dev/null 2>&1
+  (
+    flock -w 5 9
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "$_ts" "$_actor" "sessionStart" "-" "${_sid:--}" "${_detail:0:200}" >>"$_ledger"
+  ) 9>>"$_ledger.lock"
+) >/dev/null 2>&1 || true
 exit 0
