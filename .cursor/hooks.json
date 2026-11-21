@@ -14,6 +14,11 @@
         "command": "node .cursor/hooks/skills-catalog-stale.mjs",
         "timeout": 5,
         "failClosed": false
+      },
+      {
+        "command": "scripts/ts-session-ledger-hook.sh",
+        "timeout": 5,
+        "failClosed": false
       }
     ],
     "subagentStart": [

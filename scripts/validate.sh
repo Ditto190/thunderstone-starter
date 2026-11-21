@@ -19,6 +19,9 @@ bash tests/run-task-bashenv-test.sh
 bash tests/ci-mimic-test.sh
 bash tests/verify-lane-test.sh
 bash tests/thunderstone-workspace-test.sh
+bash tests/thunderstone-workspace-agent-test.sh
+bash tests/ts-session-ledger-hook-test.sh
+bash tests/ts-session-test.sh
 CURSOR_WORKER_NAME=grok-shared \
 CURSOR_WORKER_SESSION="thunderstone-worker-test-$$" \
 CURSOR_WORKER_DIR="$PWD" \
