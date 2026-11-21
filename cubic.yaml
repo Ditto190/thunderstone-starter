@@ -68,8 +68,9 @@ reviews:
       description: >-
         In workflow files, flag actions not pinned to a full 40-character commit SHA, permissions
         broader than contents read unless justified, any use of pull_request_target, schedule or
-        cron triggers, untrusted event text interpolated into run steps, and secrets exposed to
-        untrusted pull request code.
+        cron triggers outside pr-autopipeline-sweep.yml and codeql.yml (those two are approved:
+        daily batch cutoff and weekly CodeQL; matches CodeRabbit / DT t236u), untrusted event text
+        interpolated into run steps, and secrets exposed to untrusted pull request code.
       include:
         - .github/workflows/**
     - name: Script changes need tests

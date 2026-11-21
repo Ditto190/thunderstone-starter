@@ -25,6 +25,8 @@ concurrency:
   cancel-in-progress: false
 env:
   BATCH_N: "8"          # accumulate this many unresolved threads across queued PRs, then batch
+  # Documented ceiling: gh pr list defaults to 30; 500 covers this repo's open/queued set.
+  PR_LIST_LIMIT: "500"
 jobs:
   sweep:
     runs-on: ubuntu-24.04
@@ -41,7 +43,9 @@ jobs:
       - name: Re-snapshot open PRs and apply batch rule
         run: |
           set -euo pipefail
-          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 50 \
+          # Sticky-state predicate (must match pr-autopipeline.yml upsert):
+          #   user.login == "github-actions[bot]" AND body starts with <!-- autopipeline-state -->
+          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit "$PR_LIST_LIMIT" \
                  --json number,isDraft,isCrossRepository,labels \
                  --jq '[.[] | select((.isDraft|not) and (.isCrossRepository|not))]')"
           echo "$prs" | jq -r '.[].number' | while read -r n; do
@@ -50,13 +54,16 @@ jobs:
           # Wait briefly for snapshots, then read queued PRs and their unresolved-thread counts.
           sleep 60
           queued="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --label "agent:queued" \
+                    --limit "$PR_LIST_LIMIT" \
                     --json number,labels --jq '[.[] | {n: .number, sev: [.labels[].name | select(startswith("sev:"))]}]')"
           total=0
           for n in $(echo "$queued" | jq -r '.[].n'); do
-            u="$(gh pr view "$n" --repo "$GITHUB_REPOSITORY" --json comments \
-                 --jq '[.comments[] | select(.body|startswith("<!-- autopipeline-state -->"))][0].body // ""' \
-                 | sed -n '/^{/,/^}/p' | jq -r '.unresolved // 0' 2>/dev/null || echo 0)"
-            total=$(( total + ${u:-0} ))
+            body="$(gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments" --paginate \
+                    --jq '.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->"))) | .body' \
+                    | head -n1 || true)"
+            u="$(printf '%s\n' "$body" | sed -n '/^{/,/^}/p' | jq -r '.unresolved // 0' 2>/dev/null || echo 0)"
+            [[ "$u" =~ ^[0-9]+$ ]] || u=0
+            total=$(( total + u ))
           done
           urgent="$(echo "$queued" | jq '[.[] | select(.sev | index("sev:critical") or index("sev:major"))] | length')"
           echo "queued=$(echo "$queued" | jq length) unresolved_total=$total urgent=$urgent cutoff=$IS_CUTOFF"
