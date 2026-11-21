@@ -11,4 +11,7 @@ if ! tmux has-session -t '=thunderstone' 2>/dev/null; then
   tmux new-session -d -s thunderstone -c "$ROOT" 'exec bash -l' 9>&-
 fi
 (cd "$ROOT" && bash "$ROOT/scripts/cursor-worker.sh" ensure)
+if [[ -x "$ROOT/scripts/session-snapshot.sh" ]]; then
+  bash "$ROOT/scripts/session-snapshot.sh" show
+fi
 echo "Ready: tmux attach -t thunderstone. No paid agent task started."

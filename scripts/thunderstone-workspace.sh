@@ -53,6 +53,16 @@ dc-bridge-test() {
   (cd "$THUNDERSTONE_BRIDGE_DIR" && npm test)
 }
 
+if [[ $- == *i* ]] && [[ -n "${TMUX:-}" ]] && [[ -z "${TS_SNAPSHOT_TRAP:-}" ]] \
+  && [[ -n "${THUNDERSTONE_REPO_ROOT:-}" ]] \
+  && [[ -x "$THUNDERSTONE_REPO_ROOT/scripts/session-snapshot.sh" ]]; then
+  export TS_SNAPSHOT_TRAP=1
+  _ts_snapshot_save() {
+    bash "$THUNDERSTONE_REPO_ROOT/scripts/session-snapshot.sh" save >/dev/null 2>&1 || true
+  }
+  trap _ts_snapshot_save EXIT
+fi
+
 # ts-session (DT 2026-11-20 t241s854): interactive `agent` with no args, outside tmux,
 # launches `agent persist`. Bypass with TS_NO_PERSIST=1.
 agent() {
