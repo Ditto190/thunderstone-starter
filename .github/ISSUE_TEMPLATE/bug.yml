@@ -1,0 +1,55 @@
+name: Bug
+description: Something is broken or behaves differently from the docs.
+title: "fix: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Agents and people use this form. Keep values short; never paste tokens, keys or `.env` values.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Observed behaviour, including the exact command and exit code.
+      placeholder: "bash scripts/ts-session.sh send ... exited 7"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduce
+      description: Minimal steps. Relative paths only.
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "sev:critical - data loss, secret exposure, main broken"
+        - "sev:major - feature broken, no workaround"
+        - "sev:minor - workaround exists"
+        - "sev:trivial - cosmetic"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options: [scripts, ci, security, agent, docs, deps, browser]
+  - type: checkboxes
+    id: agent
+    attributes:
+      label: Agent handling
+      options:
+        - label: "auto-fix-ok: an agent may open a fix PR without asking (merge still needs DT)"
+        - label: "needs-dt: touches secrets, rulesets, paid features or deletion"

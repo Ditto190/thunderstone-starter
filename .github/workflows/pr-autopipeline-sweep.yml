@@ -1,0 +1,68 @@
+name: PR autopipeline sweep
+# v2 (fleet-v2, DT t236u). Two jobs in one file, no code changes, no merges, GITHUB_TOKEN only.
+#   push to main  -> re-snapshot every open same-repo PR (main moved, so PRs may now be BEHIND/DIRTY;
+#                    no pull_request event fires for that) and apply the batch threshold.
+#   schedule      -> daily cutoff 07:00 UTC (18:00 AEDT / 17:00 AEST). Cron is justified: elapsed time
+#                    raises no GitHub event, and the batching rule needs a cutoff. Marks every queued PR
+#                    agent:batch-due so Git-Scout resolves main-driven drift by the cutoff.
+# workflow_dispatch from GITHUB_TOKEN is the documented exception that may start another workflow run.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      cutoff:
+        description: Treat this run as the daily cutoff
+        required: false
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: autopipeline-sweep
+  cancel-in-progress: false
+env:
+  BATCH_N: "8"          # accumulate this many unresolved threads across queued PRs, then batch
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      IS_CUTOFF: ${{ github.event_name == 'schedule' || inputs.cutoff == true }}
+    steps:
+      - name: Re-snapshot open PRs and apply batch rule
+        run: |
+          set -euo pipefail
+          prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 50 \
+                 --json number,isDraft,isCrossRepository,labels \
+                 --jq '[.[] | select((.isDraft|not) and (.isCrossRepository|not))]')"
+          echo "$prs" | jq -r '.[].number' | while read -r n; do
+            gh workflow run pr-autopipeline.yml --repo "$GITHUB_REPOSITORY" -f pr="$n"
+          done
+          # Wait briefly for snapshots, then read queued PRs and their unresolved-thread counts.
+          sleep 60
+          queued="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --label "agent:queued" \
+                    --json number,labels --jq '[.[] | {n: .number, sev: [.labels[].name | select(startswith("sev:"))]}]')"
+          total=0
+          for n in $(echo "$queued" | jq -r '.[].n'); do
+            u="$(gh pr view "$n" --repo "$GITHUB_REPOSITORY" --json comments \
+                 --jq '[.comments[] | select(.body|startswith("<!-- autopipeline-state -->"))][0].body // ""' \
+                 | sed -n '/^{/,/^}/p' | jq -r '.unresolved // 0' 2>/dev/null || echo 0)"
+            total=$(( total + ${u:-0} ))
+          done
+          urgent="$(echo "$queued" | jq '[.[] | select(.sev | index("sev:critical") or index("sev:major"))] | length')"
+          echo "queued=$(echo "$queued" | jq length) unresolved_total=$total urgent=$urgent cutoff=$IS_CUTOFF"
+          if [[ "$IS_CUTOFF" == "true" || "$total" -ge "$BATCH_N" || "$urgent" -gt 0 ]]; then
+            for n in $(echo "$queued" | jq -r '.[].n'); do
+              gh pr edit "$n" --repo "$GITHUB_REPOSITORY" --add-label "agent:batch-due" >/dev/null
+            done
+          fi
+          { echo "### sweep"; echo "queued: $(echo "$queued" | jq -c '[.[].n]')"; echo "unresolved_total: $total (N=$BATCH_N)"; echo "urgent: $urgent"; echo "cutoff: $IS_CUTOFF"; } >> "$GITHUB_STEP_SUMMARY"

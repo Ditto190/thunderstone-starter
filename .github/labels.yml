@@ -1,0 +1,37 @@
+# Source of truth for repo labels. Synced by .github/workflows/label-sync.yml (create/update only; it
+# never deletes a label - removing one needs DT approval and is done by hand).
+# Existing labels kept as-is: bug, documentation, duplicate, enhancement, good first issue, help wanted,
+# invalid, question, wontfix, dependencies, github_actions, javascript, accessibility.
+- {name: ci,            color: "1d76db", description: "GitHub Actions, hooks or CI"}
+- {name: docs,          color: "0075ca", description: "Docs or Markdown only"}
+- {name: security,      color: "b60205", description: "Secrets, hygiene, CodeQL, gitleaks"}
+- {name: agent,         color: "5319e7", description: "Agent config: AGENTS.md, .cursor, bot configs"}
+- {name: deps,          color: "0366d6", description: "Dependencies"}
+- {name: scripts,       color: "c5def5", description: "scripts/**"}
+- {name: browser,       color: "bfdadc", description: "Browser stack"}
+- {name: breaking,      color: "d93f0b", description: "Incompatible change to flags, exit codes or env names"}
+- {name: task,          color: "ededed", description: "Maintenance or follow-up with a done condition"}
+- {name: needs-triage,  color: "fbca04", description: "New issue, not yet triaged"}
+- {name: "sev:critical", color: "b60205", description: "Data loss, secret exposure, main broken"}
+- {name: "sev:major",    color: "d93f0b", description: "Broken, no workaround"}
+- {name: "sev:minor",    color: "fbca04", description: "Workaround exists"}
+- {name: "sev:trivial",  color: "c2e0c6", description: "Cosmetic"}
+- {name: "agent:queued", color: "5319e7", description: "Pipeline: unresolved threads or branch behind; Git-Scout picks up"}
+- {name: "agent:batch-due", color: "5319e7", description: "Pipeline: batch threshold or daily cutoff reached; Git-Scout fixes now"}
+- {name: "agent:fixing", color: "5319e7", description: "Pipeline: CLI worker running in a worktree"}
+- {name: "agent:wip",    color: "c5def5", description: "Pipeline: agent pushing; bots skip review"}
+- {name: "agent:git-scout", color: "d4c5f9", description: "Owner: Git-Scout"}
+- {name: "agent:cursor", color: "d4c5f9", description: "Fixer: Cursor CLI (L1)"}
+- {name: "agent:copilot", color: "d4c5f9", description: "Fixer: Copilot CLI (L2)"}
+- {name: "escalation:L2", color: "f9d0c4", description: "Escalated to second model"}
+- {name: "escalation:L3", color: "e99695", description: "Escalated to SWE design review"}
+- {name: needs-dt,      color: "b60205", description: "Only DT may decide (merge, secrets, rulesets, paid, delete)"}
+- {name: auto-fix-ok,   color: "0e8a16", description: "Agents may fix without asking (merge still DT)"}
+- {name: no-auto-fix,   color: "000000", description: "Agents must not touch this PR"}
+- {name: blocked,       color: "000000", description: "Stopped by a stop rule; see receipt"}
+- {name: "blocked:auth", color: "000000", description: "Stopped: CLI or GitHub auth failure"}
+- {name: loop,          color: "000000", description: "Same finding re-flagged twice after a fix"}
+- {name: validated,     color: "0e8a16", description: "Receipt: threads resolved, branch current, checks green"}
+- {name: skip-review,   color: "ededed", description: "Bots skip review"}
+- {name: WIP,           color: "ededed", description: "Work in progress"}
+- {name: superseded,    color: "ededed", description: "Replaced by another PR"}

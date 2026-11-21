@@ -1,0 +1,93 @@
+name: PR autopipeline state
+# Event-only (no schedule). Snapshots review/branch state for the agent pipeline:
+#   - sticky PR comment with a JSON state block (marker: autopipeline-state)
+#   - label agent:queued when unresolved threads, a failing check, or a BEHIND/DIRTY branch exist
+# Git-Scout (on the shared box) reads this on its own events and does the work. This workflow
+# never pushes code, never merges, and uses only GITHUB_TOKEN (its own events cannot re-trigger it).
+on:
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+  check_suite:
+    # Only fires from the default-branch copy of this file, and not for suites created by Actions.
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to re-snapshot
+        required: true
+        type: number
+permissions:
+  contents: read
+concurrency:
+  group: autopipeline-${{ github.event.pull_request.number || inputs.pr || github.event.check_suite.head_sha || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  state:
+    # Same-repo PRs only (fork PRs get a read-only token and must not drive agents).
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      checks: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_FROM_EVENT: ${{ github.event.pull_request.number || inputs.pr || '' }}
+      PR_FROM_SUITE: ${{ github.event.check_suite.pull_requests[0].number || '' }}
+    steps:
+      - name: Snapshot PR state
+        run: |
+          set -euo pipefail
+          pr="${PR_FROM_EVENT:-$PR_FROM_SUITE}"
+          [[ "$pr" =~ ^[0-9]+$ ]] || { echo "no same-repo PR for this event"; exit 0; }
+          owner="${GITHUB_REPOSITORY%/*}"; repo="${GITHUB_REPOSITORY#*/}"
+          # shellcheck disable=SC2016  # GraphQL variables, not shell
+          q='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
+              state isDraft headRefOid headRefName mergeStateStatus mergeable
+              labels(first:50){nodes{name}}
+              reviewThreads(first:100){totalCount nodes{isResolved isOutdated
+                comments(first:1){nodes{author{login} path}}}}
+              commits(last:1){nodes{commit{statusCheckRollup{state
+                contexts(first:50){nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}}'
+          gh api graphql -f query="$q" -F o="$owner" -F r="$repo" -F n="$pr" > pr.json
+          jq --arg pr "$pr" '.data.repository.pullRequest as $p | {
+              schema: 1, pr: ($pr|tonumber), head_sha: $p.headRefOid, head_ref: $p.headRefName,
+              state: $p.state, draft: $p.isDraft, merge_state: $p.mergeStateStatus, mergeable: $p.mergeable,
+              checks: ($p.commits.nodes[0].commit.statusCheckRollup.state // "NONE"),
+              failing: [$p.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[]?
+                        | select((.conclusion // .state) as $c | $c=="FAILURE" or $c=="ERROR" or $c=="TIMED_OUT")
+                        | (.name // .context)],
+              threads_total: $p.reviewThreads.totalCount,
+              unresolved: ([$p.reviewThreads.nodes[] | select(.isResolved|not)] | length),
+              unresolved_by_author: ([$p.reviewThreads.nodes[] | select(.isResolved|not)
+                        | .comments.nodes[0].author.login] | group_by(.) | map({(.[0]): length}) | add // {}),
+              labels: [$p.labels.nodes[].name] }' pr.json > state.json
+          cat state.json
+          {
+            echo '<!-- autopipeline-state -->'
+            echo '**Agent pipeline state** (auto-updated; read by Git-Scout).'
+            echo '```json'; cat state.json; echo '```'
+          } > body.md
+          cid="$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" --paginate \
+                 --jq '.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->"))) | .id' | head -n1)"
+          if [[ -n "$cid" ]]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$cid" -F body=@body.md >/dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" -F body=@body.md >/dev/null
+          fi
+          needs="$(jq -r '(.state=="OPEN") and (.draft|not)
+                    and ((.labels|index("no-auto-fix"))|not) and ((.labels|index("needs-dt"))|not)
+                    and ((.labels|index("blocked"))|not)
+                    and (.unresolved>0 or (.failing|length)>0 or .merge_state=="BEHIND" or .merge_state=="DIRTY")' state.json)"
+          if [[ "$needs" == "true" ]]; then
+            gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --add-label "agent:queued" >/dev/null
+          elif jq -e '.labels|index("agent:queued")' state.json >/dev/null; then
+            gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --remove-label "agent:queued" >/dev/null
+          fi
+          { echo "### autopipeline"; echo '```json'; cat state.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

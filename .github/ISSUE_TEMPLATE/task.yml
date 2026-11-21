@@ -1,0 +1,35 @@
+name: Task
+description: Maintenance, follow-up or agent work item with a clear done condition.
+title: "chore: "
+labels: ["task", "needs-triage"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Verifiable checks and the evidence path the agent must write.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: PR, review thread or decision this came from (URL or number).
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Suggested owner
+      options: ["agent:git-scout", "agent:cursor", "agent:copilot", "human"]
+  - type: checkboxes
+    id: agent
+    attributes:
+      label: Agent handling
+      options:
+        - label: "auto-fix-ok"
+        - label: "needs-dt"
