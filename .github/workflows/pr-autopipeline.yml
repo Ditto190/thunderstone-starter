@@ -128,13 +128,13 @@ jobs:
                 # shellcheck disable=SC2016
                 cq='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
                   commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100){pageInfo{hasNextPage endCursor}
-                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}'
+                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}}'
                 gh api graphql -f query="$cq" -F o="$owner" -F r="$repo" -F n="$pr" > ctx.json
               else
                 # shellcheck disable=SC2016
                 cq='query($o:String!,$r:String!,$n:Int!,$a:String!){repository(owner:$o,name:$r){pullRequest(number:$n){
                   commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100, after:$a){pageInfo{hasNextPage endCursor}
-                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}'
+                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}}'
                 gh api graphql -f query="$cq" -F o="$owner" -F r="$repo" -F n="$pr" -F a="$cursor" > ctx.json
               fi
               if jq -e '.data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup == null' ctx.json >/dev/null 2>&1; then
