@@ -1,0 +1,7 @@
+# Informational: the ruleset has require_code_owner_review=false, so this only auto-requests review.
+# Guard-rail paths are listed so changes to them are visible to the owner on every PR.
+*                       @Ditto190
+/.github/               @Ditto190
+/.coderabbit.yaml       @Ditto190
+/cubic.yaml             @Ditto190
+/scripts/check-hygiene.sh @Ditto190

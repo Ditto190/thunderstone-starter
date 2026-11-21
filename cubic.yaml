@@ -3,10 +3,12 @@
 #
 # Role split (no duplicate comments):
 #   cubic       = bugs, security and the project rules below. Silent on style, docs wording and lint.
-#   CodeRabbit  = general review, PR summary, shellcheck/actionlint-style lint (see .coderabbit.yaml).
+#   CodeRabbit  = general review, PR summary, labels, title, shellcheck/actionlint-style lint.
 # Both review once when the PR is opened / ready. Re-run on demand only:
 #   cubic: comment "@cubic-dev-ai incremental review" (new commits) or "@cubic-dev-ai review this PR"
 #   CodeRabbit: comment "@coderabbitai review"
+# Agent pipeline: fixes are made by our own CLI workers (Git-Scout commits). cubic auto-fix stays OFF
+# (paid/trial only). resolve_threads_when_addressed closes cubic threads once a push fixes them.
 version: 1
 
 reviews:
@@ -24,6 +26,7 @@ reviews:
     Public shell and GitHub Actions starter repo. Report only real bugs, security problems and
     violations of the custom rules. Do not comment on style, naming, formatting, documentation
     wording, or lint-level shell issues; CodeRabbit covers those. Keep each finding to one comment.
+    Start each finding with its priority (P0-P3) so the agent pipeline can triage it.
 
   ignore:
     files:
@@ -41,6 +44,7 @@ reviews:
       - skip-review
       - WIP
       - superseded
+      - agent:wip
     pr_titles:
       - "WIP*"
       - "no-auto-review:*"
@@ -63,8 +67,10 @@ reviews:
     - name: Workflow safety
       description: >-
         In workflow files, flag actions not pinned to a full 40-character commit SHA, permissions
-        broader than contents read unless justified, any use of pull_request_target, and secrets
-        exposed to untrusted pull request code.
+        broader than contents read unless justified, any use of pull_request_target, schedule or
+        cron triggers outside pr-autopipeline-sweep.yml and codeql.yml (those two are approved:
+        daily batch cutoff and weekly CodeQL; matches CodeRabbit / DT t236u), untrusted event text
+        interpolated into run steps, and secrets exposed to untrusted pull request code.
       include:
         - .github/workflows/**
     - name: Script changes need tests
@@ -75,6 +81,13 @@ reviews:
       include:
         - scripts/**
         - .husky/**
+    - name: Agent launch safety
+      description: >-
+        Scripts that start Cursor CLI, Copilot CLI or CodeRabbit CLI must check authentication first
+        and stop on failure without looping, must not pass paid-usage flags such as --use-credits, and
+        must not run git stash, rebase, force-push or branch deletion.
+      include:
+        - scripts/**
 
 pr_descriptions:
   generate: false

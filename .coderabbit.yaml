@@ -1,7 +1,9 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # One automatic review when a PR is opened / marked ready. Later pushes are NOT
-# re-reviewed (cubic.yaml has the same policy). Role split: CodeRabbit = general review + summary + lint;
-# cubic = bugs, security and project rules. Comment "@coderabbitai review" (new commits) or "@coderabbitai full review".
+# re-reviewed (cubic.yaml has the same policy). Role split: CodeRabbit = general review + summary + lint
+# + labels + title; cubic = bugs, security and project rules.
+# Agent pipeline: Git-Scout batch-fixes threads, then posts "@coderabbitai resolve" (top-level) and,
+# only for Major+ fixes, "@coderabbitai review". See docs in the PR template.
 language: en-AU
 early_access: false
 
@@ -15,10 +17,37 @@ reviews:
   estimate_code_review_effort: false
   related_issues: false
   related_prs: false
-  suggested_labels: false
   suggested_reviewers: false
   poem: false
   in_progress_fortune: false
+
+  # Title: add "@coderabbitai" to a PR title to have it rewritten.
+  auto_title_instructions: >-
+    Conventional Commits: type(scope): summary. Types: feat, fix, chore, docs, ci, refactor, test.
+    Lower case, imperative, no trailing full stop, at most 72 characters, Australian English.
+
+  # Labels: suggest and apply only from this list (labels.yml is the source of truth).
+  suggested_labels: true
+  auto_apply_labels: true
+  labeling_instructions:
+    - label: ci
+      instructions: Apply when .github/workflows/** or .husky/** change.
+    - label: scripts
+      instructions: Apply when scripts/** change.
+    - label: security
+      instructions: Apply when SECURITY.md, scripts/check-hygiene.sh, security.yml or codeql.yml change, or the PR fixes a security finding.
+    - label: agent
+      instructions: Apply when AGENTS.md, config/**, .cursor/**, .coderabbit.yaml or cubic.yaml change.
+    - label: docs
+      instructions: Apply when only docs/** or Markdown files change.
+    - label: deps
+      instructions: Apply when package.json, package-lock.json or dependabot.yml change.
+    - label: breaking
+      instructions: Apply when a script's CLI flags, exit codes or env var names change incompatibly.
+    - label: needs-dt
+      instructions: Apply when the PR changes rulesets, branch protection, secrets handling, or enables a paid feature.
+  mutually_exclusive_groups:
+    severity: ["sev:critical", "sev:major", "sev:minor", "sev:trivial"]
 
   auto_review:
     enabled: true
@@ -30,6 +59,9 @@ reviews:
       - "[skip review]"
       - "superseded"
       - "no-auto-review"
+    labels:
+      - "!skip-review"
+      - "!agent:wip"
     ignore_usernames:
       - "dependabot[bot]"
 
@@ -45,6 +77,10 @@ reviews:
       instructions: |
         Shell safety: quoting, set -euo pipefail, no absolute or user-specific paths,
         never print secret values. Flag anything that would fail shellcheck.
+    - path: "scripts/{run-task,ts-session}.sh"
+      instructions: |
+        Agent launchers: must preflight `agent status --format json` (.isAuthenticated) and exit 77 on
+        auth failure, never retry in a loop, keep single-writer flock and ledger append behaviour.
     - path: "docs/grok-vm/**"
       instructions: |
         Ops runbooks: steps must match scripts in scripts/ (resume.sh, cursor-worker.sh,
@@ -53,15 +89,64 @@ reviews:
     - path: ".github/workflows/**"
       instructions: |
         Actions must be pinned to full commit SHAs, use least-privilege permissions,
-        and keep concurrency cancel groups. Flag any pull_request_target or secret exposure.
+        and keep concurrency cancel groups. Flag any pull_request_target, any schedule/cron trigger outside
+        pr-autopipeline-sweep.yml and codeql.yml (DT t236u allows justified cron),
+        untrusted event text interpolated into run: blocks, or secret exposure.
+    - path: ".github/{labels.yml,ISSUE_TEMPLATE/**,CODEOWNERS}"
+      instructions: |
+        Repo automation metadata. Label names used in issue forms, labeler.yml, cubic.yaml and this
+        file must exist in labels.yml. Flag label removals (label deletion needs DT approval).
     - path: ".husky/**"
       instructions: "Hooks must stay fast and must never be bypassed with --no-verify."
+    - path: "tests/**"
+      instructions: "Tests must run offline, without Cursor auth or network, and clean up tmux sessions they create."
+
+  pre_merge_checks:
+    title:
+      mode: warning
+      requirements: "Conventional Commits type(scope): summary, at most 72 characters."
+    description:
+      mode: warning
+    custom_checks:
+      - name: Agent receipt
+        mode: warning
+        instructions: |
+          Pass if the PR description has a "## Agent receipt" section where either "Manual PR" is ticked,
+          or every line of the receipt table (threads, tests, secret scan, branch state) is filled with a
+          value and an evidence path. Fail if the section is missing or a receipt line is blank.
+
+  tools:
+    shellcheck:
+      enabled: true
+    actionlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    yamllint:
+      enabled: true
 
   finishing_touches:
     docstrings:
       enabled: false
     unit_tests:
       enabled: false
+
+issue_enrichment:
+  labeling:
+    auto_apply_labels: true
+    labeling_instructions:
+      - label: bug
+        instructions: Something is broken or behaves differently from docs.
+      - label: enhancement
+        instructions: New feature or improvement request.
+      - label: task
+        instructions: Maintenance, chore or follow-up work with a clear done condition.
+      - label: scripts
+        instructions: The issue concerns scripts/**.
+      - label: ci
+        instructions: The issue concerns GitHub Actions, hooks or CI.
+      - label: security
+        instructions: The issue concerns secrets, hygiene, CodeQL or gitleaks.
 
 chat:
   auto_reply: false
