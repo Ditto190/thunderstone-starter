@@ -1,10 +1,11 @@
 name: PR autopipeline sweep
-# v2 (fleet-v2, DT t236u). Two jobs in one file, no code changes, no merges, GITHUB_TOKEN only.
+# fleet-v2 canonical template (SWE-FIXSPEC-20261121). Identical in every repo; per-repo values are env PARAMs.
+# One job, no code changes, no merges, GITHUB_TOKEN only.
 #   push to main  -> re-snapshot every open same-repo PR (main moved, so PRs may now be BEHIND/DIRTY;
 #                    no pull_request event fires for that) and apply the batch threshold.
 #   schedule      -> daily cutoff 07:00 UTC (18:00 AEDT / 17:00 AEST). Cron is justified: elapsed time
-#                    raises no GitHub event, and the batching rule needs a cutoff. Marks every queued PR
-#                    agent:batch-due so Git-Scout resolves main-driven drift by the cutoff.
+#                    raises no GitHub event, and the batching rule needs a cutoff (DT t236u). Marks every
+#                    queued PR agent:batch-due so Git-Scout resolves main-driven drift by the cutoff.
 # workflow_dispatch from GITHUB_TOKEN is the documented exception that may start another workflow run.
 on:
   push:
@@ -18,19 +19,18 @@ on:
         required: false
         type: boolean
         default: false
-permissions:
-  contents: read
+permissions: {}
 concurrency:
   group: autopipeline-sweep
   cancel-in-progress: false
 env:
-  BATCH_N: "8"          # accumulate this many unresolved threads across queued PRs, then batch
-  # Documented ceiling: gh pr list defaults to 30; 500 covers this repo's open/queued set.
-  PR_LIST_LIMIT: "500"
+  BATCH_N: "8"            # PARAM: unresolved threads across queued PRs that trigger a batch
+  PR_LIST_LIMIT: "500"    # PARAM: documented ceiling (gh pr list default is 30)
+  BARRIER_POLLS: "30"     # PARAM: x 10 s = max wait for dispatched snapshots
 jobs:
   sweep:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       contents: read
       actions: write
@@ -43,33 +43,62 @@ jobs:
       - name: Re-snapshot open PRs and apply batch rule
         run: |
           set -euo pipefail
-          # Sticky-state predicate (must match pr-autopipeline.yml upsert):
-          #   user.login == "github-actions[bot]" AND body starts with <!-- autopipeline-state -->
+          for v in BATCH_N PR_LIST_LIMIT BARRIER_POLLS; do
+            [[ "${!v}" =~ ^[0-9]+$ ]] || { echo "::error::$v not numeric"; exit 1; }
+          done
+          incomplete=false
           prs="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit "$PR_LIST_LIMIT" \
-                 --json number,isDraft,isCrossRepository,labels \
-                 --jq '[.[] | select((.isDraft|not) and (.isCrossRepository|not))]')"
-          echo "$prs" | jq -r '.[].number' | while read -r n; do
+                 --json number,isDraft,isCrossRepository \
+                 --jq '[.[] | select((.isDraft|not) and (.isCrossRepository|not)) | .number]')"
+          dispatched="$(jq 'length' <<<"$prs")"
+          sweep_start="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          jq -r '.[]' <<<"$prs" | while read -r n; do
+            [[ "$n" =~ ^[0-9]+$ ]] || continue
             gh workflow run pr-autopipeline.yml --repo "$GITHUB_REPOSITORY" -f pr="$n"
           done
-          # Wait briefly for snapshots, then read queued PRs and their unresolved-thread counts.
-          sleep 60
-          queued="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --label "agent:queued" \
-                    --limit "$PR_LIST_LIMIT" \
+
+          # Completion barrier: wait until every dispatched snapshot has registered and none is pending.
+          if (( dispatched > 0 )); then
+            done_ok=false
+            for _ in $(seq 1 "$BARRIER_POLLS"); do
+              sleep 10
+              runs="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pr-autopipeline.yml \
+                      --event workflow_dispatch --limit 200 --json status,conclusion,createdAt \
+                      --jq "[.[] | select(.createdAt >= \"$sweep_start\")]")"
+              seen="$(jq 'length' <<<"$runs")"
+              pending="$(jq '[.[] | select(.status != "completed")] | length' <<<"$runs")"
+              [[ "$seen" =~ ^[0-9]+$ && "$pending" =~ ^[0-9]+$ ]] || { seen=0; pending=1; }
+              if (( seen >= dispatched && pending == 0 )); then done_ok=true; break; fi
+            done
+            failed="$(jq '[.[] | select(.status=="completed" and .conclusion!="success")] | length' <<<"${runs:-[]}")"
+            if [[ "$done_ok" != "true" ]]; then incomplete=true; echo "::warning::snapshot barrier timed out (seen ${seen:-0}/$dispatched)"; fi
+            if [[ "$failed" =~ ^[0-9]+$ ]] && (( failed > 0 )); then incomplete=true; echo "::warning::$failed snapshot run(s) failed or were cancelled"; fi
+          fi
+
+          queued="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --label "agent:queued" --limit "$PR_LIST_LIMIT" \
                     --json number,labels --jq '[.[] | {n: .number, sev: [.labels[].name | select(startswith("sev:"))]}]')"
           total=0
-          for n in $(echo "$queued" | jq -r '.[].n'); do
+          for n in $(jq -r '.[].n' <<<"$queued"); do
+            [[ "$n" =~ ^[0-9]+$ ]] || continue
+            # Only trust the sticky state comment from github-actions[bot]; take the whole multi-line body.
             body="$(gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments" --paginate \
-                    --jq '.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->"))) | .body' \
-                    | head -n1 || true)"
-            u="$(printf '%s\n' "$body" | sed -n '/^{/,/^}/p' | jq -r '.unresolved // 0' 2>/dev/null || echo 0)"
-            [[ "$u" =~ ^[0-9]+$ ]] || u=0
+                    --jq '[.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->")))][0].body // empty' \
+                    | awk 'BEGIN{p=0} /^```json$/{p=1;next} /^```$/{p=0} p')"
+            u="$(jq -r '.unresolved' <<<"$body" 2>/dev/null || true)"
+            if ! [[ "$u" =~ ^[0-9]+$ ]]; then
+              incomplete=true; echo "::warning::no parsable state comment on #$n; counted as 0"; u=0
+            fi
             total=$(( total + u ))
           done
-          urgent="$(echo "$queued" | jq '[.[] | select(.sev | index("sev:critical") or index("sev:major"))] | length')"
-          echo "queued=$(echo "$queued" | jq length) unresolved_total=$total urgent=$urgent cutoff=$IS_CUTOFF"
-          if [[ "$IS_CUTOFF" == "true" || "$total" -ge "$BATCH_N" || "$urgent" -gt 0 ]]; then
-            for n in $(echo "$queued" | jq -r '.[].n'); do
-              gh pr edit "$n" --repo "$GITHUB_REPOSITORY" --add-label "agent:batch-due" >/dev/null
+          urgent="$(jq '[.[] | select(.sev | index("sev:critical") or index("sev:major"))] | length' <<<"$queued")"
+          echo "queued=$(jq length <<<"$queued") unresolved_total=$total urgent=$urgent cutoff=$IS_CUTOFF incomplete=$incomplete"
+          if [[ "$IS_CUTOFF" == "true" ]] || (( total >= BATCH_N || urgent > 0 )); then
+            for n in $(jq -r '.[].n' <<<"$queued"); do
+              gh pr edit "$n" --repo "$GITHUB_REPOSITORY" --add-label "agent:batch-due" >/dev/null \
+                || echo "::warning::could not add agent:batch-due to #$n (label missing? run label-sync)"
             done
           fi
-          { echo "### sweep"; echo "queued: $(echo "$queued" | jq -c '[.[].n]')"; echo "unresolved_total: $total (N=$BATCH_N)"; echo "urgent: $urgent"; echo "cutoff: $IS_CUTOFF"; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "### sweep"; echo "queued: $(jq -c '[.[].n]' <<<"$queued")"; echo "unresolved_total: $total (N=$BATCH_N)";
+            echo "urgent: $urgent"; echo "cutoff: $IS_CUTOFF"; echo "incomplete: $incomplete"; } >> "$GITHUB_STEP_SUMMARY"
+          # A cutoff sweep that could not see every snapshot goes red so Git-Scout re-runs it.
+          if [[ "$IS_CUTOFF" == "true" && "$incomplete" == "true" ]]; then exit 1; fi

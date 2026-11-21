@@ -28,6 +28,6 @@
 | Needs DT | none / list | |
 
 <!-- Review: opened PRs get one automatic AI review (CodeRabbit + cubic). For another pass, comment `@coderabbitai review`
-     or `@cubic-dev-ai incremental review`. Mark as draft, add "WIP" to the title or the `agent:wip` label to skip it while iterating.
+     or `@cubic-dev-ai incremental review`. Mark as draft, prefix the title with `WIP` (cubic glob `WIP*`, e.g. `WIP: fix parser`) or the `agent:wip` label to skip it while iterating.
      Add "@coderabbitai" to the title to have CodeRabbit write a Conventional Commits title.
      If a PR is superseded by another, close it with a short comment instead of leaving it open for re-review. -->

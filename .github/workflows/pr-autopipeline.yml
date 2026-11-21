@@ -1,18 +1,24 @@
 name: PR autopipeline state
+# fleet-v2 canonical template (SWE-FIXSPEC-20261121). Identical in every repo except the PARAM line below.
 # Event-only (no schedule). Snapshots review/branch state for the agent pipeline:
 #   - sticky PR comment with a JSON state block (marker: autopipeline-state)
 #   - label agent:queued when unresolved threads, a failing check, or a BEHIND/DIRTY branch exist
 # Git-Scout (on the shared box) reads this on its own events and does the work. This workflow
-# never pushes code, never merges, and uses only GITHUB_TOKEN (its own events cannot re-trigger it).
+# never checks out or runs PR code, never pushes, never merges, and uses only GITHUB_TOKEN
+# (its own label/comment writes cannot re-trigger it).
 on:
   pull_request:
-    types: [opened, ready_for_review, synchronize, reopened, closed, converted_to_draft]
+    types: [opened, ready_for_review, synchronize, reopened, closed, converted_to_draft, labeled, unlabeled]
   pull_request_review:
     types: [submitted]
   pull_request_review_comment:
     types: [created]
   check_suite:
-    # Only fires from the default-branch copy of this file, and not for suites created by Actions.
+    # Third-party suites only (GitHub never raises check_suite for Actions-created suites).
+    types: [completed]
+  workflow_run: # zizmor: ignore[dangerous-triggers] no checkout, no artifacts; only numeric PR ids leave the payload
+    # PARAM (per repo): names of the CI workflows whose completion should refresh state.
+    workflows: ["Starter validation", "Security", "CodeQL"]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -20,15 +26,39 @@ on:
         description: PR number to re-snapshot
         required: true
         type: number
-permissions:
-  contents: read
-concurrency:
-  group: autopipeline-${{ github.event.pull_request.number || inputs.pr || github.event.check_suite.head_sha || github.run_id }}
-  cancel-in-progress: true
+permissions: {}
 jobs:
+  fanout:
+    # Suite/run events can carry several PRs and have no PR number at job level. Re-dispatch one
+    # snapshot per same-repo PR so every snapshot of PR N shares concurrency group autopipeline-N.
+    if: github.event_name == 'check_suite' || github.event_name == 'workflow_run'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch per-PR snapshots
+        run: |
+          set -euo pipefail
+          jq -r '(.check_suite.pull_requests // .workflow_run.pull_requests // [])[]
+                 | select(.head.repo.id == .base.repo.id) | .number' "$GITHUB_EVENT_PATH" \
+            | sort -nu | while read -r n; do
+                [[ "$n" =~ ^[0-9]+$ ]] || continue
+                gh workflow run pr-autopipeline.yml --repo "$GITHUB_REPOSITORY" -f pr="$n"
+                echo "dispatched snapshot for PR #$n"
+              done
+
   state:
-    # Same-repo PRs only (fork PRs get a read-only token and must not drive agents).
-    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+    # Same-repo PRs only (fork PRs get a read-only token and must not drive agents). Dispatch runs are
+    # re-checked against isCrossRepository below before any write.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request != null && github.event.pull_request.head.repo.full_name == github.repository)
+    concurrency:
+      group: autopipeline-${{ github.event.pull_request.number || inputs.pr }}
+      cancel-in-progress: true
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -38,169 +68,151 @@ jobs:
       checks: read
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_FROM_EVENT: ${{ github.event.pull_request.number || inputs.pr || '' }}
-      # Full check_suite PR list (not only [0]); empty/null for non-suite events.
-      CHECK_SUITE_PRS_JSON: ${{ toJSON(github.event.check_suite.pull_requests) }}
+      PR_NUM: ${{ github.event.pull_request.number || inputs.pr }}
+      QUEUE_LABEL: "agent:queued"
+      BATCH_LABEL: "agent:batch-due"
+      MAX_THREAD_PAGES: "20"   # 100/page -> 2000 review threads
+      MAX_CONTEXT_PAGES: "20"  # 100/page -> 2000 check/status contexts
     steps:
       - name: Snapshot PR state
         run: |
           set -euo pipefail
           owner="${GITHUB_REPOSITORY%/*}"; repo="${GITHUB_REPOSITORY#*/}"
-          # Documented pagination caps (GitHub connection page size max is 100).
-          MAX_THREAD_PAGES=20   # up to 2000 review threads
-          MAX_CONTEXT_PAGES=20  # up to 2000 check/status contexts
+          pr="${PR_NUM:-}"
+          [[ "$pr" =~ ^[0-9]+$ ]] || { echo "::error::PR number not numeric"; exit 1; }
+          [[ "$MAX_THREAD_PAGES" =~ ^[0-9]+$ && "$MAX_CONTEXT_PAGES" =~ ^[0-9]+$ ]] || { echo "::error::page caps not numeric"; exit 1; }
 
-          collect_pr_numbers() {
-            if [[ -n "${PR_FROM_EVENT:-}" ]]; then
-              printf '%s\n' "$PR_FROM_EVENT"
-              return
-            fi
-            if [[ -n "${CHECK_SUITE_PRS_JSON:-}" && "$CHECK_SUITE_PRS_JSON" != "null" ]]; then
-              printf '%s\n' "$CHECK_SUITE_PRS_JSON" | jq -r '.[].number // empty'
-            fi
-          }
-
-          snapshot_one() {
-            local pr="$1"
-            local cross
-            cross="$(gh pr view "$pr" --repo "$GITHUB_REPOSITORY" --json isCrossRepository --jq '.isCrossRepository')"
-            if [[ "$cross" == "true" ]]; then
-              echo "skip cross-repo PR #$pr"
-              return 0
-            fi
-
-            # Base PR fields (labels capped at 50 — documented; labels rarely exceed that).
-            # shellcheck disable=SC2016  # GraphQL variables, not shell
-            q='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
-                state isDraft headRefOid headRefName mergeStateStatus mergeable
-                labels(first:50){nodes{name}}
-                commits(last:1){nodes{commit{statusCheckRollup{state}}}}}}}'
-            gh api graphql -f query="$q" -F o="$owner" -F r="$repo" -F n="$pr" > pr.json
-
-            # Paginate reviewThreads (first:100 per page).
-            echo '[]' > threads_nodes.json
-            threads_total=0
-            threads_truncated=false
-            cursor=""
-            page=0
-            has_next=true
-            while [[ "$has_next" == "true" ]]; do
-              page=$((page + 1))
-              if [[ "$page" -gt "$MAX_THREAD_PAGES" ]]; then
-                threads_truncated=true
-                echo "warning: reviewThreads truncated after $MAX_THREAD_PAGES pages for PR #$pr" >&2
-                break
-              fi
-              if [[ -z "$cursor" ]]; then
-                # shellcheck disable=SC2016
-                tq='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
-                  reviewThreads(first:100){totalCount pageInfo{hasNextPage endCursor}
-                    nodes{isResolved isOutdated comments(first:1){nodes{author{login} path}}}}}}}'
-                gh api graphql -f query="$tq" -F o="$owner" -F r="$repo" -F n="$pr" > thr.json
-              else
-                # shellcheck disable=SC2016
-                tq='query($o:String!,$r:String!,$n:Int!,$a:String!){repository(owner:$o,name:$r){pullRequest(number:$n){
-                  reviewThreads(first:100, after:$a){totalCount pageInfo{hasNextPage endCursor}
-                    nodes{isResolved isOutdated comments(first:1){nodes{author{login} path}}}}}}}'
-                gh api graphql -f query="$tq" -F o="$owner" -F r="$repo" -F n="$pr" -F a="$cursor" > thr.json
-              fi
-              threads_total="$(jq '.data.repository.pullRequest.reviewThreads.totalCount' thr.json)"
-              jq -s '.[0] + .[1]' threads_nodes.json <(jq '.data.repository.pullRequest.reviewThreads.nodes' thr.json) > threads_nodes.next
-              mv threads_nodes.next threads_nodes.json
-              has_next="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' thr.json)"
-              cursor="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // empty' thr.json)"
-            done
-
-            # Paginate statusCheckRollup.contexts (first:100 per page).
-            echo '[]' > contexts_nodes.json
-            contexts_truncated=false
-            cursor=""
-            page=0
-            has_next=true
-            while [[ "$has_next" == "true" ]]; do
-              page=$((page + 1))
-              if [[ "$page" -gt "$MAX_CONTEXT_PAGES" ]]; then
-                contexts_truncated=true
-                echo "warning: check contexts truncated after $MAX_CONTEXT_PAGES pages for PR #$pr" >&2
-                break
-              fi
-              if [[ -z "$cursor" ]]; then
-                # shellcheck disable=SC2016
-                cq='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
-                  commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100){pageInfo{hasNextPage endCursor}
-                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}}'
-                gh api graphql -f query="$cq" -F o="$owner" -F r="$repo" -F n="$pr" > ctx.json
-              else
-                # shellcheck disable=SC2016
-                cq='query($o:String!,$r:String!,$n:Int!,$a:String!){repository(owner:$o,name:$r){pullRequest(number:$n){
-                  commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100, after:$a){pageInfo{hasNextPage endCursor}
-                    nodes{__typename ... on CheckRun{name conclusion} ... on StatusContext{context state}}}}}}}}}}'
-                gh api graphql -f query="$cq" -F o="$owner" -F r="$repo" -F n="$pr" -F a="$cursor" > ctx.json
-              fi
-              if jq -e '.data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup == null' ctx.json >/dev/null 2>&1; then
-                has_next=false
-                break
-              fi
-              nodes="$(jq '.data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup.contexts.nodes // []' ctx.json)"
-              jq -s '.[0] + .[1]' contexts_nodes.json <(printf '%s\n' "$nodes") > contexts_nodes.next
-              mv contexts_nodes.next contexts_nodes.json
-              has_next="$(jq -r '.data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup.contexts.pageInfo.hasNextPage // false' ctx.json)"
-              cursor="$(jq -r '.data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup.contexts.pageInfo.endCursor // empty' ctx.json)"
-            done
-
-            jq --arg pr "$pr" --slurpfile threads threads_nodes.json --slurpfile contexts contexts_nodes.json \
-              --argjson threads_total "$threads_total" \
-              --argjson threads_truncated "$threads_truncated" \
-              --argjson contexts_truncated "$contexts_truncated" \
-              '.data.repository.pullRequest as $p | {
-                  schema: 1, pr: ($pr|tonumber), head_sha: $p.headRefOid, head_ref: $p.headRefName,
-                  state: $p.state, draft: $p.isDraft, merge_state: $p.mergeStateStatus, mergeable: $p.mergeable,
-                  checks: ($p.commits.nodes[0].commit.statusCheckRollup.state // "NONE"),
-                  failing: [$contexts[0][]?
-                            | select((.conclusion // .state) as $c | $c=="FAILURE" or $c=="ERROR" or $c=="TIMED_OUT")
-                            | (.name // .context)],
-                  threads_total: $threads_total,
-                  unresolved: ([$threads[0][] | select(.isResolved|not)] | length),
-                  unresolved_by_author: ([$threads[0][] | select(.isResolved|not)
-                            | .comments.nodes[0].author.login] | group_by(.) | map({(.[0]): length}) | add // {}),
-                  labels: [$p.labels.nodes[].name],
-                  threads_truncated: $threads_truncated,
-                  contexts_truncated: $contexts_truncated }' pr.json > state.json
-            cat state.json
-            {
-              echo '<!-- autopipeline-state -->'
-              echo '**Agent pipeline state** (auto-updated; read by Git-Scout).'
-              echo '```json'; cat state.json; echo '```'
-            } > body.md
-            # Sticky-state predicate (must match pr-autopipeline-sweep.yml reader):
-            #   user.login == "github-actions[bot]" AND body starts with <!-- autopipeline-state -->
-            cid="$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" --paginate \
-                   --jq '.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->"))) | .id' | head -n1)"
-            if [[ -n "$cid" ]]; then
-              gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$cid" -F body=@body.md >/dev/null
+          label_exists() { gh api "repos/$GITHUB_REPOSITORY/labels/$(jq -rn --arg l "$1" '$l|@uri')" --silent 2>/dev/null; }
+          add_label() {
+            # Tolerate a missing label: Git-Scout pre-creates them and label-sync runs on main.
+            if label_exists "$1"; then
+              gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --add-label "$1" >/dev/null
             else
-              gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" -F body=@body.md >/dev/null
+              echo "::warning::label '$1' missing in $GITHUB_REPOSITORY (run label-sync); not added to #$pr"
             fi
-            # Truncation fail-closed: keep/queue if we could not see all threads/contexts.
-            needs="$(jq -r '(.state=="OPEN") and (.draft|not)
-                      and ((.labels|index("no-auto-fix"))|not) and ((.labels|index("needs-dt"))|not)
-                      and ((.labels|index("blocked"))|not)
-                      and (.unresolved>0 or (.failing|length)>0 or .merge_state=="BEHIND" or .merge_state=="DIRTY"
-                           or .threads_truncated or .contexts_truncated)' state.json)"
-            if [[ "$needs" == "true" ]]; then
-              gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --add-label "agent:queued" >/dev/null
-            elif jq -e '.labels|index("agent:queued")' state.json >/dev/null; then
-              gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --remove-label "agent:queued" >/dev/null
-            fi
-            { echo "### autopipeline PR #$pr"; echo '```json'; cat state.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           }
+          remove_label() { gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --remove-label "$1" >/dev/null; }
 
-          prs="$(collect_pr_numbers | awk 'NF' | sort -nu)"
-          if [[ -z "$prs" ]]; then
-            echo "no same-repo PR for this event"
+          # One query string per connection; nullable $c (null = first page). Strings via -f (no -F magic).
+          # shellcheck disable=SC2016  # GraphQL variables, not shell
+          q_base='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
+              state isDraft isCrossRepository headRefOid headRefName mergeStateStatus mergeable
+              labels(first:100){nodes{name}}}}}'
+          # shellcheck disable=SC2016
+          q_th='query($o:String!,$r:String!,$n:Int!,$c:String){repository(owner:$o,name:$r){pullRequest(number:$n){
+              reviewThreads(first:100,after:$c){totalCount pageInfo{hasNextPage endCursor}
+                nodes{isResolved isOutdated comments(first:1){nodes{author{login} path}}}}}}}'
+          # Contexts are read from the captured head OID, not commits(last:1), so head_sha and checks agree.
+          # shellcheck disable=SC2016
+          q_ctx='query($o:String!,$r:String!,$sha:GitObjectID!,$c:String){repository(owner:$o,name:$r){object(oid:$sha){
+              ... on Commit{statusCheckRollup{state contexts(first:100,after:$c){pageInfo{hasNextPage endCursor}
+                nodes{__typename ... on CheckRun{name conclusion startedAt} ... on StatusContext{context state createdAt}}}}}}}}'
+
+          gh api graphql -f query="$q_base" -f o="$owner" -f r="$repo" -F n="$pr" > pr.json
+          # Fork / cross-repo / missing-PR guard before any write. Fail closed: only literal false passes
+          # (jq '//' treats false as empty, so '.isCrossRepository // true' would skip every PR).
+          cross="$(jq -r '.data.repository.pullRequest
+                          | if . == null or (has("isCrossRepository")|not) or .isCrossRepository == null
+                            then "true" else (.isCrossRepository|tostring) end' pr.json)"
+          if [[ "$cross" != "false" ]]; then
+            echo "skip cross-repo / missing PR #$pr (isCrossRepository=$cross)"
             exit 0
           fi
-          for pr in $prs; do
-            [[ "$pr" =~ ^[0-9]+$ ]] || continue
-            snapshot_one "$pr"
+          head_sha="$(jq -r '.data.repository.pullRequest.headRefOid' pr.json)"
+          [[ "$head_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::bad headRefOid"; exit 1; }
+
+          # Paginate reviewThreads.
+          echo '[]' > threads.json; threads_total=0; threads_truncated=false; cursor=""; page=0
+          while :; do
+            page=$((page + 1))
+            if (( page > MAX_THREAD_PAGES )); then threads_truncated=true; echo "::warning::reviewThreads truncated (#$pr)"; break; fi
+            args=(-f query="$q_th" -f o="$owner" -f r="$repo" -F n="$pr")
+            [[ -n "$cursor" ]] && args+=(-f c="$cursor")
+            gh api graphql "${args[@]}" > thr.json
+            jq -s '.[0] + (.[1].data.repository.pullRequest.reviewThreads.nodes // [])' threads.json thr.json > threads.next
+            mv threads.next threads.json
+            threads_total="$(jq -r '.data.repository.pullRequest.reviewThreads.totalCount // 0' thr.json)"
+            [[ "$threads_total" =~ ^[0-9]+$ ]] || threads_total=0
+            [[ "$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage // false' thr.json)" == "true" ]] || break
+            cursor="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // empty' thr.json)"
+            [[ -n "$cursor" ]] || break
           done
+
+          # Paginate statusCheckRollup.contexts on the captured head commit.
+          echo '[]' > contexts.json; contexts_truncated=false; rollup="NONE"; cursor=""; page=0
+          while :; do
+            page=$((page + 1))
+            if (( page > MAX_CONTEXT_PAGES )); then contexts_truncated=true; echo "::warning::check contexts truncated (#$pr)"; break; fi
+            args=(-f query="$q_ctx" -f o="$owner" -f r="$repo" -f sha="$head_sha")
+            [[ -n "$cursor" ]] && args+=(-f c="$cursor")
+            gh api graphql "${args[@]}" > ctx.json
+            jq -e '.data.repository.object.statusCheckRollup == null' ctx.json >/dev/null && break
+            rollup="$(jq -r '.data.repository.object.statusCheckRollup.state // "NONE"' ctx.json)"
+            jq -s '.[0] + (.[1].data.repository.object.statusCheckRollup.contexts.nodes // [])' contexts.json ctx.json > contexts.next
+            mv contexts.next contexts.json
+            [[ "$(jq -r '.data.repository.object.statusCheckRollup.contexts.pageInfo.hasNextPage // false' ctx.json)" == "true" ]] || break
+            cursor="$(jq -r '.data.repository.object.statusCheckRollup.contexts.pageInfo.endCursor // empty' ctx.json)"
+            [[ -n "$cursor" ]] || break
+          done
+
+          jq --arg pr "$pr" --arg rollup "$rollup" --slurpfile threads threads.json --slurpfile contexts contexts.json \
+            --argjson threads_total "$threads_total" \
+            --argjson threads_truncated "$threads_truncated" --argjson contexts_truncated "$contexts_truncated" \
+            '.data.repository.pullRequest as $p | {
+                schema: 1, pr: ($pr|tonumber), head_sha: $p.headRefOid, head_ref: $p.headRefName,
+                state: $p.state, draft: $p.isDraft, merge_state: $p.mergeStateStatus, mergeable: $p.mergeable,
+                checks: $rollup,
+                # Latest run per check name only (re-runs and self-cancelled runs must not count).
+                failing: ([$contexts[0][]? | {n: (.name // .context), c: (.conclusion // .state // ""),
+                                             t: (.startedAt // .createdAt // "")}]
+                          | group_by(.n) | map(max_by(.t))
+                          | map(select(.c as $c | ["FAILURE","ERROR","TIMED_OUT","STARTUP_FAILURE","ACTION_REQUIRED"] | index($c)))
+                          | map(.n)),
+                threads_total: $threads_total,
+                unresolved: ([$threads[0][] | select(.isResolved|not)] | length),
+                unresolved_by_author: ([$threads[0][] | select(.isResolved|not)
+                          | (.comments.nodes[0].author.login // "ghost")] | group_by(.) | map({(.[0]): length}) | add // {}),
+                labels: [$p.labels.nodes[].name],
+                threads_truncated: $threads_truncated,
+                contexts_truncated: $contexts_truncated }' pr.json > state.json
+          cat state.json
+
+          # Stale-head guard: if the head moved while collecting, the synchronize run owns the write.
+          now_sha="$(gh api graphql -f query="$q_base" -f o="$owner" -f r="$repo" -F n="$pr" --jq '.data.repository.pullRequest.headRefOid')"
+          if [[ "$now_sha" != "$head_sha" ]]; then
+            echo "head moved $head_sha -> $now_sha during snapshot; skip write (newer run will publish)"
+            exit 0
+          fi
+
+          {
+            echo '<!-- autopipeline-state -->'
+            echo '**Agent pipeline state** (auto-updated; read by Git-Scout).'
+            echo '```json'; cat state.json; echo '```'
+          } > body.md
+          # Sticky-state predicate (must match pr-autopipeline-sweep.yml reader):
+          #   user.login == "github-actions[bot]" AND body starts with <!-- autopipeline-state -->
+          # awk (not head) so gh never takes SIGPIPE under pipefail.
+          cid="$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" --paginate \
+                 --jq '.[] | select(.user.login=="github-actions[bot]" and (.body|startswith("<!-- autopipeline-state -->"))) | .id' \
+                 | awk 'NR==1')"
+          if [[ "$cid" =~ ^[0-9]+$ ]]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$cid" -F body=@body.md >/dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments" -F body=@body.md >/dev/null
+          fi
+
+          # Truncation fails closed: queue if we could not see all threads/contexts.
+          needs="$(jq -r '(.state=="OPEN") and (.draft|not)
+                    and ((.labels|index("no-auto-fix"))|not) and ((.labels|index("needs-dt"))|not)
+                    and ((.labels|index("blocked"))|not)
+                    and (.unresolved>0 or (.failing|length)>0 or .merge_state=="BEHIND" or .merge_state=="DIRTY"
+                         or .threads_truncated or .contexts_truncated)' state.json)"
+          if [[ "$needs" == "true" ]]; then
+            add_label "$QUEUE_LABEL"
+          else
+            # Leaving the queue clears both pipeline markers (owner of agent:batch-due clear = this workflow).
+            for l in "$QUEUE_LABEL" "$BATCH_LABEL"; do
+              if jq -e --arg l "$l" '.labels|index($l)' state.json >/dev/null; then remove_label "$l"; fi
+            done
+          fi
+          { echo "### autopipeline PR #$pr"; echo '```json'; cat state.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
