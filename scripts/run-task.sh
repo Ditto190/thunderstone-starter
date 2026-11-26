@@ -43,30 +43,44 @@ _ts_ledger_append() {
   local ended_epoch wall duration_ms="" input="" output="" cache_r="" cache_w="" src=""
   ended_epoch="$(date +%s)"
   wall=$(( ended_epoch - started_epoch ))
-  local logdir="${CURSOR_AGENT_LOG_DIR:-/tmp/cursor-agent-logs-$(id -u)}"
+  # Session logs go to <tmpdir>/cursor-agent-logs-<uid>. The CLI-only profile
+  # switches HOME/XDG_* for the agent but not TMPDIR, so the log dir does not
+  # move with HOME (checked on the VM 27 Nov: the profile run logged under
+  # /tmp/cursor-agent-logs-<uid>, nothing under the profile home). Search the
+  # TMPDIR and /tmp forms; CURSOR_AGENT_LOG_DIR overrides both.
+  local uid logdirs=() d
+  uid="$(id -u)"
+  if [[ -n "${CURSOR_AGENT_LOG_DIR:-}" ]]; then
+    logdirs=("$CURSOR_AGENT_LOG_DIR")
+  else
+    logdirs=("${TMPDIR:-/tmp}/cursor-agent-logs-$uid")
+    [[ "${TMPDIR:-/tmp}" == "/tmp" ]] || logdirs+=("/tmp/cursor-agent-logs-$uid")
+  fi
   local latest=""
   # Only attribute a session log written during this run (newest by mtime).
   # No stamp or no new log -> leave token columns blank rather than guess.
   # mtime >= stamp (not find -newer): coarse fs timestamps can tie on fast runs.
-  if [[ -d "$logdir" && -n "$stamp" && -e "$stamp" ]]; then
+  if [[ -n "$stamp" && -e "$stamp" ]]; then
     local stamp_t
     stamp_t="$(find "$stamp" -maxdepth 0 -printf '%T@' 2>/dev/null || true)"
     if [[ -n "$stamp_t" ]]; then
-      latest="$(find "$logdir" -maxdepth 1 -type f -name 'session-*.log' -printf '%T@ %p\n' 2>/dev/null \
-        | awk -v s="$stamp_t" '$1 >= s' | sort -n | tail -n 1 | cut -d' ' -f2-)"
+      latest="$(for d in "${logdirs[@]}"; do
+          [[ -d "$d" ]] && find "$d" -maxdepth 1 -type f -name 'session-*.log' -printf '%T@ %p\n' 2>/dev/null
+        done | awk -v s="$stamp_t" '$1 >= s' | sort -n | tail -n 1 | cut -d' ' -f2-)"
     fi
   fi
   if [[ -n "$latest" && -r "$latest" ]]; then
     src="$latest"
-    # Take the last usage tuple in the log (final counts).
+    # Take the last usage tuple in the log (final counts). Accept key=N, ...
+    # and the JSON form the CLI writes today ("input_tokens":"N",...).
     local line
-    line="$(grep -oE 'input_tokens=[0-9]+, output_tokens=[0-9]+, cache_read_tokens=[0-9]+, cache_write_tokens=[0-9]+(, duration_ms=[0-9]+)?' "$latest" 2>/dev/null | tail -n 1 || true)"
+    line="$(grep -oE 'input_tokens=[0-9]+, output_tokens=[0-9]+, cache_read_tokens=[0-9]+, cache_write_tokens=[0-9]+(, duration_ms=[0-9]+)?|("duration_ms":"[0-9]+",[^{}]*)?"input_tokens":"[0-9]+","output_tokens":"[0-9]+","cache_read_tokens":"[0-9]+","cache_write_tokens":"[0-9]+"' "$latest" 2>/dev/null | tail -n 1 || true)"
     if [[ -n "$line" ]]; then
-      input="$(sed -n 's/.*input_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
-      output="$(sed -n 's/.*output_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
-      cache_r="$(sed -n 's/.*cache_read_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
-      cache_w="$(sed -n 's/.*cache_write_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
-      duration_ms="$(sed -n 's/.*duration_ms=\([0-9]*\).*/\1/p' <<<"$line")"
+      input="$(sed -n 's/.*input_tokens"\{0,1\}[=:]"\{0,1\}\([0-9]*\).*/\1/p' <<<"$line")"
+      output="$(sed -n 's/.*output_tokens"\{0,1\}[=:]"\{0,1\}\([0-9]*\).*/\1/p' <<<"$line")"
+      cache_r="$(sed -n 's/.*cache_read_tokens"\{0,1\}[=:]"\{0,1\}\([0-9]*\).*/\1/p' <<<"$line")"
+      cache_w="$(sed -n 's/.*cache_write_tokens"\{0,1\}[=:]"\{0,1\}\([0-9]*\).*/\1/p' <<<"$line")"
+      duration_ms="$(sed -n 's/.*duration_ms"\{0,1\}[=:]"\{0,1\}\([0-9]*\).*/\1/p' <<<"$line")"
     fi
   fi
   local ts job brief_s cli model tier rung cwd_s trigger notes
@@ -100,9 +114,44 @@ _ts_ledger_append() {
 # Unique start marker for session-log attribution; never blocks the launch.
 ts_stamp="$(mktemp "${TMPDIR:-/tmp}/ts-run-task-start.XXXXXX" 2>/dev/null || true)"
 # DT standing law: VM agents have full auto-permission; keep --trust --force.
+#
+# CLI-only profile (t12s1 job4). Persistent HOME defaults to the ops tree's
+# sibling token-optimizer/state/cursor-cli-home (not tmp/dist/build/.cache);
+# TS_CLI_HOME overrides. No ops root and no TS_CLI_HOME -> profile off.
+# Sets HOME + CURSOR_CONFIG_DIR + CURSOR_DATA_DIR + XDG_* for the agent only
+# (does not export HOME for the rest of this script). Empty user mcp.json and
+# allowlisted skills are already in that profile. This does not disable
+# account/1p plugins: agent still loaded 350 plugin skills / 358 rules
+# (428.6 s). Token win vs 27,227 baseline was -20.7% (21,593 in), mostly
+# from dropping user MCP. No --no-plugins flag exists; cli-config plugin
+# flags are stripped by schema. TS_CLI_PROFILE=0 (or a missing profile dir)
+# keeps the plain launch below. Inherit CURSOR_API_KEY if the environment
+# already has it (do not print it).
+_ts_cli_home="${TS_CLI_HOME:-}"
+if [[ -z "$_ts_cli_home" && -n "$ops_root" ]]; then
+  _ts_cli_home="$(dirname "$ops_root")/token-optimizer/state/cursor-cli-home"
+fi
+_ts_cli_env=()
+if [[ "${TS_CLI_PROFILE:-1}" != "0" && -n "$_ts_cli_home" && -d "$_ts_cli_home/.cursor" ]]; then
+  _ts_cli_env=(
+    "HOME=$_ts_cli_home"
+    "CURSOR_CONFIG_DIR=$_ts_cli_home/.cursor"
+    "CURSOR_DATA_DIR=$_ts_cli_home/.cursor"
+    "XDG_CONFIG_HOME=$_ts_cli_home/.config"
+    "XDG_DATA_HOME=$_ts_cli_home/.local/share"
+    "XDG_STATE_HOME=$_ts_cli_home/.local/state"
+    "XDG_CACHE_HOME=$_ts_cli_home/.cache"
+  )
+fi
 started_epoch="$(date +%s)"
 set +e
-agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
+# Empty profile -> exact pre-profile launch (no env wrapper); ${#arr[@]} is
+# safe under set -u for an empty array.
+if (( ${#_ts_cli_env[@]} > 0 )); then
+  env "${_ts_cli_env[@]}" agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
+else
+  agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
+fi
 ec=$?
 set -e
 _ts_ledger_append "$ec" "$started_epoch" "$ts_stamp" || true

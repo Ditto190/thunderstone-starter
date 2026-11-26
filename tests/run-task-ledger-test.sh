@@ -33,8 +33,10 @@ exit 42
 STUB
 chmod +x "${STUB_BIN}/agent"
 
+# TS_CLI_HOME pinned to a missing dir so a real CLI profile on the VM is never used.
 sandbox() {
-  env -u BASH_ENV -u ENV HOME="$STUB_HOME" PATH="${STUB_BIN}:${SAFE_PATH}" "$@"
+  env -u BASH_ENV -u ENV -u TS_CLI_PROFILE HOME="$STUB_HOME" PATH="${STUB_BIN}:${SAFE_PATH}" \
+    TS_CLI_HOME="${TMP}/no-profile" "$@"
 }
 
 ops="${TMP}/ops"
