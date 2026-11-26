@@ -6,7 +6,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/bin" "$TMP/home" "$TMP/ops/state"
-printf '#!/bin/sh\nexit 42\n' >"$TMP/bin/agent"
+# shellcheck disable=SC2016  # $1 is for the stub, not this shell
+printf '#!/bin/sh\n[ "$1" = status ] && { echo "{\\"isAuthenticated\\":true}"; exit 0; }\nexit 42\n' >"$TMP/bin/agent"
 chmod +x "$TMP/bin/agent"
 printf 'brief\n' >"$TMP/brief.md"
 TODAY="$(TZ=Australia/Sydney date +%F)"

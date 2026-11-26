@@ -25,6 +25,7 @@ LOGS="${TMP}/agent-logs"
 mkdir -p "$STUB_BIN" "$LOGS"
 cat >"${STUB_BIN}/agent" <<STUB
 #!/bin/bash
+if [[ "\${1:-}" == status ]]; then ok='{"isAuthenticated":true}'; printf '%s\\n' "\${STUB_STATUS:-\$ok}"; exit 0; fi
 printf '%s\n' "\$*" >>"${MARKER}"
 if [[ -z "\${STUB_NO_LOG:-}" ]]; then
   printf 'usage input_tokens=11, output_tokens=22, cache_read_tokens=33, cache_write_tokens=44, duration_ms=55\n' >"${LOGS}/session-new-\$\$.log"
@@ -33,8 +34,10 @@ exit 42
 STUB
 chmod +x "${STUB_BIN}/agent"
 
+# TS_CLI_HOME pinned to a missing dir so a real CLI profile on the VM is never used.
 sandbox() {
-  env -u BASH_ENV -u ENV HOME="$STUB_HOME" PATH="${STUB_BIN}:${SAFE_PATH}" "$@"
+  env -u BASH_ENV -u ENV -u TS_CLI_PROFILE HOME="$STUB_HOME" PATH="${STUB_BIN}:${SAFE_PATH}" \
+    TS_CLI_HOME="${TMP}/no-profile" "$@"
 }
 
 ops="${TMP}/ops"
