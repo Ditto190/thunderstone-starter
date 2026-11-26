@@ -26,6 +26,7 @@ ENVMARK="${TMP}/agent-stub-env"
 mkdir -p "$STUB_BIN"
 cat >"${STUB_BIN}/agent" <<STUB
 #!/bin/bash
+if [[ "\${1:-}" == status ]]; then ok='{"isAuthenticated":true}'; printf '%s\\n' "\${STUB_STATUS:-\$ok}"; exit 0; fi
 printf '%s\n' "\$*" >>"${MARKER}"
 for v in HOME CURSOR_CONFIG_DIR CURSOR_DATA_DIR XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_CACHE_HOME; do
   printf '%s=%s\n' "\$v" "\${!v-<unset>}"

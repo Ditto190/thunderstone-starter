@@ -3,7 +3,8 @@
 # profile home, the ledger row must still carry this run's token counts. The
 # CLI writes session logs to <TMPDIR or /tmp>/cursor-agent-logs-<uid> (not
 # under HOME), in the JSON form ("input_tokens":"N",...). Agent exit code is
-# preserved. Stub agent only; PATH/HOME/TMPDIR pinned so a real CLI and the
+# preserved. The auth preflight runs under the same env and exits 77 when
+# logged out, before any job launch. Stub agent only; PATH/HOME/TMPDIR pinned so a real CLI and the
 # real log dir cannot be reached.
 set -euo pipefail
 if [[ -n "${BASH_ENV:-}" || -n "${ENV:-}" ]]; then
@@ -25,10 +26,12 @@ PROFILE="${TMP}/cli-home"
 STUB_TMP="${TMP}/tmpdir"
 LOGS="${STUB_TMP}/cursor-agent-logs-$(id -u)"
 MARKER="${TMP}/agent-stub-called"
+STATUSMARK="${TMP}/agent-stub-status"
 mkdir -p "$STUB_BIN" "${PROFILE}/.cursor" "$LOGS"
 # Stub logs where the real CLI does: TMPDIR-based dir, independent of HOME.
 cat >"${STUB_BIN}/agent" <<STUB
 #!/bin/bash
+if [[ "\${1:-}" == status ]]; then printf 'HOME=%s\\n' "\$HOME" >>"${STATUSMARK}"; ok='{"isAuthenticated":true}'; printf '%s\\n' "\${STUB_STATUS:-\$ok}"; exit 0; fi
 printf 'HOME=%s\n' "\$HOME" >>"${MARKER}"
 d="\${TMPDIR:-/tmp}/cursor-agent-logs-\$(id -u)"
 printf '[t] {"duration_ms":"77","retries_attempted":"0","input_tokens":"21593","output_tokens":"41","cache_read_tokens":"4352","cache_write_tokens":"0","x":"y"}\n' >"\${d}/session-new-\$\$.log"
@@ -56,7 +59,7 @@ LEDGER="${TMP}/ledger.tsv"
 printf 'header\n' >"$LEDGER"
 
 run_stub() {
-  rm -f "$MARKER" "${LOGS}"/session-new-*.log
+  rm -f "$MARKER" "$STATUSMARK" "${LOGS}"/session-new-*.log
   set +e
   out="$(sandbox THUNDERSTONE_OPERATIONAL_ROOT="$ops" TS_LEDGER="$LEDGER" TS_MODEL=composer-2.5 \
     TS_JOB_ID=cli-profile-job "$@" bash "$RUN" "$BRIEF" 2>&1)"
@@ -72,6 +75,7 @@ col() { awk -F'\t' -v n="$1" '{ print $n }' <<<"$row"; }
 # 1) Profile on: agent HOME is the profile, tokens attributed from this run's log.
 run_stub TS_CLI_HOME="$PROFILE"
 [[ "$(cat "$MARKER")" == "HOME=${PROFILE}" ]] || fail "profile on: agent HOME wrong: $(cat "$MARKER")"
+[[ "$(cat "$STATUSMARK")" == "HOME=${PROFILE}" ]] || fail "profile on: preflight not under profile: $(cat "$STATUSMARK")"
 row="$(tail -n 1 "$LEDGER")"
 [[ "$(wc -l <"$LEDGER")" -eq 2 ]] || fail "profile on: expected 1 row: $(cat "$LEDGER")"
 [[ "$(col 8)" == "42" ]] || fail "profile on: exit column wrong: ${row}"
@@ -90,5 +94,20 @@ run_stub TS_CLI_HOME="${TMP}/missing-profile"
 row="$(tail -n 1 "$LEDGER")"
 [[ "$(col 11)" == "21593" ]] || fail "missing dir: tokens not attributed: ${row}"
 [[ "$(wc -l <"$LEDGER")" -eq 4 ]] || fail "expected 3 rows total: $(cat "$LEDGER")"
+
+# 4) Auth preflight fails (profile on and off) -> exit 77, no job launch, no row.
+for extra in "TS_CLI_HOME=${PROFILE}" "TS_CLI_PROFILE=0"; do
+  rm -f "$MARKER" "$STATUSMARK"
+  set +e
+  out="$(sandbox THUNDERSTONE_OPERATIONAL_ROOT="$ops" TS_LEDGER="$LEDGER" TS_MODEL=composer-2.5 \
+    STUB_STATUS='{"isAuthenticated":false}' "$extra" bash "$RUN" "$BRIEF" 2>&1)"
+  code=$?
+  set -e
+  [[ "$code" -eq 77 ]] || fail "auth missing (${extra}): expected 77, got ${code}: ${out}"
+  [[ -s "$STATUSMARK" ]] || fail "auth missing (${extra}): preflight not run"
+  [[ ! -e "$MARKER" ]] || fail "auth missing (${extra}): job launched: $(cat "$MARKER")"
+  grep -qF 'AUTH_MISSING' <<<"$out" || fail "auth missing (${extra}): no message: ${out}"
+done
+[[ "$(wc -l <"$LEDGER")" -eq 4 ]] || fail "auth missing: ledger row appended: $(cat "$LEDGER")"
 
 echo "run-task cli-profile tests passed."

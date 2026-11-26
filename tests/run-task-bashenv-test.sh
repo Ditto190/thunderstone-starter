@@ -23,6 +23,7 @@ mkdir -p "$STUB_BIN"
 # The stub records what it inherited. /dev/null as BASH_ENV sources nothing, so PATH stays pinned.
 cat >"${STUB_BIN}/agent" <<STUB
 #!/bin/bash
+if [[ "\${1:-}" == status ]]; then ok='{"isAuthenticated":true}'; printf '%s\\n' "\${STUB_STATUS:-\$ok}"; exit 0; fi
 printf 'BASH_ENV=%s ENV=%s\n' "\${BASH_ENV-unset}" "\${ENV-unset}" >>"${MARKER}"
 exit 42
 STUB

@@ -33,6 +33,7 @@ MARKER="${TMP}/agent-stub-called"
 mkdir -p "$STUB_BIN"
 cat >"${STUB_BIN}/agent" <<STUB
 #!/bin/bash
+if [[ "\${1:-}" == status ]]; then ok='{"isAuthenticated":true}'; printf '%s\\n' "\${STUB_STATUS:-\$ok}"; exit 0; fi
 printf '%s\n' "\$*" >>"${MARKER}"
 exit 42
 STUB

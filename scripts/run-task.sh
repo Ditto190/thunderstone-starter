@@ -143,15 +143,23 @@ if [[ "${TS_CLI_PROFILE:-1}" != "0" && -n "$_ts_cli_home" && -d "$_ts_cli_home/.
     "XDG_CACHE_HOME=$_ts_cli_home/.cache"
   )
 fi
-started_epoch="$(date +%s)"
-set +e
 # Empty profile -> exact pre-profile launch (no env wrapper); ${#arr[@]} is
 # safe under set -u for an empty array.
+_ts_launch=(agent)
 if (( ${#_ts_cli_env[@]} > 0 )); then
-  env "${_ts_cli_env[@]}" agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
-else
-  agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
+  _ts_launch=(env "${_ts_cli_env[@]}" agent)
 fi
+# Auth preflight under the same env the job will use (exit 77, no retry).
+# `agent status` exits 0 even when logged out; parse the JSON instead.
+_ts_status="$(timeout 20 "${_ts_launch[@]}" status --format json 2>/dev/null || true)"
+if ! grep -qE '"isAuthenticated"[[:space:]]*:[[:space:]]*true' <<<"$_ts_status"; then
+  echo "AUTH_MISSING: run 'agent login' (DT); no retry" >&2
+  [[ -z "$ts_stamp" ]] || rm -f "$ts_stamp" || true
+  exit 77
+fi
+started_epoch="$(date +%s)"
+set +e
+"${_ts_launch[@]}" -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
 ec=$?
 set -e
 _ts_ledger_append "$ec" "$started_epoch" "$ts_stamp" || true
