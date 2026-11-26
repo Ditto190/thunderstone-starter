@@ -33,7 +33,7 @@ command -v agent >/dev/null || { echo "Install Cursor CLI first"; exit 1; }
 # Per-job token ledger (TS_LEDGER; default ops_root/state/pr-autopipeline/ledger.tsv).
 # Do not fail the job if the ledger write fails. Preserve the agent exit code.
 _ts_ledger_append() {
-  local ec="$1" started_epoch="$2"
+  local ec="$1" started_epoch="$2" stamp="${3:-}"
   local ledger="${TS_LEDGER:-}"
   if [[ -z "$ledger" && -n "$ops_root" ]]; then
     ledger="$ops_root/state/pr-autopipeline/ledger.tsv"
@@ -45,18 +45,22 @@ _ts_ledger_append() {
   wall=$(( ended_epoch - started_epoch ))
   local logdir="${CURSOR_AGENT_LOG_DIR:-/tmp/cursor-agent-logs-$(id -u)}"
   local latest=""
-  if [[ -d "$logdir" ]]; then
-    latest="$(find "$logdir" -maxdepth 1 -type f -name 'session-*.log' -newer /tmp/.ts-run-task-start-"$$" 2>/dev/null | sort | tail -n 1)"
-    # fallback: newest session log if the stamp file is missing
-    if [[ -z "$latest" ]]; then
-      latest="$(find "$logdir" -maxdepth 1 -type f -name 'session-*.log' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -n 1 | awk '{ $1=""; sub(/^ /,""); print }')"
+  # Only attribute a session log written during this run (newest by mtime).
+  # No stamp or no new log -> leave token columns blank rather than guess.
+  # mtime >= stamp (not find -newer): coarse fs timestamps can tie on fast runs.
+  if [[ -d "$logdir" && -n "$stamp" && -e "$stamp" ]]; then
+    local stamp_t
+    stamp_t="$(find "$stamp" -maxdepth 0 -printf '%T@' 2>/dev/null || true)"
+    if [[ -n "$stamp_t" ]]; then
+      latest="$(find "$logdir" -maxdepth 1 -type f -name 'session-*.log' -printf '%T@ %p\n' 2>/dev/null \
+        | awk -v s="$stamp_t" '$1 >= s' | sort -n | tail -n 1 | cut -d' ' -f2-)"
     fi
   fi
   if [[ -n "$latest" && -r "$latest" ]]; then
     src="$latest"
     # Take the last usage tuple in the log (final counts).
     local line
-    line="$(rg -o 'input_tokens=[0-9]+, output_tokens=[0-9]+, cache_read_tokens=[0-9]+, cache_write_tokens=[0-9]+(?:, duration_ms=[0-9]+)?' "$latest" 2>/dev/null | tail -n 1 || true)"
+    line="$(grep -oE 'input_tokens=[0-9]+, output_tokens=[0-9]+, cache_read_tokens=[0-9]+, cache_write_tokens=[0-9]+(, duration_ms=[0-9]+)?' "$latest" 2>/dev/null | tail -n 1 || true)"
     if [[ -n "$line" ]]; then
       input="$(sed -n 's/.*input_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
       output="$(sed -n 's/.*output_tokens=\([0-9]*\).*/\1/p' <<<"$line")"
@@ -93,13 +97,14 @@ _ts_ledger_append() {
   printf '%s\n' "$row" >> "$ledger" || echo "warn: ledger append failed: $ledger" >&2
 }
 
-touch /tmp/.ts-run-task-start-$$
+# Unique start marker for session-log attribution; never blocks the launch.
+ts_stamp="$(mktemp "${TMPDIR:-/tmp}/ts-run-task-start.XXXXXX" 2>/dev/null || true)"
 # DT standing law: VM agents have full auto-permission; keep --trust --force.
 started_epoch="$(date +%s)"
 set +e
 agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
 ec=$?
 set -e
-_ts_ledger_append "$ec" "$started_epoch" || true
-rm -f /tmp/.ts-run-task-start-$$
+_ts_ledger_append "$ec" "$started_epoch" "$ts_stamp" || true
+[[ -z "$ts_stamp" ]] || rm -f "$ts_stamp" || true
 exit "$ec"
