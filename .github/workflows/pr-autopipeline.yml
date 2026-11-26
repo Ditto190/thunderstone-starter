@@ -53,9 +53,14 @@ jobs:
   state:
     # Same-repo PRs only (fork PRs get a read-only token and must not drive agents). Dispatch runs are
     # re-checked against isCrossRepository below before any write.
+    # Issue #74: skip thread replies (comment.in_reply_to_id) and the empty "commented" wrapper review
+    # GitHub creates for each API reply; on #73 these spawned ~20 state runs, each cancelled by the
+    # next, leaving the PR UNSTABLE. Top-level review comments and real reviews still snapshot.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request != null && github.event.pull_request.head.repo.full_name == github.repository)
+      (github.event.pull_request != null && github.event.pull_request.head.repo.full_name == github.repository &&
+      !(github.event_name == 'pull_request_review_comment' && github.event.comment.in_reply_to_id) &&
+      !(github.event_name == 'pull_request_review' && github.event.review.state == 'commented' && github.event.review.body == ''))
     concurrency:
       group: autopipeline-${{ github.event.pull_request.number || inputs.pr }}
       cancel-in-progress: true
@@ -162,10 +167,15 @@ jobs:
                 schema: 1, pr: ($pr|tonumber), head_sha: $p.headRefOid, head_ref: $p.headRefName,
                 state: $p.state, draft: $p.isDraft, merge_state: $p.mergeStateStatus, mergeable: $p.mergeable,
                 checks: $rollup,
-                # Latest run per check name only (re-runs and self-cancelled runs must not count).
+                # Latest run per check name. If the newest is CANCELLED (superseded), fall back to the most
+                # recent completed non-cancelled run so a cancel cannot mask an older FAILURE (#74).
                 failing: ([$contexts[0][]? | {n: (.name // .context), c: (.conclusion // .state // ""),
                                              t: (.startedAt // .createdAt // "")}]
-                          | group_by(.n) | map(max_by(.t))
+                          | group_by(.n)
+                          | map(sort_by(.t) | .[-1] as $newest
+                              | if $newest.c == "CANCELLED" then
+                                  ([.[] | select(.c != "" and .c != "CANCELLED")] | last) // $newest
+                                else $newest end)
                           | map(select(.c as $c | ["FAILURE","ERROR","TIMED_OUT","STARTUP_FAILURE","ACTION_REQUIRED"] | index($c)))
                           | map(.n)),
                 threads_total: $threads_total,
