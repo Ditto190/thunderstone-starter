@@ -63,7 +63,10 @@ jobs:
       !(github.event_name == 'pull_request_review' && github.event.review.state == 'commented' && github.event.review.body == ''))
     concurrency:
       group: autopipeline-${{ github.event.pull_request.number || inputs.pr }}
-      cancel-in-progress: true
+      # Queue instead of cancelling (#74): a burst of events (e.g. a bot review plus its inline comment)
+      # no longer leaves CANCELLED `state` checks on the PR. A run still pending when a newer one queues
+      # is superseded; the newest run always executes and the stale-head guard keeps its write correct.
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -168,13 +171,14 @@ jobs:
                 state: $p.state, draft: $p.isDraft, merge_state: $p.mergeStateStatus, mergeable: $p.mergeable,
                 checks: $rollup,
                 # Latest run per check name. If the newest is CANCELLED (superseded), fall back to the most
-                # recent completed non-cancelled run so a cancel cannot mask an older FAILURE (#74).
+                # recent run with a terminal result (skip in-progress, CANCELLED, PENDING, EXPECTED) so a
+                # cancel cannot mask an older FAILURE (#74).
                 failing: ([$contexts[0][]? | {n: (.name // .context), c: (.conclusion // .state // ""),
                                              t: (.startedAt // .createdAt // "")}]
                           | group_by(.n)
                           | map(sort_by(.t) | .[-1] as $newest
                               | if $newest.c == "CANCELLED" then
-                                  ([.[] | select(.c != "" and .c != "CANCELLED")] | last) // $newest
+                                  ([.[] | select(.c as $c | ["","CANCELLED","PENDING","EXPECTED"] | index($c) | not)] | last) // $newest
                                 else $newest end)
                           | map(select(.c as $c | ["FAILURE","ERROR","TIMED_OUT","STARTUP_FAILURE","ACTION_REQUIRED"] | index($c)))
                           | map(.n)),
