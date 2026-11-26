@@ -30,4 +30,4 @@ if [[ -n "$ops_root" ]]; then
 fi
 command -v agent >/dev/null || { echo "Install Cursor CLI first"; exit 1; }
 # DT standing law: VM agents have full auto-permission; keep --trust --force.
-exec agent -p --trust --force "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
+exec agent -p --trust --force --model "${TS_MODEL:-composer-2.5}" "Read AGENTS.md and the task brief at $brief. Execute only its scope. Do not spawn another Cursor CLI. Validate and save a concise report under workspace/reports. Do not push, deploy or send messages."
