@@ -17,6 +17,7 @@ bash tests/run-task-usage-limit-test.sh
 bash tests/run-task-guard-test.sh
 bash tests/run-task-bashenv-test.sh
 bash tests/run-task-model-test.sh
+bash tests/run-task-ledger-test.sh
 bash tests/ci-mimic-test.sh
 bash tests/verify-lane-test.sh
 bash tests/thunderstone-workspace-test.sh
